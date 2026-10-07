@@ -85,15 +85,20 @@
     function renderCart() {
       const box = document.getElementById('pos-cart-items-list');
       box.innerHTML = cart.length ? cart.map((c, i) =>
-        '<div class="pos-cart-line"><div><strong>' + ui.esc(c.name) + '</strong><br>' +
-        '<small class="muted">' + ui.pesos(c.unit_price) + ' / ' + c.unit.toLowerCase() + '</small></div>' +
+        '<div class="pos-cart-line"><div class="pos-cart-line-info"><strong>' + ui.esc(c.name) + '</strong><br>' +
+        '<small class="muted">' + ui.pesos(c.unit_price) + ' / ' + c.unit.toLowerCase() +
+        (c.unit === 'BUNDLE' ? ' · ' + c.ppb + ' pcs' : '') + '</small></div>' +
         '<div class="pos-qty-ctrl">' +
         '<button type="button" class="btn btn-outline btn-sm pos-qty-button" data-dec="' + i + '" aria-label="Decrease quantity">−</button>' +
         '<span>' + c.qty + '</span>' +
         '<button type="button" class="btn btn-outline btn-sm pos-qty-button" data-inc="' + i + '" aria-label="Increase quantity">+</button>' +
         '<button type="button" class="btn btn-danger-outline btn-sm pos-remove-line" data-del="' + i + '" aria-label="Remove item">×</button>' +
         '</div><div><strong>' + ui.pesos(c.unit_price * c.qty) + '</strong></div></div>'
-      ).join('') : '<p class="muted" style="padding:12px;">Slip is empty. Tap a product to add it.</p>';
+      ).join('') : '<div class="pos-slip-empty"><span><i class="fas fa-basket-shopping"></i></span><strong>Your order slip is empty</strong><small>Choose a product to start this walk-in sale.</small></div>';
+      const itemCount = cart.reduce((sum, line) => sum + line.qty, 0);
+      const countEl = document.getElementById('pos-slip-count');
+      countEl.textContent = itemCount + ' item' + (itemCount === 1 ? '' : 's');
+      countEl.classList.toggle('is-empty', itemCount === 0);
       const total = cartTotal();
       document.getElementById('pos-cart-subtotal').textContent = ui.pesos(total);
       document.getElementById('pos-total-due').textContent = ui.pesos(total);

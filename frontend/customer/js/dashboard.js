@@ -12,6 +12,10 @@
 
     const U = window.WeBakeUtils;
     const api = window.ShopAPI;
+    const BUNDLES_PER_ORDER_UNIT = 300;
+    let savedCartLines = [];
+    let savedCatalog = {};
+    let selectedSavedIds = new Set();
 
     if (!window.ShopAuth.token()) {
       window.location.href = 'home.html?auth=login&next=dashboard.html';
@@ -91,6 +95,85 @@
       }
     });
 
+    const savedCart = document.getElementById('dash-cart-container');
+    savedCart.addEventListener('change', (e) => {
+      const checkbox = e.target.closest('[data-saved-select]');
+      if (!checkbox) return;
+      const id = Number(checkbox.dataset.savedSelect);
+      if (checkbox.checked) selectedSavedIds.add(id);
+      else selectedSavedIds.delete(id);
+      renderSavedCart();
+    });
+    savedCart.addEventListener('click', async (e) => {
+      const inc = e.target.closest('[data-saved-inc]');
+      const dec = e.target.closest('[data-saved-dec]');
+      const remove = e.target.closest('[data-saved-remove]');
+      const review = e.target.closest('#saved-cart-review');
+      if (review) {
+        const ids = savedCartLines.filter((line) => selectedSavedIds.has(Number(line.product_id)))
+          .map((line) => Number(line.product_id));
+        if (!ids.length) { U.toast('Select at least one product to review.'); return; }
+        window.location.href = 'products.html?selected=' + encodeURIComponent(ids.join(','));
+        return;
+      }
+      const button = inc || dec || remove;
+      if (!button) return;
+      const index = Number(button.dataset.savedInc ?? button.dataset.savedDec ?? button.dataset.savedRemove);
+      if (remove || (dec && savedCartLines[index].bundles <= BUNDLES_PER_ORDER_UNIT)) {
+        selectedSavedIds.delete(Number(savedCartLines[index].product_id));
+        savedCartLines.splice(index, 1);
+      } else {
+        savedCartLines[index].bundles += inc ? BUNDLES_PER_ORDER_UNIT : -BUNDLES_PER_ORDER_UNIT;
+      }
+      renderSavedCart();
+      try {
+        await api.cartPut(savedCartLines.map((line) => ({ product_id: Number(line.product_id), bundles: Number(line.bundles) })), false);
+      } catch (err) {
+        U.toast(err.message);
+        load().catch(() => {});
+      }
+    });
+
+    function renderSavedCart() {
+      const lines = savedCartLines;
+      const container = document.getElementById('dash-cart-container');
+      if (!lines.length) {
+        container.innerHTML = '<div class="saved-cart-empty"><span><i class="fas fa-basket-shopping"></i></span><strong>Your cart is empty</strong>' +
+          '<p>Choose your bakery favorites and they’ll be saved here.</p>' +
+          '<a class="btn btn-outline btn-sm" href="products.html">Browse products</a></div>';
+        return;
+      }
+      const selected = lines.filter((line) => selectedSavedIds.has(Number(line.product_id)));
+      const cartTotal = selected.reduce((sum, line) => {
+        const product = savedCatalog[line.product_id];
+        return sum + (product ? Number(line.bundles || 0) * Number(product.price_bundle_centavos || 0) : 0);
+      }, 0);
+      container.innerHTML = '<div class="saved-cart-list">' + lines.map((line, index) => {
+        const product = savedCatalog[line.product_id];
+        const name = product ? product.name : '#' + line.product_id;
+        const bundles = Number(line.bundles || 0);
+        const units = bundles / BUNDLES_PER_ORDER_UNIT;
+        const pieces = bundles * Number(product && product.pieces_per_bundle || 25);
+        const total = product ? U.pesos(bundles * product.price_bundle_centavos) : '-';
+        return '<div class="saved-cart-item' + (selectedSavedIds.has(Number(line.product_id)) ? ' is-selected' : '') + '">' +
+          '<label class="saved-cart-select"><input type="checkbox" data-saved-select="' + Number(line.product_id) + '"' +
+          (selectedSavedIds.has(Number(line.product_id)) ? ' checked' : '') + ' aria-label="Select ' + U.escapeHtml(name) + '">' +
+          '<span class="saved-cart-icon"><i class="fas fa-bread-slice"></i></span></label>' +
+          '<span class="saved-cart-details"><strong>' + U.escapeHtml(name) + '</strong><small>' +
+          (Number.isInteger(units) ? units + ' order unit' + (units === 1 ? '' : 's') + ' · ' : '') +
+          bundles.toLocaleString() + ' bundles · ' + pieces.toLocaleString() + ' pcs</small></span>' +
+          '<div class="saved-cart-edit"><button type="button" data-saved-dec="' + index + '" aria-label="Decrease order quantity">−</button>' +
+          '<span>' + (Number.isInteger(units) ? units : bundles) + '</span>' +
+          '<button type="button" data-saved-inc="' + index + '" aria-label="Increase order quantity">+</button>' +
+          '<button type="button" data-saved-remove="' + index + '" aria-label="Remove product">×</button></div>' +
+          '<strong class="saved-cart-line-total">' + total + '</strong></div>';
+      }).join('') + '</div><div class="saved-cart-summary"><span>' + selected.length + ' selected · ' +
+        lines.length + (lines.length === 1 ? ' product saved' : ' products saved') + '</span><strong>' +
+        U.pesos(cartTotal) + '</strong></div><p class="saved-cart-estimate">Estimated selected total</p>' +
+        '<button class="btn btn-primary saved-cart-cta" id="saved-cart-review" type="button"' + (!selected.length ? ' disabled' : '') +
+        '><i class="fas fa-bag-shopping"></i> Review selected in cart</button>';
+    }
+
     async function load() {
       const [{ member }, cartRes, ordersRes, prodRes] = await Promise.all([
         api.profile(), api.cartGet(), api.mine(), api.products(),
@@ -105,28 +188,10 @@
       document.getElementById('dash-address').value = member.address || '';
 
       // Saved cart, enriched with live catalog names/prices.
-      const catalog = Object.fromEntries((prodRes.products || []).map((p) => [p.id, p]));
-      const lines = cartRes.items || [];
-      const cartTotal = lines.reduce((sum, line) => {
-        const product = catalog[line.product_id];
-        return sum + (product ? Number(line.bundles || 0) * Number(product.price_bundle_centavos || 0) : 0);
-      }, 0);
-      document.getElementById('dash-cart-container').innerHTML = lines.length
-        ? '<div class="saved-cart-list">' + lines.map((l) => {
-            const p = catalog[l.product_id];
-            const name = p ? p.name : '#' + l.product_id;
-            const line = p ? U.pesos(l.bundles * p.price_bundle_centavos) : '-';
-            return '<div class="saved-cart-item"><span class="saved-cart-icon"><i class="fas fa-bread-slice"></i></span>' +
-              '<span class="saved-cart-details"><strong>' + U.escapeHtml(name) + '</strong><small>' +
-              U.escapeHtml(String(l.bundles)) + ' bundles saved</small></span><strong class="saved-cart-line-total">' +
-              line + '</strong></div>';
-          }).join('') + '</div><div class="saved-cart-summary"><span>' + lines.length +
-          (lines.length === 1 ? ' product saved' : ' products saved') + '</span><strong>' +
-          U.pesos(cartTotal) + '</strong></div><p class="saved-cart-estimate">Estimated cart total</p>' +
-          '<a class="btn btn-primary saved-cart-cta" href="products.html"><i class="fas fa-bag-shopping"></i> Review saved cart</a>'
-        : '<div class="saved-cart-empty"><span><i class="fas fa-basket-shopping"></i></span><strong>Your cart is empty</strong>' +
-          '<p>Choose your bakery favorites and they’ll be saved here.</p>' +
-          '<a class="btn btn-outline btn-sm" href="products.html">Browse products</a></div>';
+      savedCatalog = Object.fromEntries((prodRes.products || []).map((p) => [p.id, p]));
+      savedCartLines = (cartRes.items || []).map((line) => ({ product_id: Number(line.product_id), bundles: Number(line.bundles) }));
+      selectedSavedIds = new Set(savedCartLines.map((line) => line.product_id));
+      renderSavedCart();
 
       // Order history with track links.
       const orders = ordersRes.orders || [];

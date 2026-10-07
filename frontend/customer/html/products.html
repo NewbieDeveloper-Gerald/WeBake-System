@@ -60,11 +60,12 @@
     <p class="modal-product-desc" id="modal-desc"></p>
     <p class="modal-product-price" id="modal-price"></p>
     <div class="quantity-control">
-      <span class="quantity-label">Qty:</span>
+      <span class="quantity-label">Order quantity</span>
       <button id="qty-minus"><i class="fas fa-minus"></i></button>
       <input type="number" id="qty-input" value="1" min="1" max="99" step="1" readonly>
       <button id="qty-plus"><i class="fas fa-plus"></i></button>
     </div>
+    <p class="order-unit-note" id="modal-unit-note">1 order quantity = 300 bundles × 25 pcs = 7,500 pcs</p>
     <div class="modal-actions">
       <button class="btn btn-accent" id="add-to-cart-btn"><i class="fas fa-cart-plus"></i> Add to Cart</button>
       <button class="btn btn-primary" id="buy-now-btn"><i class="fas fa-bolt"></i> Checkout Now</button>
@@ -80,7 +81,8 @@
     </div>
     <div class="cart-body" id="cart-items"></div>
     <div class="cart-footer">
-      <div class="cart-total"><span>Total:</span><span id="cart-total">₱0</span></div>
+      <div class="cart-total"><span id="cart-selected-label">0 products selected</span><span id="cart-total">₱0</span></div>
+      <p class="cart-selection-hint">Only selected products will be checked out.</p>
       <button class="btn btn-accent btn-block" id="continue-browsing"><i class="fas fa-arrow-left"></i> Continue Browsing</button>
       <button class="btn btn-primary btn-block" id="proceed-checkout"><i class="fas fa-credit-card"></i> Proceed to Checkout</button>
     </div>

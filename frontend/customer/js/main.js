@@ -17,9 +17,13 @@
     const t = (k, v) => window.WB_I18N.t(k, v);
     const api = window.ShopAPI;
     const auth = window.ShopAuth;
+    // The shop stores bundle quantities in the API. One customer-facing order
+    // unit is 300 bundles; keeping the conversion here preserves that contract.
+    const BUNDLES_PER_ORDER_UNIT = 300;
 
     let catalog = [];
     let cart = [];
+    let selectedProductIds = new Set();
     let settings = { min_order_bundles: '300' };
     let memberEmail = '';
     let minBundles = 300;
@@ -28,6 +32,7 @@
     const co = { // checkout session state
       name: '', email: '', contact: '', address: '',
       method: 'GCASH', order: null, key: null,
+      items: [],
     };
 
     /* ---------------- load ---------------- */
@@ -52,6 +57,15 @@
         }
       } else {
         cart = loadGuest();
+      }
+      const requestedIds = new URLSearchParams(window.location.search).get('selected');
+      const requested = requestedIds ? requestedIds.split(',').map(Number).filter(Number.isFinite) : [];
+      selectedProductIds = new Set(requested.length
+        ? requested.filter((id) => cart.some((line) => line.product_id === id))
+        : cart.map((line) => line.product_id));
+      if (requestedIds) {
+        window.history.replaceState({}, '', window.location.pathname + window.location.hash);
+        openCart();
       }
       renderGrid();
       renderCart();
@@ -120,16 +134,25 @@
       document.getElementById('modal-name').textContent = p.name;
       document.getElementById('modal-desc').textContent = p.description || '';
       document.getElementById('modal-price').textContent =
+        U.pesos(p.price_bundle_centavos * BUNDLES_PER_ORDER_UNIT) + ' per order quantity · ' +
         U.pesos(p.price_bundle_centavos) + t('shop.per_bundle') +
-        ' (' + p.pieces_per_bundle + ' pcs)';
+        ' (' + p.pieces_per_bundle + ' pcs each)';
       const imgBox = document.querySelector('.modal-product-img');
       imgBox.innerHTML = p.image_url
         ? '<img src="' + U.escapeHtml(p.image_url) + '" alt="' + U.escapeHtml(p.name) + '">'
         : '<i class="fas fa-image"></i><span>No image added</span>';
       const qty = document.getElementById('qty-input');
-      qty.max = 100000;
-      qty.value = Math.min(minBundles, Math.max(1, p.bundles_available || 1));
-      document.querySelector('.quantity-label').textContent = t('shop.qty');
+      qty.max = Math.max(1, Math.floor((p.bundles_available || 0) / BUNDLES_PER_ORDER_UNIT));
+      qty.value = 1;
+      const canOrder = Number(p.bundles_available || 0) >= BUNDLES_PER_ORDER_UNIT;
+      document.getElementById('add-to-cart-btn').disabled = !canOrder;
+      document.getElementById('buy-now-btn').disabled = !canOrder;
+      document.querySelector('.quantity-label').textContent = 'Order quantity';
+      document.getElementById('modal-unit-note').textContent =
+        (canOrder
+          ? '1 order quantity = ' + BUNDLES_PER_ORDER_UNIT + ' bundles × ' +
+            (p.pieces_per_bundle || 25) + ' pcs = ' + BUNDLES_PER_ORDER_UNIT * (p.pieces_per_bundle || 25) + ' pcs'
+          : 'Not enough stock for one order quantity (' + BUNDLES_PER_ORDER_UNIT + ' bundles required).');
       document.getElementById('modal-overlay').classList.add('active');
       document.getElementById('product-modal').classList.add('active');
     }
@@ -146,7 +169,7 @@
 
     function stepQty(d) {
       const qty = document.getElementById('qty-input');
-      qty.value = Math.min(100000, Math.max(1, Number(qty.value || 1) + d));
+      qty.value = Math.min(Number(qty.max || 100000), Math.max(1, Number(qty.value || 1) + d));
     }
 
     document.getElementById('add-to-cart-btn').addEventListener('click', () => {
@@ -156,24 +179,28 @@
     });
     document.getElementById('buy-now-btn').addEventListener('click', () => {
       addLine(modalProduct.id, Number(document.getElementById('qty-input').value));
+      selectedProductIds = new Set([Number(modalProduct.id)]);
+      renderCart();
       closeModal();
       startCheckout();
     });
 
-    function addLine(productId, bundles) {
+    function addLine(productId, orderUnits) {
       const found = cart.find((l) => l.product_id === Number(productId));
-      if (found) found.bundles += bundles;
-      else cart.push({ product_id: Number(productId), bundles });
+      const actualBundles = orderUnits * BUNDLES_PER_ORDER_UNIT;
+      if (found) found.bundles += actualBundles;
+      else cart.push({ product_id: Number(productId), bundles: actualBundles });
+      selectedProductIds.add(Number(productId));
       persist();
       renderCart();
     }
 
     /* ---------------- cart sidebar ---------------- */
 
-    function totals() {
+    function totals(lines = cart) {
       let bundles = 0;
       let total = 0;
-      for (const l of cart) {
+      for (const l of lines) {
         const p = byId(l.product_id);
         if (!p) continue;
         bundles += l.bundles;
@@ -202,30 +229,64 @@
         const p = byId(l.product_id);
         const name = p ? p.name : '#' + l.product_id;
         const line = p ? l.bundles * p.price_bundle_centavos : 0;
-        return '<div class="cart-line"><div><strong>' + U.escapeHtml(name) + '</strong><br>' +
-          '<small>' + l.bundles + ' ' + t('shop.bundles') + '</small></div>' +
+        const units = l.bundles / BUNDLES_PER_ORDER_UNIT;
+        const pieces = l.bundles * (p ? Number(p.pieces_per_bundle || 25) : 25);
+        return '<div class="cart-line' + (selectedProductIds.has(l.product_id) ? ' is-selected' : '') + '">' +
+          '<label class="cart-line-select"><input type="checkbox" data-cselect="' + l.product_id + '"' +
+          (selectedProductIds.has(l.product_id) ? ' checked' : '') + ' aria-label="Select ' + U.escapeHtml(name) + ' for checkout">' +
+          '<span class="cart-line-product"><strong>' + U.escapeHtml(name) + '</strong><small>' +
+          (Number.isInteger(units) ? units + ' order unit' + (units === 1 ? '' : 's') + ' · ' : '') +
+          l.bundles + ' bundles · ' + pieces.toLocaleString() + ' pcs</small></span></label>' +
           '<div class="cart-line-ctrl">' +
-          '<button type="button" data-cdec="' + i + '">-</button>' +
-          '<button type="button" data-cinc="' + i + '">+</button>' +
-          '<button type="button" data-cdel="' + i + '">x</button></div>' +
+          '<button type="button" data-cdec="' + i + '" aria-label="Remove one order quantity">−</button>' +
+          '<span class="cart-order-qty">' + (Number.isInteger(units) ? units : l.bundles) + '</span>' +
+          '<button type="button" data-cinc="' + i + '" aria-label="Add one order quantity">+</button>' +
+          '<button type="button" data-cdel="' + i + '" aria-label="Remove ' + U.escapeHtml(name) + '">×</button></div>' +
           '<div><strong>' + U.pesos(line) + '</strong></div></div>';
       }).join('') : '<p class="empty-state">' + t('cart.empty') + '</p>';
-      const { bundles, total } = totals();
-      document.getElementById('cart-count').textContent = bundles;
+      const selected = selectedLines();
+      const { bundles, total } = totals(selected);
+      const badge = document.getElementById('cart-count');
+      badge.textContent = cart.length;
+      badge.hidden = !cart.length;
+      badge.setAttribute('aria-label', cart.length + ' product' + (cart.length === 1 ? '' : 's') + ' in cart');
       document.getElementById('cart-total').textContent = U.pesos(total);
+      document.getElementById('cart-selected-label').textContent =
+        selected.length + ' product' + (selected.length === 1 ? '' : 's') + ' selected · ' + bundles.toLocaleString() + ' bundles';
+      const checkout = document.getElementById('proceed-checkout');
+      checkout.disabled = selected.length === 0;
+      checkout.innerHTML = '<i class="fas fa-credit-card"></i> Checkout selected (' + selected.length + ')';
     }
+
+    function selectedLines() { return cart.filter((line) => selectedProductIds.has(line.product_id)); }
 
     document.getElementById('cart-items').addEventListener('click', (e) => {
       const inc = e.target.closest('[data-cinc]');
       const dec = e.target.closest('[data-cdec]');
       const del = e.target.closest('[data-cdel]');
-      if (inc) cart[inc.dataset.cinc].bundles += 1;
+      const select = e.target.closest('[data-cselect]');
+      let removedProductId = null;
+      if (select) {
+        const id = Number(select.dataset.cselect);
+        if (select.checked) selectedProductIds.add(id);
+        else selectedProductIds.delete(id);
+        renderCart();
+        return;
+      }
+      if (inc) cart[inc.dataset.cinc].bundles += BUNDLES_PER_ORDER_UNIT;
       if (dec) {
         const l = cart[dec.dataset.cdec];
-        l.bundles -= 1;
-        if (l.bundles <= 0) cart.splice(dec.dataset.cdec, 1);
+        l.bundles -= BUNDLES_PER_ORDER_UNIT;
+        if (l.bundles <= 0) {
+          removedProductId = l.product_id;
+          cart.splice(dec.dataset.cdec, 1);
+        }
       }
-      if (del) cart.splice(del.dataset.del, 1);
+      if (del) {
+        removedProductId = cart[del.dataset.cdel].product_id;
+        cart.splice(del.dataset.cdel, 1);
+      }
+      if (removedProductId !== null) selectedProductIds.delete(removedProductId);
       if (inc || dec || del) { persist(); renderCart(); }
     });
 
@@ -254,8 +315,8 @@
     }
 
     document.getElementById('proceed-checkout').addEventListener('click', () => {
-      if (!cart.length) { U.toast(t('cart.empty')); return; }
-      const { bundles } = totals();
+      if (!selectedLines().length) { U.toast('Select at least one product to check out.'); return; }
+      const { bundles } = totals(selectedLines());
       if (bundles < minBundles) {
         U.toast(t('co.below_min', { n: minBundles, have: bundles }));
         return;
@@ -265,8 +326,9 @@
     });
 
     function startCheckout() {
-      const { bundles } = totals();
-      if (!cart.length || bundles < minBundles) {
+      co.items = selectedLines().map((line) => ({ ...line }));
+      const { bundles } = totals(co.items);
+      if (!co.items.length || bundles < minBundles) {
         U.toast(t('co.below_min', { n: minBundles, have: bundles }));
         return;
       }
@@ -276,7 +338,7 @@
       gotoStep('step-stock');
       // Client-side stock sanity (the SERVER re-checks at approval).
       window.setTimeout(() => {
-        const short = cart.find((l) => {
+        const short = co.items.find((l) => {
           const p = byId(l.product_id);
           return !p || l.bundles > (p.bundles_available || 0);
         });
@@ -388,7 +450,7 @@
       try {
         const body = {
           customer: { name: co.name, email: co.email, contact: co.contact, address: co.address },
-          items: cart.map((l) => ({ product_id: l.product_id, bundles: l.bundles })),
+          items: co.items.map((l) => ({ product_id: l.product_id, bundles: l.bundles })),
           payment_method: co.method,
           idempotency_key: co.key,
         };
@@ -405,17 +467,19 @@
     }
 
     function estimate() {
-      const { bundles, total } = totals();
+      const { bundles, total } = totals(co.items);
       const down = Math.ceil(total / 2);
       return { bundles, total, down, balance: total - down };
     }
 
     function renderReview() {
       const o = co.order;
-      const lines = cart.map((l) => {
+      const lines = co.items.map((l) => {
         const p = byId(l.product_id);
+        const units = l.bundles / BUNDLES_PER_ORDER_UNIT;
         return '<div class="review-line"><span>' + U.escapeHtml(p ? p.name : '#' + l.product_id) +
-          ' x' + l.bundles + '</span><span>' +
+          ' × ' + (Number.isInteger(units) ? units + ' order unit' + (units === 1 ? '' : 's') : l.bundles + ' bundles') +
+          ' (' + l.bundles + ' bundles)</span><span>' +
           U.pesos(p ? l.bundles * p.price_bundle_centavos : 0) + '</span></div>';
       }).join('');
       document.getElementById('review-details').innerHTML =
@@ -536,10 +600,11 @@
         U.escapeHtml(co.email) + '.</p><a class="btn btn-outline btn-sm" href="register.html?email=' +
         encodeURIComponent(co.email) + '">Create account</a></div>';
       gotoStep('step-success');
-      // Order placed: empty the cart everywhere.
-      cart = [];
-      if (auth.token()) api.cartPut([], false).catch(() => {});
-      else localStorage.removeItem('webake_cart');
+      // Keep unchecked products in the saved cart after placing this order.
+      const checkedOutIds = new Set(co.items.map((line) => line.product_id));
+      cart = cart.filter((line) => !checkedOutIds.has(line.product_id));
+      checkedOutIds.forEach((id) => selectedProductIds.delete(id));
+      persist();
       renderCart();
     }
 
