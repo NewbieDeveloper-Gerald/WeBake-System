@@ -1,7 +1,7 @@
 /**
  * Supabase PostgreSQL connection pool.
  *
- * WHAT: A shared `pg` Pool plus three helpers: query(), getClient(), ping().
+ * WHAT: A shared `pg` pool plus three helpers: query(), getClient(), ping().
  *
  * WHY: Opening a new database connection per request is slow and exhausts
  * Supabase's connection limit. A pool reuses a small set of connections.
@@ -14,8 +14,7 @@
 const { Pool } = require('pg');
 const config = require('./env');
 
-// Prefer the pooler connection string (port 6543). The pooler is designed for
-// server environments like Render that open/close connections often.
+// Prefer the shared Supabase Session pooler for this long-running Render API.
 const poolConfig = config.db.connectionString
   ? { connectionString: config.db.connectionString }
   : {
@@ -56,7 +55,7 @@ async function query(text, params) {
     }
     return result;
   } catch (err) {
-    // Log the SQL shape but never the params (they may contain PII/secrets).
+    // Log the SQL shape but never the params (they may contain rII/secrets).
     console.error(`[db] query failed: ${text.slice(0, 120)}... -> ${err.message}`);
     throw err;
   }

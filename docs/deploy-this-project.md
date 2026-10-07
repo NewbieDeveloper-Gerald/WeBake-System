@@ -26,10 +26,10 @@ If this project is not in GitHub yet, create a repository and push the project f
 
 1. Create a Supabase project. The repository's deployment notes specify the Singapore region (`ap-southeast-1`) to match the Render service region.
 2. Set and save the database password during project creation. Keep it available for the connection string.
-3. Open **Project Settings → Database** and copy the PostgreSQL **Session pooler** connection string. Use port `6543`, and the `postgres.PROJECT_REF` username format. The project example is:
+3. Click **Connect** in the Supabase dashboard, choose the PostgreSQL **Session pooler**, and copy the complete connection string. The shared Session pooler uses port `5432`; use the host and `postgres.PROJECT_REF` username from the copied string. It should look like:
 
    ```text
-   postgresql://postgres.PROJECT_REF:PASSWORD@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
+   postgresql://postgres.PROJECT_REF:PASSWORD@POOLER-HOST:5432/postgres
    ```
 
    Use the actual values Supabase displays; do not use this example literally. This full value becomes Render's `DATABASE_URL`.
@@ -71,7 +71,7 @@ The project uses Brevo for registration and checkout verification codes, passwor
 5. Apply the Blueprint and deploy. Open the service's **Logs** and wait for the build to finish. It should report six migrations applied on the first run, followed by a successful server start and health check.
 6. Copy the service's public URL, for example `https://webake-api-xxxx.onrender.com`. This is the API URL used in the next steps.
 
-If the build fails during migrations, check `DATABASE_URL` first: it must be the correct Supabase pooler URL, port `6543`, with the right database password and no extra spaces.
+If the build fails during migrations, check `DATABASE_URL` first: it must be a PostgreSQL connection string beginning with `postgresql://`, from Supabase's Session pooler, with the right database password and no extra spaces. Percent-encode reserved characters in the password (such as `@`, `#`, `?`, `&`, or spaces) if you insert it manually.
 
 ## 5. Check the API before deploying the frontend
 
@@ -83,21 +83,41 @@ Open these addresses in a browser, replacing `<render-url>` with the Render serv
 
 If the health response says `degraded` or `connected:false`, the API is running but cannot connect to the database. Fix the database URL or password in Render and redeploy before continuing.
 
-## 6. Seed the new database once
+## 6. Run migrations and seed from your computer
 
-The migration step creates tables. The seed step creates the owner account, eight products, sample reviews, and default settings.
+You do not need Render's paid Shell for this step. The project's npm scripts can connect directly to the same Supabase database from your computer. Render still runs migrations during its build; this local path is also useful for bootstrapping the first database.
 
-1. In Render, open the `webake-api` service's **Shell**.
-2. Run:
+1. On your computer, open PowerShell in the repository's `backend` folder:
 
-   ```bash
-   cd backend && npm run seed
+   ```powershell
+   cd C:\Users\rodny\OneDrive\Documents\Desktop\webake\backend
    ```
 
-3. Confirm the output reports the owner account, eight products, sample reviews, and default settings as created.
-4. Save the owner email (`crbwebake@gmail.com`) and the password you entered as `ADMIN_PASSWORD`. The seed script stores a password hash in the database; it does not save the plain password there.
+2. If `backend/.env` does not exist yet, create it from the example. This command leaves an existing `.env` untouched:
 
-The seed is designed to preserve existing data if run again. Stock starts at zero, so the customer checkout will not be usable until you add stock later.
+   ```powershell
+   if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+   ```
+
+3. Open `backend/.env` and set these values using your **rotated** credentials:
+
+   - `DATABASE_URL`: the full PostgreSQL Session pooler string from Supabase Connect, with the new database password. URL-encode reserved password characters.
+   - `JWT_SECRET`: a random secret at least 32 characters long.
+   - `ADMIN_EMAIL`: `crbwebake@gmail.com` or the owner email you want to use.
+   - `ADMIN_PASSWORD`: a new owner password. Use the same one set in Render if you want the Render seed configuration to match.
+
+   Keep `SUPABASE_URL` as the `https://…supabase.co` project URL. `SUPABASE_SERVICE_ROLE_KEY` and `BREVO_API_KEY` are not needed for migration or seeding. `.gitignore` excludes `backend/.env`; never commit it or paste it into chat.
+4. Install the backend dependencies and run the scripts from the `backend` folder:
+
+   ```powershell
+   npm install
+   npm run migrate
+   npm run seed
+   ```
+
+5. Confirm the output says the migrations were applied and the seed created the admin, eight products, sample reviews, and default settings.
+
+The seed script is idempotent: running it again does not overwrite the stored admin password, product stock, or edited settings. If the admin was already seeded with a different password, changing `ADMIN_PASSWORD` does not change the existing account; use the account's reset flow. Seeded product stock starts at zero, so restock products in Admin → Inventory before checkout can succeed.
 
 ## 7. Point Vercel's API rewrite at Render
 

@@ -34,7 +34,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        sync: false # Supabase POOLER string (port 6543). Secret - prompted at deploy.
+        sync: false # Supabase shared Session pooler URL. Secret - prompted at deploy.
       - key: JWT_SECRET
         generateValue: true # Render invents a random secret on first deploy.
       - key: BCRYPT_ROUNDS

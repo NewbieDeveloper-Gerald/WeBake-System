@@ -20,8 +20,8 @@ then seed, then Vercel, then the FRONTEND_URL loop-back.
 1. Create a project at supabase.com, region **Singapore (ap-southeast-1)**
    (same region as the Render service = lowest latency).
 2. Project Settings > Database: copy the **pooler** connection string
-   (port **6543**, not 5432). It looks like:
-   `postgresql://postgres.PROJECT_REF:PASSWORD@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres`
+   (shared Session pooler, port **5432**). It looks like:
+   `postgresql://postgres.PROJECT_REF:PASSWORD@POOLER-HOST:5432/postgres`
    Keep it; Render asks for it as `DATABASE_URL`.
 3. Project Settings > API: copy the `service_role` key (server-only, never goes
    in the frontend) and the project URL. These become `SUPABASE_SERVICE_ROLE_KEY`

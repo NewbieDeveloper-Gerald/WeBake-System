@@ -11,7 +11,7 @@ paste straight through without pausing the wizard:
 
 | Secret | Where to get it |
 |---|---|
-| `DATABASE_URL` | Supabase > Project Settings > Database > **pooler** string (port `6543`). Must start with `postgresql://` and contain `pooler.supabase.com:6543`. The direct string (port 5432) also boots but drops connections under Render's free tier — use the pooler. |
+| `DATABASE_URL` | Supabase > Project Settings > Database > **Session pooler** string (port `5432`). Must start with `postgresql://` and contain `pooler.supabase.com:5432`. Copy the host and username from Supabase's Connect dialog rather than composing them. |
 | `FRONTEND_URL` | Your Vercel URL, e.g. `https://webake-xxxx.vercel.app`. **If Vercel isn't deployed yet:** type `https://placeholder.local` for now and replace it later (step 7). Any value boots; a wrong value only affects browser CORS, not the API itself. |
 | `ADMIN_PASSWORD` | A strong owner password you invent now (12+ characters, unique). Used once by the seed script, then stored only as a bcrypt hash. |
 | `BREVO_API_KEY` | Brevo dashboard > SMTP & API > API Keys. Starts with `xkeysib-`. |
@@ -202,8 +202,9 @@ a Node version mismatch (engines pin is `20.x` for exactly this reason).
 
 **`[migrate] FAILED`.**
 Read the first error line. Common causes: `DATABASE_URL` has a typo/trailing
-space (connection refused), or you pasted the direct (5432) string and the
-free-tier connection was refused — switch to the pooler (6543). Fix the env
+space (connection refused), or you used the wrong host, username, or connection
+mode. For this long-running Render API, use the Supabase shared Session pooler
+string from the Connect dialog (port 5432). Fix the env
 var, Save (triggers redeploy), and migrate resumes: already-recorded files are
 skipped, the failed file re-runs from scratch (each file is one transaction).
 
