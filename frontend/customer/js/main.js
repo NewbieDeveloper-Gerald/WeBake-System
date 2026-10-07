@@ -27,7 +27,7 @@
     let settings = { min_order_bundles: '300' };
     let memberEmail = '';
     let minBundles = 300;
-    let persistTimer = null;
+    let cartWriteQueue = Promise.resolve();
 
     const co = { // checkout session state
       name: '', email: '', contact: '', address: '',
@@ -89,11 +89,13 @@
         localStorage.setItem('webake_cart', JSON.stringify(cart));
         return;
       }
-      // Debounced server sync: rapid +/- taps send one request.
-      window.clearTimeout(persistTimer);
-      persistTimer = window.setTimeout(() => {
-        api.cartPut(cart, false).catch(() => {});
-      }, 600);
+      // Save each updated snapshot in order so the dashboard sees the same
+      // cart even when a customer navigates away immediately after editing.
+      const snapshot = cart.map((line) => ({ ...line }));
+      cartWriteQueue = cartWriteQueue
+        .catch(() => {})
+        .then(() => api.cartPut(snapshot, false))
+        .catch(() => U.toast('Your cart could not be saved to your account. Please try again.'));
     }
 
     /* ---------------- catalog + modal ---------------- */
@@ -175,7 +177,7 @@
     document.getElementById('add-to-cart-btn').addEventListener('click', () => {
       addLine(modalProduct.id, Number(document.getElementById('qty-input').value));
       closeModal();
-      openCart();
+      U.toast('Added to cart.');
     });
     document.getElementById('buy-now-btn').addEventListener('click', () => {
       addLine(modalProduct.id, Number(document.getElementById('qty-input').value));
@@ -256,6 +258,18 @@
       const checkout = document.getElementById('proceed-checkout');
       checkout.disabled = selected.length === 0;
       checkout.innerHTML = '<i class="fas fa-credit-card"></i> Checkout selected (' + selected.length + ')';
+    }
+
+    async function refreshCartCatalog() {
+      const prodRes = await api.products();
+      catalog = (prodRes.products || []).filter((p) => !p.is_archived);
+      const availableIds = new Set(catalog.map((p) => Number(p.id)));
+      cart = sanitize(cart);
+      selectedProductIds = new Set([...selectedProductIds].filter((id) =>
+        availableIds.has(Number(id)) && cart.some((line) => line.product_id === Number(id))));
+      persist();
+      renderGrid();
+      renderCart();
     }
 
     function selectedLines() { return cart.filter((line) => selectedProductIds.has(line.product_id)); }
@@ -461,6 +475,15 @@
         setMethod(co.method);
         gotoStep('step-payment');
       } catch (err) {
+        if (err.code === 'PRODUCT_UNAVAILABLE') {
+          try {
+            await refreshCartCatalog();
+            closeCheckout();
+            openCart();
+            U.toast('A product in your cart is no longer available. Your cart has been updated.');
+            return;
+          } catch { /* Preserve the original checkout error if refresh fails. */ }
+        }
         gotoStep(auth.token() && memberEmail.toLowerCase() === co.email ? 'step-info' : 'step-otp');
         U.toast(err.message);
       }

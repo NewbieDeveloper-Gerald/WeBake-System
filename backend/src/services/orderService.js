@@ -162,10 +162,11 @@ async function createOrder(input, idempotencyKey, opts = {}) {
     for (const item of input.items) {
       const product = byId.get(item.product_id);
       if (!product || product.is_archived) {
+        const productName = product ? product.name : `Product ${item.product_id}`;
         throw conflict(
           'PRODUCT_UNAVAILABLE',
-          `"${item.product_id}" is no longer available. Please update your cart.`,
-          'Ang isang produkto ay hindi na available. Paki-update ang cart.'
+          `"${productName}" is no longer available. Please update your cart.`,
+          `Hindi na available ang "${productName}". Paki-update ang cart.`
         );
       }
       const lineTotal = product.price_bundle_centavos * item.bundles;
