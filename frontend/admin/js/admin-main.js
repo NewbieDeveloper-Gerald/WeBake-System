@@ -95,7 +95,30 @@
     const toggle = document.querySelector('.mobile-menu-toggle');
     const sidebar = document.querySelector('.admin-sidebar');
     if (toggle && sidebar) {
-      toggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+      const backdrop = document.createElement('button');
+      backdrop.type = 'button';
+      backdrop.className = 'sidebar-backdrop';
+      backdrop.setAttribute('aria-label', 'Close navigation');
+      backdrop.hidden = true;
+      document.body.appendChild(backdrop);
+      const closeMenu = () => {
+        sidebar.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+        backdrop.hidden = true;
+      };
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.addEventListener('click', () => {
+        const isOpen = sidebar.classList.toggle('open');
+        toggle.setAttribute('aria-expanded', String(isOpen));
+        backdrop.hidden = !isOpen;
+      });
+      backdrop.addEventListener('click', closeMenu);
+      sidebar.querySelectorAll('.nav-item-link').forEach((link) => {
+        link.addEventListener('click', closeMenu);
+      });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeMenu();
+      });
     }
 
     // Nav badges from ONE call (dashboard stats carry queue depths).

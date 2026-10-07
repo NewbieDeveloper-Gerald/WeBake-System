@@ -358,5 +358,43 @@ input::-ms-clear {
   }
 }
 
+/* Refined storefront components */
+.header {
+  height: 76px;
+  background: rgba(255,254,252,.94);
+  border-bottom: 1px solid rgba(107,53,42,.09);
+  box-shadow: 0 5px 24px rgba(63,37,25,.055);
+  backdrop-filter: blur(14px);
+}
+.nav { gap: 1rem; }
+.nav-links { gap: clamp(1rem, 2vw, 2rem); }
+.nav-links a { font-size: .88rem; font-weight: 600; }
+.nav-links a::after { height: 2px; border-radius: 999px; }
+.logo-img { height: 44px; }
+.auth-buttons .btn { min-height: 40px; padding: .55rem 1.15rem; }
+.btn { min-height: 44px; border-radius: 12px; transition: transform var(--ease), box-shadow var(--ease), background var(--ease), border-color var(--ease); }
+.btn-primary { box-shadow: 0 6px 16px rgba(107,53,42,.15); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(107,53,42,.2); }
+.btn-accent { box-shadow: 0 5px 14px rgba(130,99,20,.1); }
+.footer { background: #FCF8F3; border-top-color: #EDE3D9; }
+.footer-nav a:hover { transform: translateY(-1px); }
+.modal, .checkout-container { border: 1px solid rgba(107,53,42,.1); border-radius: 20px; box-shadow: var(--shadow-lg); }
+.form-group label { color: #4A3329; font-weight: 600; }
+.form-input, .form-select, .form-textarea { min-height: 44px; border-color: #E8DED4; border-radius: 11px; background: #FFFEFC; }
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: #9D6654; box-shadow: 0 0 0 4px rgba(107,53,42,.09); }
+.cart-sidebar { box-shadow: -18px 0 55px rgba(47,29,22,.17); }
+.cart-header, .cart-footer { background: #FFFEFC; }
+.cart-item { border-bottom-color: #F0E9E2; }
+.toast { border-radius: 13px; }
+
+@media (max-width: 768px) {
+  :root { --header-h: 68px; }
+  .header { height: 68px; }
+  .nav-links { border-top: 1px solid #F0E8E1; padding: .65rem 0 .9rem; }
+  .nav-links a { padding: .78rem 1.5rem; }
+  .nav-toggle { background: #F8F1EA; }
+  .nav-toggle:hover { background: #F0E4D9; }
+}
+
 /* Phase 6: mobile nav toggle (the shell had the button but no show rule). */
 .nav-links.open { display: flex; }

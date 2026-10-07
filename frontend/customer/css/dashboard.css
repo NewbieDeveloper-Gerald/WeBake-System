@@ -51,3 +51,19 @@
 #dash-orders-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
 #dash-orders-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
 #dash-orders-container::-webkit-scrollbar-thumb:hover { background: #aaa; }
+
+.dashboard-main { background: linear-gradient(180deg, #FBF7F2, #F7F3EE); }
+.dashboard-grid { gap: 1.1rem; }
+.dash-card { padding: clamp(1.1rem, 2.5vw, 1.75rem); border: 1px solid rgba(107,53,42,.1); border-radius: 18px; box-shadow: 0 10px 30px rgba(69,42,25,.055); }
+.dash-card-title { color: #552D24; border-bottom: 1px solid #F0E8E1; }
+.dash-card-title i { color: #B58A44; }
+.cart-table th { border-bottom: 1px solid #E9E0D8; }
+.cart-table td { border-bottom-color: #F0EAE4; }
+.cart-table .qty-input { min-height: 36px; border-color: #E7DED7; border-radius: 9px; }
+.order-item { padding: .85rem 0; border-bottom-color: #F0EAE4; }
+.order-status { padding: .28rem .7rem; border-radius: 999px; }
+
+@media (max-width: 560px) {
+  .dashboard-main { padding-bottom: 2rem; }
+  .dash-card { border-radius: 15px; }
+}

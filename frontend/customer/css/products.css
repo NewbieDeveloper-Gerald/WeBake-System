@@ -111,6 +111,35 @@
   .confirmation-actions { flex-direction: column; }
 }
 
+.products-page { background: #FFFEFC; }
+.product-grid { gap: 1.15rem; }
+.product-card { border-radius: 20px; }
+.product-img { background: linear-gradient(145deg, #FBF5ED, #F2E6D9); }
+.product-card-info { padding: 1.15rem 1.1rem 1.3rem; }
+.product-card-name { letter-spacing: -.025em; }
+.product-card-price { color: #6B352A; font-weight: 650; }
+.product-card > h4 { margin: 1rem 1rem .25rem; color: var(--primary); font-size: 1.02rem; font-weight: 700; letter-spacing: -.025em; }
+.product-card > .product-price { margin: 0 1rem .2rem; color: #6B352A; font-size: .88rem; font-weight: 650; }
+.product-card > .product-stock { margin: 0 1rem; font-size: .75rem; color: #83766D; }
+.modal-product-img { border-radius: 15px; background: linear-gradient(145deg, #FBF5ED, #F1E4D7); }
+.checkout-overlay { backdrop-filter: blur(4px); background: rgba(39,22,17,.56); }
+.checkout-container { border-radius: 22px; padding: clamp(1.25rem, 4vw, 2rem); box-shadow: 0 28px 80px rgba(35,20,16,.28); }
+.checkout-step h2 { letter-spacing: -.035em; }
+.payment-details-card, .downpayment-breakdown-box, .confirmation-details-section { border-radius: 14px; }
+.payment-method-btn { border-radius: 12px; }
+.order-id-badge-box { border-radius: 13px; }
+
+@media (max-width: 600px) {
+  .product-grid { gap: .75rem; }
+  .product-img { height: 170px; }
+  .product-card-info { padding: .9rem .75rem 1rem; }
+  .product-card-name { font-size: .96rem; }
+  .product-card > h4 { margin: .8rem .75rem .2rem; font-size: .9rem; }
+  .product-card > .product-price { margin: 0 .75rem .2rem; font-size: .8rem; }
+  .product-card > .product-stock { margin: 0 .75rem; font-size: .68rem; }
+  .checkout-container { width: calc(100% - 20px); max-height: 94dvh; }
+}
+
 .products-page .section { padding-top:5.2rem; }
 .products-page .section-title { letter-spacing:-.6px; }
 .products-page .section-subtitle { margin-bottom:2.8rem; }

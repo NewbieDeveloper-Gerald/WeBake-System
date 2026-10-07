@@ -351,3 +351,23 @@
     grid-template-columns: 1fr;
   }
 }
+
+.orders-filter-bar { padding: 1rem; gap: .8rem; }
+.orders-filter-top { gap: .75rem; }
+.orders-search-input { min-height: 42px; border-radius: 11px; background: #FFFEFC; }
+.orders-status-tabs { padding: .2rem .05rem .35rem; scrollbar-width: thin; }
+.order-tab-btn { border-radius: 10px; padding: .52rem .78rem; background: #FAF7F3; font-size: .75rem; }
+.order-tab-btn.active { background: #6B352A; box-shadow: 0 4px 12px rgba(107,53,42,.16); }
+.order-actions-cell { gap: .35rem; }
+.order-id-cell { letter-spacing: -.02em; }
+.detail-section-box { border-radius: 12px; padding: 1rem; }
+.proof-viewer-card { border-radius: 13px; background: #F8F1E9; }
+.balance-collect-card { border-radius: 15px; border-color: #F1D78C; }
+
+@media (max-width: 640px) {
+  .orders-search-box { min-width: 100%; }
+  .orders-filter-top { align-items: stretch; }
+  .orders-channel-filter { width: 100%; }
+  .order-tab-btn { padding: .48rem .68rem; }
+  .balance-payment-options { grid-template-columns: 1fr; }
+}

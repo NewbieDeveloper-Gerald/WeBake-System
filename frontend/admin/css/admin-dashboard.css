@@ -265,3 +265,76 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Dashboard composition */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: .9rem;
+  margin-bottom: 1.15rem;
+}
+
+.stat-card {
+  min-width: 0;
+  padding: 1.15rem 1.15rem 1.05rem;
+  border: 1px solid rgba(107,53,42,.1);
+  border-radius: 16px;
+  background: rgba(255,255,255,.96);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--ease), box-shadow var(--ease), border-color var(--ease);
+}
+
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: rgba(107,53,42,.23); }
+.stat-card.highlight { background: linear-gradient(145deg, #6B352A, #4E261F); border-color: #6B352A; color: #FFF; }
+.stat-label { color: var(--text-muted); font-size: .71rem; font-weight: 650; line-height: 1.4; min-height: 2em; }
+.stat-card.highlight .stat-label, .stat-card.highlight .stat-sub { color: rgba(255,255,255,.75); }
+.stat-value { margin: .4rem 0 .32rem; color: #4F2A22; font-size: clamp(1.15rem, 1.7vw, 1.55rem); font-weight: 750; letter-spacing: -.045em; line-height: 1.2; overflow-wrap: anywhere; }
+.stat-card.highlight .stat-value { color: #FFF1A6; }
+.stat-sub { color: #8A7B73; font-size: .69rem; line-height: 1.45; }
+.stat-sub a { color: var(--primary); font-weight: 650; text-decoration: underline; text-decoration-color: rgba(107,53,42,.25); text-underline-offset: 2px; }
+.stat-card.highlight .stat-sub a { color: #FFE7A2; }
+
+.refund-alert-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid #EACD82;
+  border-radius: 16px;
+  background: linear-gradient(100deg, #FFF8E5, #FFFCF4);
+}
+.refund-alert-card[hidden] { display: none; }
+.refund-alert-icon { display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 42px; border-radius: 13px; background: #F6E7BA; color: #8C5D19; }
+.refund-alert-body { flex: 1; min-width: 0; }
+.refund-alert-body h3 { color: #5C3824; font-size: .95rem; }
+.refund-alert-body p { margin-top: .15rem; color: #806B58; font-size: .76rem; }
+
+.dashboard-cols { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 1rem; margin-bottom: 1rem; }
+.dash-panel { min-width: 0; padding: 1.2rem; border: 1px solid rgba(107,53,42,.1); border-radius: 17px; background: #FFF; box-shadow: var(--shadow-sm); margin-bottom: 1rem; }
+.dashboard-cols .dash-panel { margin-bottom: 0; }
+.dash-panel > h3 { display: flex; align-items: center; gap: .55rem; margin-bottom: 1rem; color: #542D24; font-size: .92rem; letter-spacing: -.02em; }
+.dash-panel > h3 i { color: #9A6A48; font-size: .88rem; }
+.status-list { display: flex; flex-direction: column; gap: .48rem; }
+.status-row { display: flex; justify-content: space-between; align-items: center; gap: .75rem; padding: .6rem .7rem; border: 1px solid #F1ECE7; border-radius: 11px; background: #FCFAF7; }
+.status-row > strong { min-width: 28px; text-align: center; padding: .18rem .45rem; border-radius: 999px; background: #F1E7DF; color: #5D3329; font-size: .75rem; }
+.dash-table { width: 100%; border-collapse: collapse; text-align: left; font-size: .78rem; }
+.dash-table th { padding: .62rem .7rem; background: #FAF7F3; color: #82756E; font-size: .66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; white-space: nowrap; }
+.dash-table th:first-child { border-radius: 8px 0 0 8px; }
+.dash-table th:last-child { border-radius: 0 8px 8px 0; }
+.dash-table td { padding: .72rem .7rem; border-bottom: 1px solid #F2EDE8; vertical-align: middle; }
+.dash-table tbody tr:last-child td { border-bottom: 0; }
+.dash-table tbody tr:hover { background: #FCFAF7; }
+.muted { color: var(--text-muted); font-size: .8rem; }
+
+@media (max-width: 1200px) { .stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 850px) { .dashboard-cols { grid-template-columns: 1fr; } }
+@media (max-width: 600px) {
+  .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+  .stat-card { padding: .9rem; border-radius: 14px; }
+  .stat-label { font-size: .65rem; }
+  .stat-sub { font-size: .64rem; }
+  .refund-alert-card { align-items: flex-start; flex-wrap: wrap; padding: .85rem; }
+  .refund-alert-card > .btn { width: 100%; }
+  .dash-panel { padding: .95rem; }
+}
