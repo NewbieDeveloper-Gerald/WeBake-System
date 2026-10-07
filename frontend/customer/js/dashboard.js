@@ -108,12 +108,12 @@
       const inc = e.target.closest('[data-saved-inc]');
       const dec = e.target.closest('[data-saved-dec]');
       const remove = e.target.closest('[data-saved-remove]');
-      const review = e.target.closest('#saved-cart-review');
-      if (review) {
+      const checkout = e.target.closest('#saved-cart-checkout');
+      if (checkout) {
         const ids = savedCartLines.filter((line) => selectedSavedIds.has(Number(line.product_id)))
           .map((line) => Number(line.product_id));
-        if (!ids.length) { U.toast('Select at least one product to review.'); return; }
-        window.location.href = 'products.html?selected=' + encodeURIComponent(ids.join(','));
+        if (!ids.length) { U.toast('Select at least one product to check out.'); return; }
+        window.location.href = 'products.html?selected=' + encodeURIComponent(ids.join(',')) + '&checkout=1';
         return;
       }
       const button = inc || dec || remove;
@@ -170,8 +170,8 @@
       }).join('') + '</div><div class="saved-cart-summary"><span>' + selected.length + ' selected · ' +
         lines.length + (lines.length === 1 ? ' product saved' : ' products saved') + '</span><strong>' +
         U.pesos(cartTotal) + '</strong></div><p class="saved-cart-estimate">Estimated selected total</p>' +
-        '<button class="btn btn-primary saved-cart-cta" id="saved-cart-review" type="button"' + (!selected.length ? ' disabled' : '') +
-        '><i class="fas fa-bag-shopping"></i> Review selected in cart</button>';
+        '<button class="btn btn-primary saved-cart-cta" id="saved-cart-checkout" type="button"' + (!selected.length ? ' disabled' : '') +
+        '><i class="fas fa-credit-card"></i> Check out selected</button>';
     }
 
     async function load() {

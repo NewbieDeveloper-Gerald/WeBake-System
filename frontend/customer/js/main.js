@@ -58,17 +58,20 @@
       } else {
         cart = loadGuest();
       }
-      const requestedIds = new URLSearchParams(window.location.search).get('selected');
+      const params = new URLSearchParams(window.location.search);
+      const requestedIds = params.get('selected');
+      const checkoutRequested = params.get('checkout') === '1';
       const requested = requestedIds ? requestedIds.split(',').map(Number).filter(Number.isFinite) : [];
       selectedProductIds = new Set(requested.length
         ? requested.filter((id) => cart.some((line) => line.product_id === id))
         : cart.map((line) => line.product_id));
       if (requestedIds) {
         window.history.replaceState({}, '', window.location.pathname + window.location.hash);
-        openCart();
       }
       renderGrid();
       renderCart();
+      if (checkoutRequested && selectedProductIds.size) startCheckout();
+      else if (requestedIds) openCart();
     }
 
     function sanitize(lines) {
