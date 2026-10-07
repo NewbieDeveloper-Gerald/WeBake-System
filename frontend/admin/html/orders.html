@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WeBake Admin — Orders Management &amp; Downpayment Verification</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/admin-globals.css">
+  <link rel="stylesheet" href="../css/admin-orders.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo-icon">
+          <i class="fas fa-bread-slice"></i>
+        </div>
+        <div class="brand-text">
+          <h2>WeBake</h2>
+          <span>Admin Portal</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Operations</div>
+        <a href="walkin-pos.html" class="nav-item-link pos-highlight">
+          <i class="fas fa-cash-register"></i>
+          <span>Walk-In / POS</span>
+        </a>
+        <a href="dashboard.html" class="nav-item-link">
+          <i class="fas fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="orders.html" class="nav-item-link active">
+          <i class="fas fa-clipboard-list"></i>
+          <span>Orders &amp; Verify</span>
+          <span class="nav-badge" id="sidebar-orders-badge">0</span>
+        </a>
+        <a href="refunds.html" class="nav-item-link">
+          <i class="fas fa-undo-alt"></i>
+          <span>Refunds Queue</span>
+          <span class="nav-badge" id="sidebar-refunds-badge">0</span>
+        </a>
+
+        <div class="nav-section-title">Bakery Management</div>
+        <a href="inventory.html" class="nav-item-link">
+          <i class="fas fa-boxes-stacked"></i>
+          <span>Daily Inventory</span>
+        </a>
+        <a href="products.html" class="nav-item-link">
+          <i class="fas fa-tags"></i>
+          <span>Product Catalog</span>
+        </a>
+        <a href="settings.html" class="nav-item-link">
+          <i class="fas fa-cog"></i>
+          <span>Bakery Settings</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="staff-profile-card">
+          <div class="staff-avatar">GV</div>
+          <div class="staff-details">
+            <div class="staff-name">Gerald V.</div>
+          </div>
+        </div>
+        <div class="sidebar-actions">
+          <a href="../../customer/html/home.html" target="_blank" class="btn-sidebar" title="Open Customer Storefront">
+            <i class="fas fa-external-link-alt"></i> Store
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <!-- Topbar -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-toggle" aria-label="Toggle Navigation">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="page-headline">
+            <h1>Orders Management &amp; Verification</h1>
+            <p>Unified online customer orders &amp; walk-in counter sales pipeline</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="live-sync-pill">
+            <span class="pulse-dot"></span>
+            <span>Live Sync Active</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <main class="content-area">
+        <!-- Filters Toolbar -->
+        <div class="orders-filter-bar">
+          <div class="orders-filter-top">
+            <div class="orders-search-box">
+              <i class="fas fa-search"></i>
+              <input type="text" id="orders-search" class="orders-search-input" placeholder="Search by Order ID (WB-XXXXX), customer name, phone, or ref #...">
+            </div>
+            <div class="orders-channel-filter">
+              <select id="orders-channel-filter" class="form-select">
+                <option value="all">All Channels (Online + Walk-In)</option>
+                <option value="online">Online Orders</option>
+                <option value="walkin">Walk-In Counter</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="orders-status-tabs">
+            <button type="button" class="order-tab-btn active" data-status="all">
+              <span>All Orders</span>
+              <span class="order-tab-count">0</span>
+            </button>
+            <button type="button" class="order-tab-btn" data-status="pending">
+              <span>Pending Downpayment</span>
+              <span class="order-tab-count">0</span>
+            </button>
+            <button type="button" class="order-tab-btn" data-status="in_production">
+              <span>In-Production (Preparing)</span>
+              <span class="order-tab-count">0</span>
+            </button>
+            <button type="button" class="order-tab-btn" data-status="ready">
+              <span>Ready for Pickup / Delivery</span>
+              <span class="order-tab-count">0</span>
+            </button>
+            <button type="button" class="order-tab-btn" data-status="completed">
+              <span>Completed &amp; Paid</span>
+              <span class="order-tab-count">0</span>
+            </button>
+            <button type="button" class="order-tab-btn" data-status="cancelled">
+              <span>Cancelled &amp; Refunded</span>
+              <span class="order-tab-count">0</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Orders Table Card -->
+        <div class="admin-card">
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Order ID / Date</th>
+                  <th>Customer Details</th>
+                  <th>Channel</th>
+                  <th>Items Ordered</th>
+                  <th>Total / Downpayment</th>
+                  <th>Payment Method</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="orders-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal 1: Payment Verification Drawer / Modal -->
+  <div class="modal-backdrop" id="modal-verify-payment">
+    <div class="modal-dialog modal-dialog-lg">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fas fa-shield-alt"></i> Verify Downpayment Proof — <span id="verify-order-id"></span>
+        </h3>
+        <button type="button" class="modal-close-btn" id="btn-close-verify">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="verification-grid">
+          <!-- Left: Order Details & Payment Metadata -->
+          <div class="verification-details-col">
+            <div class="detail-section-box">
+              <div class="detail-section-title">Customer Information</div>
+              <div class="detail-data-row">
+                <span class="detail-data-label">Name:</span>
+                <strong id="verify-cust-name"></strong>
+              </div>
+              <div class="detail-data-row">
+                <span class="detail-data-label">Contact:</span>
+                <span id="verify-cust-contact"></span>
+              </div>
+              <div class="detail-data-row">
+                <span class="detail-data-label">Address:</span>
+                <span id="verify-cust-address"></span>
+              </div>
+            </div>
+
+            <div class="detail-section-box">
+              <div class="detail-section-title">Payment &amp; Downpayment Verification</div>
+              <div class="detail-data-row">
+                <span class="detail-data-label">Order Total:</span>
+                <strong id="verify-order-total"></strong>
+              </div>
+              <div class="detail-data-row">
+                <span class="detail-data-label">50% Downpayment Required:</span>
+                <strong class="text-success" id="verify-downpayment-amt"></strong>
+              </div>
+              <div class="detail-data-row">
+                <span class="detail-data-label">Balance Due Upon Handover:</span>
+                <strong class="text-primary" id="verify-balance-amt"></strong>
+              </div>
+              <div class="detail-data-row">
+                <span class="detail-data-label">E-Wallet Used:</span>
+                <strong id="verify-payment-method"></strong>
+              </div>
+              <div class="detail-data-row">
+                <span class="detail-data-label">Customer Ref #:</span>
+                <strong class="order-ref-num" id="verify-ref-number"></strong>
+              </div>
+            </div>
+
+            <!-- Rejection Form Box (Hidden unless toggled) -->
+            <div class="rejection-form-box" id="verify-rejection-box">
+              <label class="form-label form-label-required">Reason for Rejection</label>
+              <textarea id="verify-rejection-reason" class="form-textarea" rows="2" placeholder="e.g. Reference number not found in GCash/Maya portal, receipt blurry..."></textarea>
+              <div class="d-flex justify-between gap-1">
+                <button type="button" class="btn btn-danger btn-sm" id="btn-confirm-reject">
+                  Confirm Rejection &amp; Cancel Order
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Uploaded Screenshot Proof Viewer -->
+          <div class="verification-proof-col">
+            <div class="detail-section-title">Uploaded Payment Screenshot Receipt</div>
+            <div class="proof-viewer-card">
+              <img id="verify-proof-image" class="proof-image-element" src="" alt="Payment Proof Screenshot">
+              <div id="verify-no-proof" class="empty-state">
+                <i class="fas fa-file-invoice text-muted"></i>
+                <p class="text-muted">No screenshot attached for this transaction.</p>
+              </div>
+            </div>
+            <p class="proof-zoom-hint text-center">
+              <i class="fas fa-search-plus"></i> Click image to inspect &amp; zoom in full resolution
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" id="btn-show-reject-form">
+          <i class="fas fa-times-circle text-danger"></i> Reject / Flag Payment
+        </button>
+        <button type="button" class="btn btn-success" id="btn-approve-downpayment">
+          <i class="fas fa-check-circle"></i> Verify &amp; Approve Downpayment (Move to Production)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Fullscreen Lightbox Zoom Modal -->
+  <div class="proof-lightbox-modal" id="modal-proof-lightbox">
+    <button type="button" class="proof-lightbox-close" id="btn-close-lightbox">&times;</button>
+    <img id="lightbox-full-img" class="proof-lightbox-img" src="" alt="Zoomed Receipt">
+  </div>
+
+  <!-- Modal 3: Delivery & Balance Collection Modal -->
+  <div class="modal-backdrop" id="modal-collect-balance">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fas fa-hand-holding-usd"></i> Collect Remaining 50% Balance
+        </h3>
+        <button type="button" class="modal-close-btn" id="btn-close-balance">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="balance-collect-card">
+          <div class="text-muted">Order ID: <strong id="balance-order-id"></strong> — <span id="balance-cust-name"></span></div>
+          <div class="balance-amount-display" id="balance-due-amount">&#8369;0.00</div>
+          <p class="form-hint">Record customer's remaining 50% balance collection upon order handover</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label form-label-required">Payment Method Collected</label>
+          <div class="balance-payment-options">
+            <label class="btn btn-outline">
+              <input type="radio" name="balance-payment-mode" value="Cash" checked>
+              <span>Cash</span>
+            </label>
+            <label class="btn btn-outline">
+              <input type="radio" name="balance-payment-mode" value="GCash">
+              <span>GCash</span>
+            </label>
+            <label class="btn btn-outline">
+              <input type="radio" name="balance-payment-mode" value="PayMaya">
+              <span>Maya</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary btn-block" id="btn-confirm-balance">
+          <i class="fas fa-check-double"></i> Confirm Balance Collected &amp; Mark Completed
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Edit Order Modal -->
+  <div class="modal-backdrop" id="modal-edit-order">
+    <div class="modal-dialog modal-dialog-lg">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fas fa-edit"></i> Edit Order Details — <span id="edit-order-id-label"></span>
+        </h3>
+        <button type="button" class="modal-close-btn" id="btn-close-edit">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Customer Name</label>
+            <input type="text" id="edit-cust-name" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Phone</label>
+            <input type="tel" id="edit-cust-phone" class="form-input">
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Gmail Address</label>
+            <input type="email" id="edit-cust-email" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Order Status</label>
+            <select id="edit-order-status-select" class="form-select">
+              <option value="pending">Pending Downpayment</option>
+              <option value="in_production">In Production (Preparing)</option>
+              <option value="ready_for_pickup">Ready for Pickup / Delivery</option>
+              <option value="completed">Completed &amp; Fully Paid</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Delivery / Pickup Address</label>
+          <input type="text" id="edit-cust-address" class="form-input">
+        </div>
+
+        <!-- Editable Items Table -->
+        <div class="form-group">
+          <label class="form-label">Order Items &amp; Quantities</label>
+          <div class="table-responsive">
+            <table class="edit-items-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Price</th>
+                  <th>Quantity</th>
+                  <th class="text-right">Line Total</th>
+                </tr>
+              </thead>
+              <tbody id="edit-items-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recalculated Summary -->
+        <div class="detail-section-box">
+          <div class="detail-data-row">
+            <span>Recalculated Total:</span>
+            <strong id="edit-calculated-total">&#8369;0.00</strong>
+          </div>
+          <div class="detail-data-row">
+            <span>50% Downpayment:</span>
+            <strong class="text-success" id="edit-calculated-downpayment">&#8369;0.00</strong>
+          </div>
+          <div class="detail-data-row">
+            <span>50% Remaining Balance:</span>
+            <strong class="text-primary" id="edit-calculated-balance">&#8369;0.00</strong>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="btn-save-edit-order">
+          <i class="fas fa-save"></i> Save Order Changes
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../../customer/js/config.js"></script>
+  <script src="../js/admin-api.js"></script>
+  <script src="../js/admin-main.js"></script>
+  <script src="../js/admin-auth.js"></script>
+  <script src="../js/admin-orders.js"></script>
+</body>
+</html>

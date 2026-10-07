@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WeBake Admin — Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/admin-globals.css">
+  <link rel="stylesheet" href="../css/admin-dashboard.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo-icon"><i class="fas fa-bread-slice"></i></div>
+        <div class="brand-text"><h2>WeBake</h2><span>Admin Portal</span></div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Operations</div>
+        <a href="walkin-pos.html" class="nav-item-link pos-highlight"><i class="fas fa-cash-register"></i><span>Walk-In / POS</span></a>
+        <a href="dashboard.html" class="nav-item-link active"><i class="fas fa-chart-pie"></i><span>Dashboard</span></a>
+        <a href="orders.html" class="nav-item-link"><i class="fas fa-clipboard-list"></i><span>Orders &amp; Verify</span><span class="nav-badge" id="sidebar-orders-badge">0</span></a>
+        <a href="refunds.html" class="nav-item-link"><i class="fas fa-undo-alt"></i><span>Refunds Queue</span><span class="nav-badge" id="sidebar-refunds-badge">0</span></a>
+        <div class="nav-section-title">Bakery Management</div>
+        <a href="inventory.html" class="nav-item-link"><i class="fas fa-boxes-stacked"></i><span>Daily Inventory</span></a>
+        <a href="products.html" class="nav-item-link"><i class="fas fa-tags"></i><span>Product Catalog</span></a>
+        <a href="settings.html" class="nav-item-link"><i class="fas fa-cog"></i><span>Bakery Settings</span></a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="staff-profile-card">
+          <div class="staff-avatar" id="staff-initials">OW</div>
+          <div class="staff-details"><div class="staff-name" id="staff-email">Owner</div></div>
+        </div>
+        <div class="sidebar-actions">
+          <a href="../../customer/html/home.html" target="_blank" class="btn-sidebar" title="Open Customer Storefront"><i class="fas fa-external-link-alt"></i> Store</a>
+          <button type="button" class="btn-sidebar" id="btn-logout" title="Sign out"><i class="fas fa-sign-out-alt"></i> Out</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-toggle" aria-label="Toggle Navigation"><i class="fas fa-bars"></i></button>
+          <div class="page-headline">
+            <h1>Dashboard</h1>
+            <p>Today's sales, queues, and alerts at a glance</p>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <a href="walkin-pos.html" class="btn btn-primary btn-sm"><i class="fas fa-cash-register"></i> New POS Sale</a>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <!-- Refund alert card (spec: stays until Refunded/Closed, links to queue) -->
+        <div class="refund-alert-card" id="refund-alert-card" hidden>
+          <div class="refund-alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
+          <div class="refund-alert-body">
+            <h3><span id="refund-alert-count">0</span> refund(s) need action</h3>
+            <p>Awaiting details or pending payout. Money is sent manually, then recorded.</p>
+          </div>
+          <a href="refunds.html" class="btn btn-primary">Open Refund Queue</a>
+        </div>
+
+        <!-- Stat cards -->
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">Online sales today</div>
+            <div class="stat-value" id="stat-online">—</div>
+            <div class="stat-sub" id="stat-online-count"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Walk-in sales today</div>
+            <div class="stat-value" id="stat-walkin">—</div>
+            <div class="stat-sub" id="stat-walkin-count"></div>
+          </div>
+          <div class="stat-card highlight">
+            <div class="stat-label">Combined today</div>
+            <div class="stat-value" id="stat-combined">—</div>
+            <div class="stat-sub">online + walk-in, cancelled excluded</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Awaiting verification</div>
+            <div class="stat-value" id="stat-pending">—</div>
+            <div class="stat-sub"><a href="orders.html">Review proofs</a></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Outstanding balances</div>
+            <div class="stat-value" id="stat-outstanding">—</div>
+            <div class="stat-sub">cash to collect on delivery</div>
+          </div>
+        </div>
+
+        <div class="dashboard-cols">
+          <!-- Orders by status -->
+          <div class="dash-panel">
+            <h3><i class="fas fa-clipboard-list"></i> Orders by status</h3>
+            <div id="status-breakdown" class="status-list"><p class="muted">Loading…</p></div>
+          </div>
+          <!-- Low stock -->
+          <div class="dash-panel">
+            <h3><i class="fas fa-boxes-stacked"></i> Low stock alerts</h3>
+            <table class="dash-table">
+              <thead><tr><th>Product</th><th>Stock</th><th>Status</th></tr></thead>
+              <tbody id="lowstock-tbody"><tr><td colspan="3" class="muted">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent orders -->
+        <div class="dash-panel">
+          <h3><i class="fas fa-clock"></i> Recent orders</h3>
+          <div class="table-responsive">
+            <table class="dash-table">
+              <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th></tr></thead>
+              <tbody id="recent-tbody"><tr><td colspan="5" class="muted">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Sales report quick export -->
+        <div class="dash-panel">
+          <h3><i class="fas fa-file-pdf"></i> Sales reports (PDF)</h3>
+          <div class="report-row">
+            <select id="report-period" class="form-select">
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+            <input type="date" id="report-anchor" class="form-input">
+            <button type="button" class="btn btn-outline" id="btn-report-view">View</button>
+            <button type="button" class="btn btn-primary" id="btn-report-pdf"><i class="fas fa-download"></i> Export PDF</button>
+          </div>
+          <div id="report-summary" class="report-summary"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="../../customer/js/config.js"></script>
+  <script src="../js/admin-api.js"></script>
+  <script src="../js/admin-main.js"></script>
+  <script src="../js/admin-auth.js"></script>
+  <script src="../js/admin-dashboard.js"></script>
+</body>
+</html>

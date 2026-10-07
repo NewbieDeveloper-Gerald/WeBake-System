@@ -1,0 +1,33 @@
+/* ==============================================
+   WeBake — Design Tokens (variables.css)
+   ============================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Colors */
+  --primary: #6B352A;
+  --primary-dark: #5A2C23;
+  --accent: #FFF1A6;
+  --accent-dark: #FFE766;
+  --white: #FFFFFF;
+  --dark: #333333;
+  --gray: #666666;
+  --light: #F8F8F8;
+  --border: #E0E0E0;
+  --success: #28A745;
+  --danger: #DC3545;
+
+  /* Typography */
+  --font: 'Poppins', sans-serif;
+
+  /* Layout */
+  --max-w: 1200px;
+  --header-h: 70px;
+
+  /* Effects */
+  --radius: 8px;
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 4px 24px rgba(0, 0, 0, 0.15);
+  --ease: all 0.3s ease;
+}

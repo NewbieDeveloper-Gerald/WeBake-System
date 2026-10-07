@@ -1,0 +1,19 @@
+# Dependencies (reinstalled from package.json on every deploy)
+node_modules/
+
+# Secrets - NEVER commit real credentials
+.env
+backend/.env
+*.pem
+*.key
+
+# Logs and OS noise
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Editor / tooling caches
+.vscode/
+.idea/
+coverage/

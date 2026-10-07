@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WeBake Admin — Bakery Settings &amp; Payment Credentials</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/admin-globals.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo-icon">
+          <i class="fas fa-bread-slice"></i>
+        </div>
+        <div class="brand-text">
+          <h2>WeBake</h2>
+          <span>Admin Portal</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Operations</div>
+        <a href="walkin-pos.html" class="nav-item-link pos-highlight">
+          <i class="fas fa-cash-register"></i>
+          <span>Walk-In / POS</span>
+        </a>
+        <a href="dashboard.html" class="nav-item-link">
+          <i class="fas fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="orders.html" class="nav-item-link">
+          <i class="fas fa-clipboard-list"></i>
+          <span>Orders &amp; Verify</span>
+          <span class="nav-badge" id="sidebar-orders-badge">0</span>
+        </a>
+        <a href="refunds.html" class="nav-item-link">
+          <i class="fas fa-undo-alt"></i>
+          <span>Refunds Queue</span>
+          <span class="nav-badge" id="sidebar-refunds-badge">0</span>
+        </a>
+
+        <div class="nav-section-title">Bakery Management</div>
+        <a href="inventory.html" class="nav-item-link">
+          <i class="fas fa-boxes-stacked"></i>
+          <span>Daily Inventory</span>
+        </a>
+        <a href="products.html" class="nav-item-link">
+          <i class="fas fa-tags"></i>
+          <span>Product Catalog</span>
+        </a>
+        <a href="settings.html" class="nav-item-link active">
+          <i class="fas fa-cog"></i>
+          <span>Bakery Settings</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="staff-profile-card">
+          <div class="staff-avatar">GV</div>
+          <div class="staff-details">
+            <div class="staff-name">Gerald V.</div>
+          </div>
+        </div>
+        <div class="sidebar-actions">
+          <a href="../../customer/html/home.html" target="_blank" class="btn-sidebar" title="Open Customer Storefront">
+            <i class="fas fa-external-link-alt"></i> Store
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <!-- Topbar -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-toggle" aria-label="Toggle Navigation">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="page-headline">
+            <h1>Bakery Settings &amp; Payment Credentials</h1>
+            <p>Update e-wallet receiver numbers, QR code images, and operating hours</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="live-sync-pill">
+            <span class="pulse-dot"></span>
+            <span>Live Sync Active</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <main class="content-area">
+        <form id="form-bakery-settings">
+          <!-- Card 1: Payment Credentials -->
+          <div class="admin-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h3><i class="fas fa-wallet text-primary"></i> Payment Credentials Management</h3>
+                <p>Receiving mobile numbers and QR code images shown on checkout and walk-in counter</p>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="form-row-3">
+                <div class="form-group">
+                  <label class="form-label form-label-required">Account Name (Merchant)</label>
+                  <input type="text" id="set-acc-name" class="form-input" placeholder="Gerald V." required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label form-label-required">GCash Receiving Number</label>
+                  <input type="text" id="set-gcash-num" class="form-input" placeholder="0917-123-4567" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label form-label-required">PayMaya Receiving Number</label>
+                  <input type="text" id="set-maya-num" class="form-input" placeholder="0918-987-6543" required>
+                </div>
+              </div>
+
+              <!-- QR Code Upload / Link Row -->
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="form-label">GCash QR Code Image (URL or Upload)</label>
+                  <input type="text" id="set-gcash-qr" class="form-input" placeholder="../img/gcash-qr.svg">
+                  <input type="file" id="file-gcash-qr" class="form-input" accept="image/*">
+                  <div class="detail-section-box">
+                    <span class="detail-section-title">Current GCash QR Preview</span>
+                    <div class="pos-qr-thumbnail">
+                      <img id="preview-gcash-qr" src="../img/gcash-qr.svg" alt="GCash QR">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">PayMaya QR Code Image (URL or Upload)</label>
+                  <input type="text" id="set-maya-qr" class="form-input" placeholder="../img/paymaya-qr.svg">
+                  <input type="file" id="file-maya-qr" class="form-input" accept="image/*">
+                  <div class="detail-section-box">
+                    <span class="detail-section-title">Current Maya QR Preview</span>
+                    <div class="pos-qr-thumbnail">
+                      <img id="preview-maya-qr" src="../img/paymaya-qr.svg" alt="Maya QR">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Operating Hours & Delivery Policy -->
+          <div class="admin-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h3><i class="fas fa-clock text-primary"></i> Operating Hours &amp; Delivery Policy</h3>
+                <p>Define same-day baking cutoffs and covered coverage zones</p>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="form-label">Store Operating Hours</label>
+                  <input type="text" id="set-store-hours" class="form-input" placeholder="6:00 AM - 8:00 PM">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Baking Cut-Off Time (for Same-Day Wholesale)</label>
+                  <input type="text" id="set-cutoff-time" class="form-input" placeholder="2:00 PM">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Standard Delivery Areas Covered</label>
+                <input type="text" id="set-delivery-areas" class="form-input" placeholder="Marilao, Meycauayan, Bocaue, Caloocan, Valenzuela, QC">
+                <p class="form-hint">Shown in customer delivery terms during checkout</p>
+              </div>
+            </div>
+            <div class="card-footer">
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-save"></i> Save Bakery Settings
+              </button>
+            </div>
+          </div>
+        </form>
+      </main>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../../customer/js/config.js"></script>
+  <script src="../js/admin-api.js"></script>
+  <script src="../js/admin-main.js"></script>
+  <script src="../js/admin-auth.js"></script>
+  <script src="../js/admin-settings.js"></script>
+</body>
+</html>

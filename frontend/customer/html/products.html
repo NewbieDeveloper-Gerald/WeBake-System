@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products — WeBake</title>
+  <link rel="icon" type="image/png" href="../img/favicon.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/globals.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/products.css">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <nav class="nav container">
+      <a href="home.html" class="logo" aria-label="WeBake Home">
+        <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Rolls Bakery" class="logo-img">
+      </a>
+      <div class="nav-right">
+        <div class="nav-links" id="nav-links">
+          <a href="home.html">Home</a>
+          <a href="products.html" class="active">Products</a>
+          <a href="#" data-track-order-open>Track Order</a>
+          <a href="home.html#about">About Us</a>
+        </div>
+        <button class="cart-icon" id="cart-icon" aria-label="View Cart">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-badge" id="cart-count">0</span>
+        </button>
+        <div class="auth-buttons">
+          <button type="button" data-auth-open="login" class="btn btn-outline btn-sm">Sign In</button>
+          <button type="button" data-auth-open="register" class="btn btn-primary btn-sm">Register</button>
+        </div>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- PRODUCT GRID -->
+  <main class="products-page">
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title"><i class="fas fa-bread-slice"></i> Our Products</h2>
+        <p class="section-subtitle">Wholesale bakery products — click a product to view details and order in bulk.</p>
+        <div class="product-grid" id="product-grid"><!-- Rendered by JS --></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- PRODUCT DETAIL MODAL -->
+  <div class="overlay" id="modal-overlay"></div>
+  <div class="modal" id="product-modal">
+    <button class="modal-close" id="modal-close"><i class="fas fa-times"></i></button>
+    <div class="modal-product-img"><i class="fas fa-image"></i><span>No image added</span></div>
+    <h3 class="modal-product-name" id="modal-name"></h3>
+    <p class="modal-product-desc" id="modal-desc"></p>
+    <p class="modal-product-price" id="modal-price"></p>
+    <div class="quantity-control">
+      <span class="quantity-label">Qty:</span>
+      <button id="qty-minus"><i class="fas fa-minus"></i></button>
+      <input type="number" id="qty-input" value="1" min="1" max="99" step="1" readonly>
+      <button id="qty-plus"><i class="fas fa-plus"></i></button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-accent" id="add-to-cart-btn"><i class="fas fa-cart-plus"></i> Add to Cart</button>
+      <button class="btn btn-primary" id="buy-now-btn"><i class="fas fa-bolt"></i> Checkout Now</button>
+    </div>
+  </div>
+
+  <!-- CART SIDEBAR -->
+  <div class="overlay" id="cart-overlay"></div>
+  <div class="cart-sidebar" id="cart-sidebar">
+    <div class="cart-header">
+      <h3><i class="fas fa-shopping-cart"></i> Your Cart</h3>
+      <button id="cart-close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="cart-body" id="cart-items"></div>
+    <div class="cart-footer">
+      <div class="cart-total"><span>Total:</span><span id="cart-total">₱0</span></div>
+      <button class="btn btn-accent btn-block" id="continue-browsing"><i class="fas fa-arrow-left"></i> Continue Browsing</button>
+      <button class="btn btn-primary btn-block" id="proceed-checkout"><i class="fas fa-credit-card"></i> Proceed to Checkout</button>
+    </div>
+  </div>
+
+  <!-- CHECKOUT FLOW -->
+  <div class="checkout-overlay" id="checkout-overlay">
+    <div class="checkout-container">
+      <!-- Step 1: Stock Check -->
+      <div class="checkout-step active" id="step-stock">
+        <h2><i class="fas fa-boxes-stacked"></i> Checking Stock</h2>
+        <div class="stock-loader">
+          <i class="fas fa-spinner"></i>
+          <p>Verifying product availability...</p>
+        </div>
+      </div>
+      <!-- Step 2: Customer Information -->
+      <div class="checkout-step" id="step-info">
+        <h2><i class="fas fa-user"></i> Your Information</h2>
+        <form id="info-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input class="form-input" id="cust-name" type="text" placeholder="Juan Dela Cruz" required>
+            </div>
+            <div class="form-group">
+              <label>Contact Number *</label>
+              <input class="form-input" id="cust-contact" type="tel" placeholder="09XXXXXXXXX" pattern="09[0-9]{9}" maxlength="11" inputmode="numeric" title="Must be 11 digits starting with 09" required>
+              <div class="invalid-feedback">Please enter a valid 11-digit phone number starting with 09.</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Email Address (Gmail) *</label>
+            <input class="form-input" id="cust-email" type="email" placeholder="you@gmail.com" pattern="[a-zA-Z0-9._%+\-]+@[gG][mM][aA][iI][lL]\.[cC][oO][mM]" title="Please enter a valid Gmail address ending in @gmail.com" required>
+            <div class="invalid-feedback" id="cust-email-feedback">Please enter a valid Gmail address (must end with @gmail.com).</div>
+          </div>
+          <div class="form-group">
+            <label>Delivery Address</label>
+            <textarea class="form-textarea" id="cust-address" placeholder="Full delivery address..." required></textarea>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-outline" id="info-back-btn"><i class="fas fa-arrow-left"></i> Back</button>
+            <button type="submit" class="btn btn-primary" id="info-proceed-btn"><i class="fas fa-arrow-right"></i> Proceed to Payment</button>
+          </div>
+        </form>
+      </div>
+      <!-- Step: OTP Verification -->
+      <div class="checkout-step" id="step-otp">
+        <div style="padding: 2.5rem; display: flex; flex-direction: column; align-items: center; max-width: 400px; margin: 0 auto;">
+          <div style="text-align:center;font-size:2.5rem;color:var(--accent);margin-bottom:1rem"><i class="fas fa-envelope-open-text"></i></div>
+          <h3 class="auth-modal-title" style="margin-bottom:.25rem">Verify Email</h3>
+          <p class="auth-modal-subtitle">Enter the 6‑digit code sent to <br><strong id="checkout-otp-email-display" style="color:var(--dark)"></strong></p>
+          
+          <div class="form-group" style="width: 100%;">
+            <div class="otp-inputs" style="display:flex;gap:0.5rem;justify-content:center;margin-bottom:0.5rem">
+              <input class="otp-input form-input" type="text" inputmode="numeric" maxlength="1" autocomplete="one-time-code" required style="width:3rem;height:3.5rem;text-align:center;font-size:1.5rem;font-weight:600;padding:0">
+              <input class="otp-input form-input" type="text" inputmode="numeric" maxlength="1" required style="width:3rem;height:3.5rem;text-align:center;font-size:1.5rem;font-weight:600;padding:0">
+              <input class="otp-input form-input" type="text" inputmode="numeric" maxlength="1" required style="width:3rem;height:3.5rem;text-align:center;font-size:1.5rem;font-weight:600;padding:0">
+              <input class="otp-input form-input" type="text" inputmode="numeric" maxlength="1" required style="width:3rem;height:3.5rem;text-align:center;font-size:1.5rem;font-weight:600;padding:0">
+              <input class="otp-input form-input" type="text" inputmode="numeric" maxlength="1" required style="width:3rem;height:3.5rem;text-align:center;font-size:1.5rem;font-weight:600;padding:0">
+              <input class="otp-input form-input" type="text" inputmode="numeric" maxlength="1" required style="width:3rem;height:3.5rem;text-align:center;font-size:1.5rem;font-weight:600;padding:0">
+            </div>
+            <div class="invalid-feedback" id="otp-error" style="display:none; color:var(--danger); margin-top:0.5rem; text-align: center;">Invalid OTP. Please try again.</div>
+          </div>
+          
+          <div style="display: flex; gap: 1rem; width: 100%; margin-top: 1rem;">
+            <button type="button" class="btn btn-outline" id="otp-back-btn" style="flex: 1;"><i class="fas fa-arrow-left"></i> Back</button>
+            <button type="button" class="btn btn-primary" id="otp-verify-btn" style="flex: 1;"><i class="fas fa-check-circle"></i> Verify</button>
+          </div>
+          
+          <p style="text-align:center;margin-top:1.5rem;font-size:.9rem;color:var(--gray)">
+            <span id="checkout-otp-timer-wrap">Resend code in <strong id="checkout-otp-timer">60</strong>s</span> 
+            <a href="#" id="checkout-otp-resend-btn" class="auth-link" style="display:none"><i class="fas fa-redo-alt"></i> Resend OTP</a>
+          </p>
+        </div>
+      </div>
+      <!-- Step 3: Order Summary & Payment -->
+      <div class="checkout-step" id="step-payment">
+        <h2 style="display:flex; justify-content:center; align-items:center; text-align:center"><i class="fas fa-clipboard-check"></i> Order Summary & Payment</h2>
+        
+        <!-- 50% Downpayment Policy Notice -->
+        <div class="downpayment-notice-banner">
+          <i class="fas fa-shield-alt"></i>
+          <div>
+            <strong>50% Downpayment Policy:</strong> To confirm authentic orders and prevent bogus requests, pay half (50%) now. The remaining 50% balance is collected upon receipt of your order.
+          </div>
+        </div>
+
+        <div id="review-details" style="text-align:center; margin-bottom: 1.25rem;"></div>
+        
+        <!-- Payment Method Selection (Only GCash and PayMaya) -->
+        <div class="form-group" style="text-align:left; margin-bottom: 0.75rem;">
+          <label style="font-weight:600; margin-bottom:0.5rem; display:block;">Select Payment Method *</label>
+          <div class="payment-method-selector">
+            <button type="button" class="payment-method-btn active-gcash" id="btn-method-gcash" data-method="GCash">
+              <span class="payment-logo-badge gcash">G</span> GCash
+            </button>
+            <button type="button" class="payment-method-btn" id="btn-method-maya" data-method="PayMaya">
+              <span class="payment-logo-badge maya">M</span> Maya (PayMaya)
+            </button>
+          </div>
+          <input type="hidden" id="payment-method" value="GCash">
+        </div>
+
+        <!-- Payment Instructions & QR Card -->
+        <div class="payment-details-card" id="payment-qr-container">
+          <div class="payment-qr-wrap">
+            <img src="../img/gcash-qr.svg" alt="GCash QR Code" id="payment-qr-img" class="payment-qr-img">
+          </div>
+          <div style="font-size:0.85rem; color:var(--gray); margin-bottom:0.5rem;">
+            Scan the QR code above or send manually:
+          </div>
+          <div class="copy-number-box">
+            <div>
+              <span style="font-size:0.75rem; color:#888; display:block;">ACCOUNT NUMBER (<span id="qr-brand-label">GCash</span>)</span>
+              <span class="num-val" id="qr-num-display">0912 221 7577</span>
+            </div>
+            <button type="button" class="btn-copy-num" id="copy-acc-btn">
+              <i class="far fa-copy"></i> <span id="copy-btn-text">Copy</span>
+            </button>
+          </div>
+          <div style="font-size:0.8rem; color:#555;">
+            Account Name: <strong id="qr-name-display">Gerald V.</strong>
+          </div>
+        </div>
+
+        <!-- Payment Verification Fields -->
+        <div id="payment-verification-fields" style="text-align:left;">
+          <div class="form-group">
+            <label><span id="ref-field-label">GCash</span> Reference Number *</label>
+            <input class="form-input" id="gcash-ref" type="text" inputmode="numeric" maxlength="13" placeholder="e.g. 1000123456789 (13 digits)" autocomplete="off">
+            <div class="invalid-feedback" id="ref-invalid-feedback">Please enter a valid 13-digit GCash reference number (numbers only).</div>
+          </div>
+          <div class="form-group">
+            <label>Upload Payment Screenshot (Receipt) *</label>
+            <input class="form-input" id="gcash-proof" type="file" accept="image/*">
+            <div style="font-size:0.78rem; color:var(--gray); margin-top:4px;">Upload screenshot of your 50% downpayment transfer.</div>
+          </div>
+        </div>
+
+        <div id="payment-error-msg" style="display:none; color:var(--danger); background:rgba(220,53,69,0.1); padding:0.75rem; border-radius:var(--radius); margin-bottom:1rem; text-align:center; font-weight:500;"></div>
+        
+        <div class="modal-actions">
+          <button class="btn btn-outline" id="payment-back-btn"><i class="fas fa-arrow-left"></i> Back</button>
+          <button class="btn btn-primary" id="pay-btn"><i class="fas fa-check-circle"></i> Confirm 50% Payment</button>
+        </div>
+      </div>
+      <!-- Step 5: Success -->
+      <div class="checkout-step" id="step-success" style="text-align:center;">
+        <div class="confirmation-icon" style="margin-bottom:1rem; display:flex; justify-content:center;"><i class="fas fa-circle-check" style="font-size:4rem; color:var(--success);"></i></div>
+        <div class="confirmation-msg" style="width:100%; text-align:center; margin-bottom:1.5rem;">
+          <h2 style="display:flex; justify-content:center; align-items:center; color:var(--primary); margin-bottom:0.5rem; text-align:center;">Order Placed Successfully!</h2>
+          <p style="text-align:center; color:var(--gray);">Your 50% downpayment has been recorded. We are now preparing your order!</p>
+        </div>
+        
+        <!-- Order Tracking ID Card -->
+        <div id="success-order-id-card" style="margin-bottom: 1rem;"></div>
+
+        <!-- Summary Card in Success Screen -->
+        <div id="success-downpayment-summary" style="margin-bottom: 1.5rem;"></div>
+
+        <!-- 1-Click Convert to Account for Guests -->
+        <div id="success-guest-convert-box" style="margin-bottom: 1.5rem;"></div>
+
+        <div class="confirmation-actions" style="width:100%; display:flex; justify-content:center; gap:1rem;">
+          <a href="home.html" class="btn btn-outline" id="success-nav-btn"><i class="fas fa-home"></i> Back to Home Page</a>
+          <button class="btn btn-primary" id="order-again-btn"><i class="fas fa-rotate"></i> Order Again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="home.html" class="logo" aria-label="WeBake Home">
+            <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Rolls Bakery" class="logo-img">
+          </a>
+          <p>Crumbs N' Rolls Bakery</p>
+        </div>
+        <nav class="footer-nav">
+          <a href="home.html">Home</a>
+          <a href="products.html">Products</a>
+          <a href="home.html#about">About Us</a>
+          <a href="#" data-track-order-open>Track Order</a>
+        </nav>
+        <div class="footer-social">
+          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        &copy; 2026 Crumbs N' Rolls Bakery. All Rights Reserved.
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+  <script src="../js/config.js?v=2.3"></script>
+  <script src="../js/utils.js?v=2.3"></script>
+  <script src="../js/shop-api.js?v=2.3"></script>
+  <script src="../js/otp.js?v=2.3"></script>
+  <script src="../js/modals.js?v=2.3"></script>
+  <script src="../js/main.js?v=2.3"></script>
+  <script src="../js/auth.js?v=2.3"></script>
+  <script src="../js/tracking.js?v=2.3"></script>
+</body>
+</html>
+

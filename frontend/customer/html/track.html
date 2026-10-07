@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Order — WeBake</title>
+  <link rel="icon" type="image/png" href="../img/favicon.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/globals.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/products.css">
+  <style>
+    .track-wrap { max-width: 720px; margin: 0 auto; padding: 2rem 1rem 3rem; }
+    .track-card { background: #fff; border-radius: 14px; padding: 1.75rem; margin-bottom: 1.25rem; box-shadow: 0 4px 20px rgba(0,0,0,.06); }
+    .track-card h4 { margin: 0 0 .75rem; color: var(--primary, #6B352A); }
+    #track-error { display: none; color: var(--danger, #c0392b); margin-top: .75rem; }
+    #track-result { display: none; }
+    #track-status-pill { display: inline-block; background: var(--accent-soft, #FFF9D2); color: var(--primary, #6B352A); font-weight: 700; border-radius: 9999px; padding: .3rem 1rem; margin: .5rem 0 1rem; }
+    .tl-step { display: flex; align-items: center; gap: .6rem; padding: .3rem 0; color: #999; }
+    .tl-step .tl-dot { width: 12px; height: 12px; border-radius: 50%; background: #ddd; flex: none; }
+    .tl-step.done { color: var(--primary, #6B352A); }
+    .tl-step.done .tl-dot { background: var(--success, #28a745); }
+    .tl-step.now { color: var(--primary, #6B352A); font-weight: 700; }
+    .tl-step.now .tl-dot { background: var(--accent, #e8a13c); }
+    .tl-step.cancelled .tl-dot { background: var(--danger, #c0392b); }
+    .review-line { display: flex; justify-content: space-between; padding: .3rem 0; border-bottom: 1px dashed #eee; }
+    .pending-note { background: #E0F2FE; border-radius: 8px; padding: .8rem 1rem; }
+    .reject-note { background: #FDE8E8; border-radius: 8px; padding: .8rem 1rem; }
+    .ok-note { background: #EAF7ED; border-radius: 8px; padding: .8rem 1rem; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <nav class="nav container">
+      <a href="home.html" class="logo" aria-label="WeBake Home">
+        <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Rolls Bakery" class="logo-img">
+      </a>
+      <div class="nav-right">
+        <div class="nav-links" id="nav-links">
+          <a href="home.html">Home</a>
+          <a href="products.html">Products</a>
+          <a href="#" data-track-order-open class="active">Track Order</a>
+          <a href="home.html#about">About Us</a>
+        </div>
+        <div class="auth-buttons">
+          <button type="button" data-auth-open="login" class="btn btn-outline btn-sm">Sign In</button>
+          <button type="button" data-auth-open="register" class="btn btn-primary btn-sm">Register</button>
+        </div>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="track-wrap">
+    <div class="track-card">
+      <h3 data-i18n="nav.track">Track Order</h3>
+      <form id="track-lookup">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Order ID</label>
+            <input class="form-input" id="track-code" placeholder="WB-XXXXX" required autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label>Gmail used for the order</label>
+            <input class="form-input" id="track-email" type="email" placeholder="you@gmail.com" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" id="track-btn">Track</button>
+        <div id="track-error"></div>
+      </form>
+    </div>
+
+    <div id="track-result">
+      <div class="track-card">
+        <h3 id="track-order-code"></h3>
+        <div><span id="track-status-pill"></span></div>
+        <div id="track-timeline"></div>
+      </div>
+      <div class="track-card">
+        <h4>Items</h4>
+        <div id="track-items"></div>
+        <div id="track-amounts" style="margin-top:.75rem;"></div>
+      </div>
+      <div class="track-card" id="track-payment-card">
+        <div id="track-payment"></div>
+      </div>
+      <div class="track-card" id="track-refund-card">
+        <div id="track-refund"></div>
+      </div>
+      <div class="track-card" id="track-cancel-card">
+        <div id="track-cancel"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="home.html" class="logo" aria-label="WeBake Home">
+            <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Rolls Bakery" class="logo-img">
+          </a>
+          <p>Crumbs N' Rolls Bakery</p>
+        </div>
+        <nav class="footer-nav">
+          <a href="home.html">Home</a>
+          <a href="products.html">Products</a>
+          <a href="home.html#about">About Us</a>
+          <a href="#" data-track-order-open>Track Order</a>
+        </nav>
+        <div class="footer-social">
+          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        &copy; 2026 Crumbs N' Rolls Bakery. All Rights Reserved.
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+  <script src="../js/config.js?v=2.3"></script>
+  <script src="../js/utils.js?v=2.3"></script>
+  <script src="../js/shop-api.js?v=2.3"></script>
+  <script src="../js/otp.js?v=2.3"></script>
+  <script src="../js/modals.js?v=2.3"></script>
+  <script src="../js/main.js?v=2.3"></script>
+  <script src="../js/auth.js?v=2.3"></script>
+  <script src="../js/tracking.js?v=2.3"></script>
+</body>
+</html>

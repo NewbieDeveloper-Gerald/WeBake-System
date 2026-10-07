@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — WeBake</title>
+  <link rel="icon" type="image/png" href="../img/favicon.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/globals.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    .auth-wrap { max-width: 440px; margin: 0 auto; padding: 2.5rem 1rem 3rem; }
+    .auth-card { background: #fff; border-radius: 14px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,.06); }
+    .auth-card h2 { margin: 0 0 .25rem; color: var(--primary, #6B352A); }
+    .auth-card .sub { color: var(--gray, #777); font-size: .9rem; margin-bottom: 1.25rem; }
+    #login-error { display: none; color: var(--danger, #c0392b); margin-bottom: .75rem; }
+    #forgot-box { display: none; }
+    #forgot-msg { display: none; margin: .75rem 0; }
+    #forgot-otp-wrap { display: none; }
+    .otp-inputs { display: flex; gap: .5rem; justify-content: center; margin: .75rem 0; }
+    .otp-inputs .otp-input { width: 3rem; height: 3.5rem; text-align: center; font-size: 1.5rem; font-weight: 600; padding: 0; }
+    .auth-switch { text-align: center; margin-top: 1rem; font-size: .9rem; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <nav class="nav container">
+      <a href="home.html" class="logo" aria-label="WeBake Home">
+        <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Rolls Bakery" class="logo-img">
+      </a>
+      <div class="nav-right">
+        <div class="nav-links" id="nav-links">
+          <a href="home.html">Home</a>
+          <a href="products.html">Products</a>
+          <a href="#" data-track-order-open>Track Order</a>
+          <a href="home.html#about">About Us</a>
+        </div>
+        <div class="auth-buttons">
+          <button type="button" data-auth-open="login" class="btn btn-outline btn-sm">Sign In</button>
+          <button type="button" data-auth-open="register" class="btn btn-primary btn-sm">Register</button>
+        </div>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="auth-wrap">
+    <div class="auth-card">
+      <form id="login-form">
+        <h2>Sign In</h2>
+        <p class="sub">Members skip email verification at checkout.</p>
+        <div id="login-error"></div>
+        <div class="form-group">
+          <label>Email</label>
+          <input class="form-input" id="login-email" type="email" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input class="form-input" id="login-password" type="password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="btn-login">Sign In</button>
+        <p class="auth-switch"><a href="#" id="forgot-toggle">Forgot password?</a></p>
+        <p class="auth-switch">No account yet? <a href="register.html">Register</a></p>
+      </form>
+
+      <div id="forgot-box">
+        <h2>Reset Password</h2>
+        <p class="sub">We will email you a 6-digit code.</p>
+        <div id="forgot-msg"></div>
+        <div class="form-group">
+          <label>Email</label>
+          <input class="form-input" id="forgot-email" type="email" autocomplete="username">
+        </div>
+        <button type="button" class="btn btn-outline btn-block" id="forgot-send">Send code</button>
+        <div id="forgot-otp-wrap">
+          <div class="otp-inputs">
+            <input class="otp-input form-input" type="text" inputmode="numeric" maxlength="1">
+            <input class="otp-input form-input" type="text" inputmode="numeric" maxlength="1">
+            <input class="otp-input form-input" type="text" inputmode="numeric" maxlength="1">
+            <input class="otp-input form-input" type="text" inputmode="numeric" maxlength="1">
+            <input class="otp-input form-input" type="text" inputmode="numeric" maxlength="1">
+            <input class="otp-input form-input" type="text" inputmode="numeric" maxlength="1">
+          </div>
+          <p style="text-align:center;font-size:.9rem;">
+            <span id="forgot-timer-wrap">Resend code in <strong id="forgot-timer">60</strong>s</span>
+            <a href="#" id="forgot-resend" style="display:none;">Resend OTP</a>
+          </p>
+          <div class="form-group">
+            <label>New password (min 6 characters)</label>
+            <input class="form-input" id="forgot-new-password" type="password" autocomplete="new-password">
+          </div>
+          <button type="button" class="btn btn-primary btn-block" id="forgot-submit">Set new password</button>
+        </div>
+        <p class="auth-switch"><a href="#" id="forgot-back">Back to sign in</a></p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="home.html" class="logo" aria-label="WeBake Home">
+            <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Rolls Bakery" class="logo-img">
+          </a>
+          <p>Crumbs N' Rolls Bakery</p>
+        </div>
+        <nav class="footer-nav">
+          <a href="home.html">Home</a>
+          <a href="products.html">Products</a>
+          <a href="home.html#about">About Us</a>
+          <a href="#" data-track-order-open>Track Order</a>
+        </nav>
+      </div>
+      <div class="footer-bottom">
+        &copy; 2026 Crumbs N' Rolls Bakery. All Rights Reserved.
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+  <script src="../js/config.js?v=2.3"></script>
+  <script src="../js/utils.js?v=2.3"></script>
+  <script src="../js/shop-api.js?v=2.3"></script>
+  <script src="../js/otp.js?v=2.3"></script>
+  <script src="../js/modals.js?v=2.3"></script>
+  <script src="../js/main.js?v=2.3"></script>
+  <script src="../js/auth.js?v=2.3"></script>
+  <script src="../js/tracking.js?v=2.3"></script>
+</body>
+</html>

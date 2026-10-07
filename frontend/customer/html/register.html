@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register — WeBake</title>
+  <link rel="icon" type="image/png" href="../img/favicon.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/globals.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    .auth-wrap { max-width: 520px; margin: 0 auto; padding: 2.5rem 1rem 3rem; }
+    .auth-card { background: #fff; border-radius: 14px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,.06); }
+    .auth-card h2 { margin: 0 0 .25rem; color: var(--primary, #6B352A); }
+    .auth-card .sub { color: var(--gray, #777); font-size: .9rem; margin-bottom: 1.25rem; }
+    #reg-error { display: none; color: var(--danger, #c0392b); margin-bottom: .75rem; }
+    #reg-otp-section { display: none; }
+    .otp-inputs { display: flex; gap: .5rem; justify-content: center; margin: .75rem 0; }
+    .otp-inputs .otp-input { width: 3rem; height: 3.5rem; text-align: center; font-size: 1.5rem; font-weight: 600; padding: 0; }
+    .auth-switch { text-align: center; margin-top: 1rem; font-size: .9rem; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <nav class="nav container">
+      <a href="home.html" class="logo" aria-label="WeBake Home">
+        <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Rolls Bakery" class="logo-img">
+      </a>
+      <div class="nav-right">
+        <div class="nav-links" id="nav-links">
+          <a href="home.html">Home</a>
+          <a href="products.html">Products</a>
+          <a href="#" data-track-order-open>Track Order</a>
+          <a href="home.html#about">About Us</a>
+        </div>
+        <div class="auth-buttons">
+          <button type="button" data-auth-open="login" class="btn btn-outline btn-sm">Sign In</button>
+          <button type="button" data-auth-open="register" class="btn btn-primary btn-sm">Register</button>
+        </div>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="auth-wrap">
+    <div class="auth-card">
+      <h2>Create Account</h2>
+      <p class="sub">Verify your Gmail, then your past guest orders link automatically.</p>
+      <div id="reg-error"></div>
+      <form id="reg-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full name</label>
+            <input class="form-input" id="reg-name" required>
+          </div>
+          <div class="form-group">
+            <label>Contact (09XXXXXXXXX)</label>
+            <input class="form-input" id="reg-contact" required inputmode="numeric" maxlength="11">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Gmail address</label>
+          <input class="form-input" id="reg-email" type="email" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>Delivery address</label>
+          <textarea class="form-textarea" id="reg-address" required></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Password (min 6)</label>
+            <input class="form-input" id="reg-password" type="password" required minlength="6" autocomplete="new-password">
+          </div>
+          <div class="form-group">
+            <label>Confirm password</label>
+            <input class="form-input" id="reg-confirm" type="password" required minlength="6" autocomplete="new-password">
+          </div>
+        </div>
+        <button type="button" class="btn btn-outline btn-block" id="reg-send-otp">Send verification code</button>
+
+        <div id="reg-otp-section">
+          <div class="otp-inputs">
+            <input class="otp-input form-input" type="text" inputmode="numeric" maxlength="1">
+            <input class="otp-input form-input" type="text" inputmode="numeric" maxlength="1">
+            <input class="otp-input form-input" type="text" inputmode="numeric" maxlength="1">
+            <input class="otp-input form-input" type="text" inputmode="numeric" maxlength="1">
+            <input class="otp-input form-input" type="text" inputmode="numeric" maxlength="1">
+            <input class="otp-input form-input" type="text" inputmode="numeric" maxlength="1">
+          </div>
+          <p style="text-align:center;font-size:.9rem;">
+            <span id="reg-timer-wrap">Resend code in <strong id="reg-timer">60</strong>s</span>
+            <a href="#" id="reg-resend" style="display:none;">Resend OTP</a>
+          </p>
+          <button type="submit" class="btn btn-primary btn-block" id="reg-submit">Verify and create account</button>
+        </div>
+      </form>
+      <p class="auth-switch">Already have an account? <a href="login.html">Sign in</a></p>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="home.html" class="logo" aria-label="WeBake Home">
+            <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Rolls Bakery" class="logo-img">
+          </a>
+          <p>Crumbs N' Rolls Bakery</p>
+        </div>
+        <nav class="footer-nav">
+          <a href="home.html">Home</a>
+          <a href="products.html">Products</a>
+          <a href="home.html#about">About Us</a>
+          <a href="#" data-track-order-open>Track Order</a>
+        </nav>
+      </div>
+      <div class="footer-bottom">
+        &copy; 2026 Crumbs N' Rolls Bakery. All Rights Reserved.
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+  <script src="../js/config.js?v=2.3"></script>
+  <script src="../js/utils.js?v=2.3"></script>
+  <script src="../js/shop-api.js?v=2.3"></script>
+  <script src="../js/otp.js?v=2.3"></script>
+  <script src="../js/modals.js?v=2.3"></script>
+  <script src="../js/main.js?v=2.3"></script>
+  <script src="../js/auth.js?v=2.3"></script>
+  <script src="../js/tracking.js?v=2.3"></script>
+</body>
+</html>

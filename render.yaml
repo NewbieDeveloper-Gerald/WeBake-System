@@ -1,0 +1,67 @@
+# =====================================================================
+# WeBake - Render Blueprint (infrastructure as code).
+#
+# WHAT: Declares the backend web service so Render builds it directly from
+# this repo. No serverless functions, no separate API project: one Express
+# service (backend/) + one static site (frontend/, deployed on Vercel).
+#
+# HOW TO USE: Render dashboard > New > Blueprint > pick this repo. Render
+# reads this file, asks only for the `sync: false` secrets, then deploys.
+# Full click-by-click steps live in the Phase 7 deployment guide.
+#
+# NOTES:
+# - region singapore: closest Render region to Bulacan customers (lowest
+#   latency). Supabase project should also use Singapore (ap-southeast-1).
+# - PORT is NOT listed: Render injects it automatically at runtime.
+# - Migrations run inside buildCommand, NOT preDeployCommand: Render's free
+#   tier rejects pre-deploy commands. migrate is idempotent (applied files
+#   skip) and a failed migration fails the build BEFORE new code goes live,
+#   so the schema can never lag behind the code. Seed stays MANUAL (one
+#   command, once per database) - see docs.
+# =====================================================================
+
+services:
+  - type: web
+    name: webake-api
+    runtime: node
+    plan: free
+    region: singapore
+    rootDir: backend
+    buildCommand: npm install && npm run migrate
+    startCommand: node server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false # Supabase POOLER string (port 6543). Secret - prompted at deploy.
+      - key: JWT_SECRET
+        generateValue: true # Render invents a random secret on first deploy.
+      - key: BCRYPT_ROUNDS
+        value: 12
+      - key: MEMBER_JWT_EXPIRES_IN
+        value: 7d
+      - key: ADMIN_JWT_EXPIRES_IN
+        value: 12h
+      - key: FRONTEND_URL
+        sync: false # Vercel URL, e.g. https://webake.vercel.app (no trailing slash).
+      - key: DEV_ORIGIN
+        value: ""
+      - key: ADMIN_EMAIL
+        value: crbwebake@gmail.com
+      - key: ADMIN_PASSWORD
+        sync: false # Owner password for the one-time `npm run seed`.
+      - key: BREVO_API_KEY
+        sync: false # Brevo dashboard > SMTP & API. Empty disables email.
+      - key: BREVO_SENDER_EMAIL
+        value: crbwebake@gmail.com
+      - key: BREVO_SENDER_NAME
+        value: "WeBake - Crumbs N' Rolls Bakery"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false # Server-only key. Never put this in the frontend.
+      - key: DEFAULT_LOW_STOCK_PIECES
+        value: 500
+      - key: MIN_ORDER_BUNDLES
+        value: 300

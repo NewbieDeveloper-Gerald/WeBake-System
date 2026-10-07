@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WeBake Admin — Reset Password</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/admin-globals.css">
+  <style>
+    .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .login-card { width: 100%; max-width: 400px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 32px 28px; }
+    .login-brand { text-align: center; margin-bottom: 24px; }
+    .login-brand img { height: 56px; width: auto; }
+    .login-brand h1 { font-size: 1.3rem; margin-top: 8px; }
+    .reset-msg { display: none; border-radius: var(--radius-sm); padding: 10px 12px; font-size: 0.85rem; margin-bottom: 14px; }
+    .reset-msg.show { display: block; }
+    .reset-msg.error { background: var(--danger-bg); color: var(--danger); }
+    .reset-msg.ok { background: var(--success-bg); color: var(--success); }
+  </style>
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-brand">
+        <img src="../../assets/logo.png" alt="WeBake">
+        <h1>Set New Password</h1>
+        <p>This link expires in 30 minutes and works once.</p>
+      </div>
+
+      <div class="reset-msg" id="reset-msg" role="alert"></div>
+
+      <form id="reset-form">
+        <div class="form-group">
+          <label class="form-label" for="reset-password">New password (min 6 characters)</label>
+          <input type="password" id="reset-password" class="form-input" required minlength="6" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reset-confirm">Confirm new password</label>
+          <input type="password" id="reset-confirm" class="form-input" required minlength="6" autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="btn-reset">
+          <i class="fas fa-key"></i> Reset Password
+        </button>
+        <p style="text-align:center;margin-top:14px;font-size:0.85rem;">
+          <a href="login.html" style="color:var(--primary);">Back to sign in</a>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <script src="../../customer/js/config.js"></script>
+  <script src="../js/admin-api.js"></script>
+  <script src="../js/admin-auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WeBake Admin — Sign In</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/admin-globals.css">
+  <style>
+    .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .login-card { width: 100%; max-width: 400px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 32px 28px; }
+    .login-brand { text-align: center; margin-bottom: 24px; }
+    .login-brand img { height: 56px; width: auto; }
+    .login-brand h1 { font-size: 1.3rem; margin-top: 8px; }
+    .login-brand p { color: var(--text-muted); font-size: 0.85rem; }
+    .login-error { display: none; background: var(--danger-bg); color: var(--danger); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 0.85rem; margin-bottom: 14px; }
+    .login-error.show { display: block; }
+    .login-ok { display: none; background: var(--success-bg); color: var(--success); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 0.85rem; margin-bottom: 14px; }
+    .login-ok.show { display: block; }
+    .forgot-link { display: block; text-align: center; margin-top: 14px; font-size: 0.85rem; color: var(--primary); }
+    #forgot-form { display: none; }
+  </style>
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-brand">
+        <img src="../../assets/logo.png" alt="WeBake">
+        <h1>Owner Sign In</h1>
+        <p>Crumbs N' Rolls Bakery — Admin Portal</p>
+      </div>
+
+      <div class="login-error" id="login-error" role="alert"></div>
+      <div class="login-ok" id="login-ok" role="status"></div>
+
+      <!-- Sign-in form -->
+      <form id="login-form" autocomplete="on">
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email</label>
+          <input type="email" id="login-email" class="form-input" required autocomplete="username" placeholder="owner email">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <input type="password" id="login-password" class="form-input" required autocomplete="current-password" placeholder="password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="btn-login">
+          <i class="fas fa-sign-in-alt"></i> Sign In
+        </button>
+        <a href="#" class="forgot-link" id="forgot-toggle">Forgot password?</a>
+      </form>
+
+      <!-- Reset-link request (spec Q8: emailed link, 30 min, one use) -->
+      <form id="forgot-form">
+        <div class="form-group">
+          <label class="form-label" for="forgot-email">Owner email</label>
+          <input type="email" id="forgot-email" class="form-input" required placeholder="owner email">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="btn-forgot">
+          <i class="fas fa-envelope"></i> Send Reset Link
+        </button>
+        <a href="#" class="forgot-link" id="back-to-login">Back to sign in</a>
+      </form>
+    </div>
+  </div>
+
+  <script src="../../customer/js/config.js"></script>
+  <script src="../js/admin-api.js"></script>
+  <script src="../js/admin-auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WeBake Admin — Cancellation &amp; Refund Management</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/admin-globals.css">
+  <link rel="stylesheet" href="../css/admin-orders.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo-icon">
+          <i class="fas fa-bread-slice"></i>
+        </div>
+        <div class="brand-text">
+          <h2>WeBake</h2>
+          <span>Admin Portal</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Operations</div>
+        <a href="walkin-pos.html" class="nav-item-link pos-highlight">
+          <i class="fas fa-cash-register"></i>
+          <span>Walk-In / POS</span>
+        </a>
+        <a href="dashboard.html" class="nav-item-link">
+          <i class="fas fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="orders.html" class="nav-item-link">
+          <i class="fas fa-clipboard-list"></i>
+          <span>Orders &amp; Verify</span>
+          <span class="nav-badge" id="sidebar-orders-badge">0</span>
+        </a>
+        <a href="refunds.html" class="nav-item-link active">
+          <i class="fas fa-undo-alt"></i>
+          <span>Refunds Queue</span>
+          <span class="nav-badge" id="sidebar-refunds-badge">0</span>
+        </a>
+
+        <div class="nav-section-title">Bakery Management</div>
+        <a href="inventory.html" class="nav-item-link">
+          <i class="fas fa-boxes-stacked"></i>
+          <span>Daily Inventory</span>
+        </a>
+        <a href="products.html" class="nav-item-link">
+          <i class="fas fa-tags"></i>
+          <span>Product Catalog</span>
+        </a>
+        <a href="settings.html" class="nav-item-link">
+          <i class="fas fa-cog"></i>
+          <span>Bakery Settings</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="staff-profile-card">
+          <div class="staff-avatar">GV</div>
+          <div class="staff-details">
+            <div class="staff-name">Gerald V.</div>
+          </div>
+        </div>
+        <div class="sidebar-actions">
+          <a href="../../customer/html/home.html" target="_blank" class="btn-sidebar" title="Open Customer Storefront">
+            <i class="fas fa-external-link-alt"></i> Store
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <!-- Topbar -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-toggle" aria-label="Toggle Navigation">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="page-headline">
+            <h1>Cancellations &amp; Refund Queue</h1>
+            <p>Review and disburse downpayment returns requested by customers</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="live-sync-pill">
+            <span class="pulse-dot"></span>
+            <span>Live Sync Active</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <main class="content-area">
+        <!-- Status Tabs -->
+        <div class="orders-filter-bar">
+          <div class="orders-status-tabs">
+            <button type="button" class="order-tab-btn active" data-tab="pending">
+              <span>Pending Requests</span>
+              <span class="order-tab-count" id="count-refund-pending">0</span>
+            </button>
+            <button type="button" class="order-tab-btn" data-tab="approved">
+              <span>Approved &amp; Refunded</span>
+              <span class="order-tab-count" id="count-refund-approved">0</span>
+            </button>
+            <button type="button" class="order-tab-btn" data-tab="declined">
+              <span>Declined Requests</span>
+              <span class="order-tab-count" id="count-refund-declined">0</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Refunds Table Card -->
+        <div class="admin-card">
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Customer</th>
+                  <th>Downpayment</th>
+                  <th>Cancellation Reason</th>
+                  <th>Refund E-Wallet Account</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="refunds-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal: Process Payout Refund -->
+  <div class="modal-backdrop" id="modal-process-refund">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fas fa-money-check-alt"></i> Approve &amp; Disburse Downpayment Refund
+        </h3>
+        <button type="button" class="modal-close-btn" id="btn-close-process">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-section-box">
+          <div class="detail-data-row">
+            <span>Order ID:</span>
+            <strong id="refund-modal-order-id"></strong>
+          </div>
+          <div class="detail-data-row">
+            <span>Amount to Return (50% Downpayment):</span>
+            <strong class="text-danger" id="refund-modal-amount"></strong>
+          </div>
+          <div class="detail-data-row">
+            <span>E-Wallet Destination:</span>
+            <strong id="refund-modal-wallet"></strong>
+          </div>
+          <div class="detail-data-row">
+            <span>Account Number:</span>
+            <strong id="refund-modal-acc-num"></strong>
+          </div>
+          <div class="detail-data-row">
+            <span>Account Name:</span>
+            <strong id="refund-modal-acc-name"></strong>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label form-label-required">Bakery Payout Transfer Reference Number</label>
+          <input type="text" id="refund-payout-ref" class="form-input" placeholder="e.g. GCash/Maya 13-digit payout reference">
+          <p class="form-hint">Enter the reference code after transferring the downpayment refund from the bakery e-wallet.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="btn-confirm-payout">
+          <i class="fas fa-check-circle"></i> Confirm Payout &amp; Mark Refunded
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Decline Refund -->
+  <div class="modal-backdrop" id="modal-decline-refund">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fas fa-times-circle text-danger"></i> Decline Refund Request
+        </h3>
+        <button type="button" class="modal-close-btn" id="btn-close-decline">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted">Order ID: <strong id="decline-modal-order-id"></strong></p>
+        <div class="form-group">
+          <label class="form-label form-label-required">Reason for Declining</label>
+          <textarea id="decline-reason-text" class="form-textarea" rows="3" placeholder="e.g. Order is already baked and dispatched in delivery, downpayment non-refundable per bakery policy."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" id="btn-confirm-decline">
+          Decline &amp; Restore Order
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../../customer/js/config.js"></script>
+  <script src="../js/admin-api.js"></script>
+  <script src="../js/admin-main.js"></script>
+  <script src="../js/admin-auth.js"></script>
+  <script src="../js/admin-refunds.js"></script>
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WeBake — Crumbs N' Rolls Bakery</title>
+  <link rel="icon" type="image/png" href="../img/favicon.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/globals.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/home.css">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <nav class="nav container">
+      <a href="home.html" class="logo" aria-label="WeBake Home">
+        <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Rolls Bakery" class="logo-img">
+      </a>
+      <div class="nav-right">
+        <div class="nav-links" id="nav-links">
+          <a href="home.html" class="active">Home</a>
+          <a href="products.html">Products</a>
+          <a href="#" data-track-order-open>Track Order</a>
+          <a href="#about">About Us</a>
+        </div>
+        <div class="auth-buttons">
+          <button type="button" data-auth-open="login" class="btn btn-outline btn-sm">Sign In</button>
+          <button type="button" data-auth-open="register" class="btn btn-primary btn-sm">Register</button>
+        </div>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- MAIN LANDING CONTENT -->
+  <main>
+    <!-- 1. HERO SECTION -->
+    <section class="hero">
+      <div class="hero-orbit hero-orbit-one" aria-hidden="true"></div>
+      <div class="hero-orbit hero-orbit-two" aria-hidden="true"></div>
+      <div class="hero-content">
+        <span class="hero-pill"><i class="fas fa-award"></i> Fresh Bakery Since 2010</span>
+        <p class="hero-eyebrow">A little joy, straight from our oven</p>
+        <h1>Freshly baked.<br><span>Made to be shared.</span></h1>
+        <p>
+          Small-batch favorites from Crumbs N’ Rolls Bakery, baked fresh every day in Marilao. Find your new merienda favorite, then we’ll bring it to your door.
+        </p>
+        <div class="hero-buttons">
+          <a href="products.html" class="btn btn-accent">
+            <i class="fas fa-bread-slice"></i> Order Now
+          </a>
+          <a href="#" data-track-order-open class="btn btn-outline">
+            <i class="fas fa-truck-fast"></i> Track Order
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. QUICK STATS STRIP -->
+    <section class="stats-strip">
+      <div class="container">
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+            <div class="stat-text">
+              <h4>Est. 2010</h4>
+              <p>Over a decade of baking excellence</p>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-map-location-dot"></i></div>
+            <div class="stat-text">
+              <h4>Marilao, Bulacan</h4>
+              <p>1356 Cordero St., Lambakin</p>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
+            <div class="stat-text">
+              <h4>Angelita B. Amadeo</h4>
+              <p>Founder & Owner</p>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-users-gear"></i></div>
+            <div class="stat-text">
+              <h4>8 Team Members</h4>
+              <p>Production, packaging & delivery</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. ABOUT US SECTION -->
+    <section class="home-about-section" id="about">
+      <div class="container">
+        <span class="section-kicker">A neighborhood bakery with heart</span>
+        <h2 class="section-title"><i class="fas fa-info-circle"></i> Good things take a little kneading.</h2>
+        <p class="section-subtitle">Our heritage, dedication to quality, and community roots</p>
+
+        <div class="about-main-grid">
+          <!-- Story Narrative Card -->
+          <div class="about-story-card">
+            <span class="about-story-badge"><i class="fas fa-heart"></i> Our Story</span>
+            <h3>Crumbs N' Rolls Bakery</h3>
+            <p>
+              <strong>Crumbs N' Rolls Bakery (CRB)</strong> is a trusted local bakery established in <strong>2010</strong> by <strong>Angelita B. Amadeo</strong>. Located at <strong>1356 Cordero Street, Lambakin, Marilao, Bulacan</strong>, our bakery was founded with a heartfelt purpose: to provide quality, freshly baked, and affordable bread products while creating a sustainable livelihood for our family and community.
+            </p>
+            <p>
+              Over the years, CRB Bakery has grown into a beloved neighborhood bakery and supplier for cafes, local stores, and bread lovers, while continuing to warmly serve walk-in customers whenever fresh batches emerge from our ovens.
+            </p>
+            <p>
+              Our operations are powered by a dedicated team of <strong>eight skilled bakers and personnel</strong> handling daily baking, hygienic packaging, and prompt deliveries across key areas.
+            </p>
+          </div>
+
+          <!-- Key Info Cards Column -->
+          <div class="info-cards-column">
+            <div class="info-card">
+              <i class="fas fa-calendar-alt"></i>
+              <h4>Established</h4>
+              <p>2010</p>
+            </div>
+            <div class="info-card">
+              <i class="fas fa-map-marker-alt"></i>
+              <h4>Location</h4>
+              <p>Lambakin, Marilao, Bulacan</p>
+            </div>
+            <div class="info-card">
+              <i class="fas fa-user-tie"></i>
+              <h4>Owner & Founder</h4>
+              <p>Angelita B. Amadeo</p>
+            </div>
+            <div class="info-card">
+              <i class="fas fa-users"></i>
+              <h4>Bakery Team</h4>
+              <p>8 Dedicated Members</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Distribution Areas -->
+        <div class="distribution-box">
+          <h3><i class="fas fa-truck-fast"></i> Delivery &amp; Service Reach</h3>
+          <p>We deliver freshly baked bread and pastries across Bulacan and nearby cities</p>
+          <div class="distribution-areas">
+            <span class="area-badge"><i class="fas fa-location-dot"></i> Bulacan</span>
+            <span class="area-badge"><i class="fas fa-location-dot"></i> Metro-Manila</span>
+            <span class="area-badge"><i class="fas fa-location-dot"></i> Caloocan</span>
+            <span class="area-badge"><i class="fas fa-location-dot"></i> Malolos</span>
+            <span class="area-badge"><i class="fas fa-location-dot"></i> Surrounding Municipalities</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. SIGNATURE PRODUCTS TEASER -->
+    <section class="home-products-section">
+      <div class="container text-center">
+        <h2 class="section-title"><i class="fas fa-bread-slice"></i> Our Signature Bestsellers</h2>
+        <p class="section-subtitle">Baked fresh daily with the finest ingredients. Available in wholesale bundles.</p>
+
+        <div class="home-product-grid">
+          <div class="home-product-card">
+            <div class="home-product-icon"><i class="fas fa-cake-candles"></i></div>
+            <h4>Mamon</h4>
+            <p class="product-desc">Soft, fluffy Filipino sponge cake with a melt-in-your-mouth texture. A classic favorite for merienda or pasalubong.</p>
+          </div>
+
+          <div class="home-product-card">
+            <div class="home-product-icon"><i class="fas fa-cookie"></i></div>
+            <h4>Otap</h4>
+            <p class="product-desc">Crispy, flaky oval puff pastry coated in caramelized sugar. A beloved delicacy with irresistible crunch.</p>
+          </div>
+
+          <div class="home-product-card">
+            <div class="home-product-icon"><i class="fas fa-cookie-bite"></i></div>
+            <h4>Eggnog</h4>
+            <p class="product-desc">Sweet, crumbly meringue-based cookies baked to golden perfection. Light, sweet, and comforting.</p>
+          </div>
+
+          <div class="home-product-card">
+            <div class="home-product-icon"><i class="fas fa-bread-slice"></i></div>
+            <h4>Buttertoast</h4>
+            <p class="product-desc">Golden, crunchy butter-toasted bread slices with a rich, aromatic flavor. Perfect for coffee dipping.</p>
+          </div>
+        </div>
+
+        <div>
+          <a href="products.html" class="btn btn-primary" style="padding:0.85rem 2rem; font-size:1rem;">
+            <i class="fas fa-bread-slice"></i> Explore Our Fresh Bakes & Order
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. ORDER CALL TO ACTION -->
+    <section class="home-cta-section">
+      <div class="container">
+        <div class="home-cta-box">
+          <h2>Craving Freshly Baked <span>Bakery Treats</span>?</h2>
+          <p>
+            Browse our full catalog of fresh bread, delicate sponge cakes, and crispy snacks. Convenient online ordering, secure checkout, and scheduled deliveries.
+          </p>
+          <div style="display:flex; justify-content:center; gap:1rem; flex-wrap:wrap; margin-top:1.5rem;">
+            <a href="products.html" class="btn btn-accent" style="padding:0.85rem 2rem; font-size:1rem;">
+              <i class="fas fa-shopping-bag"></i> Order Fresh Bakes Now
+            </a>
+            <a href="#" data-track-order-open class="btn btn-outline" style="padding:0.85rem 1.75rem; font-size:1rem; border-color:#fff; color:#fff;">
+              <i class="fas fa-truck-fast"></i> Track Existing Order
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="home.html" class="logo" aria-label="WeBake Home">
+            <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Rolls Bakery" class="logo-img">
+          </a>
+          <p>Crumbs N' Rolls Bakery</p>
+        </div>
+        <nav class="footer-nav">
+          <a href="home.html">Home</a>
+          <a href="products.html">Products</a>
+          <a href="#about">About Us</a>
+          <a href="#" data-track-order-open>Track Order</a>
+        </nav>
+        <div class="footer-social">
+          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        &copy; 2026 Crumbs N' Rolls Bakery. All Rights Reserved.
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+  <script src="../js/config.js?v=2.3"></script>
+  <script src="../js/utils.js?v=2.3"></script>
+  <script src="../js/shop-api.js?v=2.3"></script>
+  <script src="../js/otp.js?v=2.3"></script>
+  <script src="../js/modals.js?v=2.3"></script>
+  <script src="../js/main.js?v=2.3"></script>
+  <script src="../js/auth.js?v=2.3"></script>
+  <script src="../js/tracking.js?v=2.3"></script>
+</body>
+</html>

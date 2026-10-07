@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WeBake Admin — Walk-In / POS Counter</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/admin-globals.css">
+  <link rel="stylesheet" href="../css/admin-pos.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo-icon">
+          <i class="fas fa-bread-slice"></i>
+        </div>
+        <div class="brand-text">
+          <h2>WeBake</h2>
+          <span>Admin Portal</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Operations</div>
+        <a href="walkin-pos.html" class="nav-item-link pos-highlight active">
+          <i class="fas fa-cash-register"></i>
+          <span>Walk-In / POS</span>
+        </a>
+        <a href="dashboard.html" class="nav-item-link">
+          <i class="fas fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="orders.html" class="nav-item-link">
+          <i class="fas fa-clipboard-list"></i>
+          <span>Orders & Verify</span>
+          <span class="nav-badge" id="sidebar-orders-badge">0</span>
+        </a>
+        <a href="refunds.html" class="nav-item-link">
+          <i class="fas fa-undo-alt"></i>
+          <span>Refunds Queue</span>
+          <span class="nav-badge" id="sidebar-refunds-badge">0</span>
+        </a>
+
+        <div class="nav-section-title">Bakery Management</div>
+        <a href="inventory.html" class="nav-item-link">
+          <i class="fas fa-boxes-stacked"></i>
+          <span>Daily Inventory</span>
+        </a>
+        <a href="products.html" class="nav-item-link">
+          <i class="fas fa-tags"></i>
+          <span>Product Catalog</span>
+        </a>
+        <a href="settings.html" class="nav-item-link">
+          <i class="fas fa-cog"></i>
+          <span>Bakery Settings</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="staff-profile-card">
+          <div class="staff-avatar">GV</div>
+          <div class="staff-details">
+            <div class="staff-name">Gerald V.</div>
+          </div>
+        </div>
+        <div class="sidebar-actions">
+          <a href="../../customer/html/home.html" target="_blank" class="btn-sidebar" title="Open Customer Storefront">
+            <i class="fas fa-external-link-alt"></i> Store
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <!-- Topbar -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-toggle" aria-label="Toggle Navigation">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="page-headline">
+            <h1>Walk-In / POS Counter</h1>
+            <p>1356 Cordero St., Lambakin, Marilao — Counter Sales Register</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="live-sync-pill">
+            <span class="pulse-dot"></span>
+            <span>Live Sync Active</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <main class="content-area">
+        <div class="pos-container">
+          <!-- Left: Product Catalog -->
+          <section class="pos-products-panel">
+            <div class="pos-toolbar">
+              <div class="pos-search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="pos-search" class="pos-search-input" placeholder="Search bakery products...">
+              </div>
+              <div class="pos-category-filters">
+                <button type="button" class="pos-filter-pill active" data-category="all">All Products</button>
+                <button type="button" class="pos-filter-pill" data-category="in_stock">Available Only</button>
+              </div>
+            </div>
+
+            <!-- Dynamic Product Grid -->
+            <div class="pos-product-grid" id="pos-product-grid"></div>
+          </section>
+
+          <!-- Right: Register / Active Cart Panel -->
+          <section class="pos-cart-panel">
+            <div class="pos-cart-header">
+              <div class="pos-cart-title">
+                <i class="fas fa-receipt"></i>
+                <span>Order Slip</span>
+              </div>
+              <button type="button" class="btn-clear-cart" id="btn-clear-cart">Clear Slip</button>
+            </div>
+
+            <div class="pos-cart-scroll-area">
+              <!-- Order Type Toggle -->
+              <div class="form-group">
+                <label class="form-label">Order Type</label>
+                <div class="pos-order-type-tabs">
+                  <button type="button" class="pos-type-toggle-btn active" data-type="takeout">
+                    <i class="fas fa-shopping-bag"></i> Immediate Takeout
+                  </button>
+                  <button type="button" class="pos-type-toggle-btn" data-type="advance">
+                    <i class="fas fa-calendar-check"></i> Advance Reservation
+                  </button>
+                </div>
+              </div>
+
+              <!-- Advance Details (Shown if advance reservation) -->
+              <div class="pos-advance-details" id="pos-advance-details">
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label form-label-required">Pickup Date</label>
+                    <input type="date" id="pos-advance-date" class="form-input">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Pickup Time</label>
+                    <input type="time" id="pos-advance-time" class="form-input" value="09:00">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Customer Info -->
+              <div class="pos-customer-box">
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label">Customer Name</label>
+                    <input type="text" id="pos-cust-name" class="form-input" placeholder="Walk-In Customer">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Contact Number</label>
+                    <input type="tel" id="pos-cust-phone" class="form-input" placeholder="09XX-XXX-XXXX">
+                  </div>
+                </div>
+                <button type="button" class="btn btn-outline btn-sm w-full" id="btn-link-customer">
+                  <i class="fas fa-search"></i> Quick Link Registered Customer
+                </button>
+              </div>
+
+              <!-- Line Items List -->
+              <div class="pos-cart-items-list" id="pos-cart-items-list"></div>
+            </div>
+
+            <!-- Cart Footer & Calculations -->
+            <div class="pos-cart-footer">
+              <!-- 50% Downpayment Mode Switch -->
+              <div class="pos-downpayment-switch-row">
+                <label for="pos-downpayment-checkbox">
+                  <input type="checkbox" id="pos-downpayment-checkbox">
+                  <span>50% Downpayment Mode</span>
+                </label>
+              </div>
+
+              <!-- Totals Breakdown -->
+              <div class="pos-totals-box">
+                <div class="pos-total-row">
+                  <span>Subtotal</span>
+                  <span id="pos-cart-subtotal">&#8369;0.00</span>
+                </div>
+                <div class="pos-total-row" id="pos-downpayment-row">
+                  <span>50% Downpayment Due</span>
+                  <span id="pos-downpayment-val">&#8369;0.00</span>
+                </div>
+                <div class="pos-total-row" id="pos-balance-row">
+                  <span>Balance Due on Pickup</span>
+                  <span id="pos-balance-val">&#8369;0.00</span>
+                </div>
+                <div class="pos-total-row highlight-due">
+                  <span>Total Due Counter</span>
+                  <span id="pos-total-due">&#8369;0.00</span>
+                </div>
+              </div>
+
+              <!-- Payment Method Tabs -->
+              <div class="pos-payment-tabs">
+                <button type="button" class="pos-pay-tab-btn active" data-method="Cash">
+                  <i class="fas fa-money-bill-wave"></i> Cash
+                </button>
+                <button type="button" class="pos-pay-tab-btn" data-method="GCash">
+                  <i class="fas fa-mobile-alt"></i> GCash QR
+                </button>
+                <button type="button" class="pos-pay-tab-btn" data-method="PayMaya">
+                  <i class="fas fa-wallet"></i> Maya QR
+                </button>
+              </div>
+
+              <!-- Cash Calculator -->
+              <div class="pos-cash-calculator" id="pos-cash-calculator">
+                <div class="form-group">
+                  <label class="form-label">Cash Tendered (&#8369;)</label>
+                  <input type="number" id="pos-cash-tendered" class="form-input" placeholder="0.00" min="0">
+                </div>
+                <div class="cash-presets-row">
+                  <button type="button" class="cash-chip-btn" data-amount="exact">Exact</button>
+                  <button type="button" class="cash-chip-btn" data-amount="105">&#8369;105</button>
+                  <button type="button" class="cash-chip-btn" data-amount="200">&#8369;200</button>
+                  <button type="button" class="cash-chip-btn" data-amount="500">&#8369;500</button>
+                  <button type="button" class="cash-chip-btn" data-amount="1000">&#8369;1,000</button>
+                </div>
+                <div class="pos-change-display">
+                  <span class="change-label">Change to Return:</span>
+                  <span class="change-amount" id="pos-change-amount">&#8369;0.00</span>
+                </div>
+              </div>
+
+              <!-- E-Wallet QR Box -->
+              <div class="pos-ewallet-box" id="pos-ewallet-box">
+                <div class="pos-qr-thumbnail">
+                  <img id="pos-ewallet-qr-img" src="../img/gcash-qr.svg" alt="Payment QR">
+                </div>
+                <div class="detail-data-row">
+                  <span class="detail-data-label">Account:</span>
+                  <strong id="pos-ewallet-name">Gerald V.</strong>
+                </div>
+                <div class="detail-data-row">
+                  <span class="detail-data-label">Number:</span>
+                  <strong id="pos-ewallet-number">0917-123-4567</strong>
+                </div>
+                <div class="form-group">
+                  <input type="text" id="pos-ewallet-ref" class="form-input" placeholder="Enter Reference Number (e.g. 13-digit)">
+                </div>
+              </div>
+
+              <!-- Checkout Button -->
+              <button type="button" class="btn btn-primary btn-block btn-lg" id="btn-pos-complete">
+                <i class="fas fa-check-circle"></i> Complete Sale &amp; Print Receipt
+              </button>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Thermal Receipt Modal -->
+  <div class="modal-backdrop" id="pos-receipt-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-receipt"></i> Official Thermal Receipt</h3>
+        <button type="button" class="modal-close-btn" id="btn-close-receipt">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="receipt-print-area"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="btn-print-receipt">
+          <i class="fas fa-print"></i> Print Receipt (80mm)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../../customer/js/config.js"></script>
+  <script src="../js/admin-api.js"></script>
+  <script src="../js/admin-main.js"></script>
+  <script src="../js/admin-auth.js"></script>
+  <script src="../js/admin-pos.js"></script>
+</body>
+</html>
