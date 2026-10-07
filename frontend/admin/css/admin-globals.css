@@ -995,6 +995,12 @@ body {
 
 .btn-primary { background: linear-gradient(135deg, #784032, #633126); box-shadow: 0 5px 13px rgba(107,53,42,.16); }
 .btn-primary:hover { background: linear-gradient(135deg, #874A3B, #6B352A); transform: translateY(-1px); box-shadow: 0 8px 18px rgba(107,53,42,.2); }
+.btn-success { background: #2F7D4A; color: #FFF; box-shadow: 0 4px 12px rgba(47,125,74,.14); }
+.btn-success:hover { background: #246A3D; transform: translateY(-1px); }
+.btn-danger { background: #B83232; color: #FFF; }
+.btn-danger:hover { background: #9F2020; }
+.btn-danger-outline { border: 1px solid rgba(185,53,53,.26); background: #FFF; color: #B83232; }
+.btn-danger-outline:hover { background: #FFF0F0; border-color: #C64242; color: #9F2020; }
 .btn-accent { border-color: #E9D575; }
 .btn-outline { border-color: #E3D9D1; }
 .btn-outline:hover { background: #FBF7F2; }
@@ -1027,6 +1033,11 @@ body {
   background: #FFFEFC;
   font-size: .86rem;
 }
+.password-input-wrap { position: relative; width: 100%; }
+.password-input-wrap > .form-input { padding-right: 3rem; }
+.password-toggle { position: absolute; top: 50%; right: .55rem; display: grid; place-items: center; width: 34px; height: 34px; transform: translateY(-50%); border: 0; border-radius: 9px; background: transparent; color: #806E63; }
+.password-toggle:hover { background: #F6EFE9; color: #6B352A; }
+.password-toggle i { font-size: .9rem; }
 .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: #9D6654; box-shadow: 0 0 0 4px rgba(107,53,42,.09); }
 .form-label { font-size: .78rem; }
 

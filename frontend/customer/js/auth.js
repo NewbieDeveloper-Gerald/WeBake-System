@@ -31,6 +31,121 @@
     window.location.href = 'home.html';
   }
 
+  function addPasswordControl(input) {
+    if (input.dataset.passwordControlReady === 'true') return;
+    input.dataset.passwordControlReady = 'true';
+    const wrap = document.createElement('div');
+    wrap.className = 'password-input-wrap';
+    input.parentNode.insertBefore(wrap, input);
+    wrap.appendChild(input);
+
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'password-toggle';
+    toggle.setAttribute('aria-label', 'Show password');
+    toggle.setAttribute('aria-pressed', 'false');
+    toggle.innerHTML = '<i class="fas fa-eye" aria-hidden="true"></i>';
+    toggle.addEventListener('click', () => {
+      const reveal = input.type === 'password';
+      input.type = reveal ? 'text' : 'password';
+      toggle.setAttribute('aria-label', reveal ? 'Hide password' : 'Show password');
+      toggle.setAttribute('aria-pressed', String(reveal));
+      toggle.innerHTML = '<i class="fas fa-eye' + (reveal ? '-slash' : '') + '" aria-hidden="true"></i>';
+      input.focus();
+    });
+    wrap.appendChild(toggle);
+
+    if ((input.autocomplete === 'new-password' && !input.hasAttribute('data-match-password')) || input.hasAttribute('data-password-strength')) {
+      input.dataset.passwordStrength = 'true';
+      const feedback = document.createElement('div');
+      feedback.className = 'password-strength';
+      feedback.innerHTML = '<span class="password-strength-track" aria-hidden="true"><span></span></span>' +
+        '<span class="password-strength-label" aria-live="polite">Use 6+ characters; a mix of letters and numbers is stronger.</span>';
+      wrap.insertAdjacentElement('afterend', feedback);
+      updatePasswordStrength(input);
+    }
+
+    if (input.hasAttribute('data-match-password')) {
+      const note = document.createElement('span');
+      note.className = 'password-match-note';
+      note.setAttribute('aria-live', 'polite');
+      const feedback = wrap.nextElementSibling;
+      (feedback && feedback.classList.contains('password-strength') ? feedback : wrap)
+        .insertAdjacentElement('afterend', note);
+      updatePasswordMatch(input);
+    }
+  }
+
+  function updatePasswordStrength(input) {
+    const feedback = input.parentElement && input.parentElement.nextElementSibling;
+    if (!feedback || !feedback.classList.contains('password-strength')) return;
+    const value = input.value || '';
+    const label = feedback.querySelector('.password-strength-label');
+    const fill = feedback.querySelector('.password-strength-track > span');
+    if (!value) {
+      feedback.dataset.strength = '0';
+      label.textContent = 'Use 6+ characters; a mix of letters and numbers is stronger.';
+      fill.style.width = '0%';
+      return;
+    }
+    let score = value.length >= 6 ? 1 : 0;
+    if (value.length >= 8) score += 1;
+    if (/[a-z]/.test(value) && /[A-Z]/.test(value)) score += 1;
+    if (/\d/.test(value)) score += 1;
+    if (/[^a-zA-Z0-9]/.test(value)) score += 1;
+    const state = score < 2 ? 'weak' : score < 3 ? 'fair' : score < 4 ? 'good' : 'strong';
+    feedback.dataset.strength = state;
+    fill.style.width = Math.max(12, score * 20) + '%';
+    label.textContent = value.length < 6 ? 'Too short — use at least 6 characters.' :
+      state.charAt(0).toUpperCase() + state.slice(1) + ' password';
+  }
+
+  function updatePasswordMatch(confirmInput) {
+    const targetId = confirmInput.getAttribute('data-match-password');
+    const password = targetId && document.getElementById(targetId);
+    const note = confirmInput.parentElement &&
+      (confirmInput.parentElement.nextElementSibling?.classList.contains('password-strength')
+        ? confirmInput.parentElement.nextElementSibling.nextElementSibling
+        : confirmInput.parentElement.nextElementSibling);
+    if (!password || !note || !note.classList.contains('password-match-note')) return true;
+    const value = confirmInput.value;
+    if (!value) {
+      confirmInput.classList.remove('is-invalid', 'is-valid');
+      confirmInput.removeAttribute('aria-invalid');
+      note.textContent = '';
+      note.dataset.state = '';
+      return false;
+    }
+    const matches = value === password.value;
+    confirmInput.classList.toggle('is-invalid', !matches);
+    confirmInput.classList.toggle('is-valid', matches);
+    confirmInput.setAttribute('aria-invalid', String(!matches));
+    note.dataset.state = matches ? 'match' : 'mismatch';
+    note.textContent = matches ? 'Passwords match.' : 'Passwords do not match.';
+    return matches;
+  }
+
+  function watchPasswordControls() {
+    const enhance = (root) => {
+      if (root.matches && root.matches('input[type="password"]')) addPasswordControl(root);
+      root.querySelectorAll?.('input[type="password"]').forEach(addPasswordControl);
+    };
+    enhance(document);
+    new MutationObserver((records) => records.forEach((record) =>
+      record.addedNodes.forEach((node) => { if (node.nodeType === 1) enhance(node); })
+    )).observe(document.body, { childList: true, subtree: true });
+
+    document.addEventListener('input', (event) => {
+      const input = event.target;
+      if (!(input instanceof HTMLInputElement)) return;
+      if (input.dataset.passwordStrength === 'true') updatePasswordStrength(input);
+      if (input.hasAttribute('data-match-password')) updatePasswordMatch(input);
+      if (input.type === 'password' || input.dataset.passwordStrength === 'true') {
+        document.querySelectorAll('[data-match-password]').forEach(updatePasswordMatch);
+      }
+    });
+  }
+
   /** Merge the anonymous browser cart into the member's DB cart at sign-in. */
   async function mergeGuestCart() {
     let guest = [];
@@ -72,7 +187,8 @@
           <button type="button" class="btn btn-outline btn-block" id="forgot-send">Send verification code</button>
           <div id="forgot-otp-wrap"><div class="otp-inputs"><input class="otp-input form-input" inputmode="numeric" maxlength="1"><input class="otp-input form-input" inputmode="numeric" maxlength="1"><input class="otp-input form-input" inputmode="numeric" maxlength="1"><input class="otp-input form-input" inputmode="numeric" maxlength="1"><input class="otp-input form-input" inputmode="numeric" maxlength="1"><input class="otp-input form-input" inputmode="numeric" maxlength="1"></div>
             <p class="auth-timer"><span id="forgot-timer-wrap">Resend in <strong id="forgot-timer">60</strong>s</span><a href="#" id="forgot-resend" style="display:none">Resend code</a></p>
-            <div class="form-group"><label for="forgot-new-password">New password</label><input class="form-input" id="forgot-new-password" type="password" autocomplete="new-password" placeholder="At least 6 characters"></div>
+            <div class="form-group"><label for="forgot-new-password">New password</label><input class="form-input" id="forgot-new-password" type="password" minlength="6" autocomplete="new-password" placeholder="At least 6 characters"></div>
+            <div class="form-group"><label for="forgot-confirm-password">Confirm new password</label><input class="form-input" id="forgot-confirm-password" type="password" minlength="6" autocomplete="new-password" data-match-password="forgot-new-password" placeholder="Repeat your new password"></div>
             <button type="button" class="btn btn-primary btn-block" id="forgot-submit">Set new password</button></div>
           <p class="auth-switch"><a href="#" id="forgot-back">Back to sign in</a></p>
         </div>
@@ -82,7 +198,8 @@
           <div class="form-row"><div class="form-group"><label for="reg-name">Full name</label><input class="form-input" id="reg-name" required autocomplete="name" placeholder="Your name"></div><div class="form-group"><label for="reg-contact">Mobile number</label><input class="form-input" id="reg-contact" required inputmode="numeric" maxlength="11" placeholder="09XXXXXXXXX"></div></div>
           <div class="form-group"><label for="reg-email">Gmail address</label><input class="form-input" id="reg-email" type="email" required autocomplete="username" placeholder="you@gmail.com"></div>
           <div class="form-group"><label for="reg-address">Delivery address</label><textarea class="form-textarea" id="reg-address" required autocomplete="street-address" placeholder="House number, street, barangay, city"></textarea></div>
-          <div class="form-row"><div class="form-group"><label for="reg-password">Password</label><input class="form-input" id="reg-password" type="password" required minlength="6" autocomplete="new-password" placeholder="At least 6 characters"></div><div class="form-group"><label for="reg-confirm">Confirm password</label><input class="form-input" id="reg-confirm" type="password" required minlength="6" autocomplete="new-password" placeholder="Repeat password"></div></div>
+          <div class="form-group"><label for="reg-password">Password</label><input class="form-input" id="reg-password" type="password" required minlength="6" autocomplete="new-password" placeholder="At least 6 characters"></div>
+          <div class="form-group"><label for="reg-confirm">Confirm password</label><input class="form-input" id="reg-confirm" type="password" required minlength="6" autocomplete="new-password" data-match-password="reg-password" placeholder="Repeat password"></div>
           <button type="button" class="btn btn-outline btn-block" id="reg-send-otp">Send verification code</button>
           <div id="reg-otp-section"><div class="auth-verify-note"><i class="fas fa-envelope-open-text"></i><span>Enter the 6-digit code we sent to your email.</span></div><div class="otp-inputs"><input class="otp-input form-input" inputmode="numeric" maxlength="1"><input class="otp-input form-input" inputmode="numeric" maxlength="1"><input class="otp-input form-input" inputmode="numeric" maxlength="1"><input class="otp-input form-input" inputmode="numeric" maxlength="1"><input class="otp-input form-input" inputmode="numeric" maxlength="1"><input class="otp-input form-input" inputmode="numeric" maxlength="1"></div><p class="auth-timer"><span id="reg-timer-wrap">Resend in <strong id="reg-timer">60</strong>s</span><a href="#" id="reg-resend" style="display:none">Resend code</a></p><button type="submit" class="btn btn-primary btn-block" id="reg-submit">Verify &amp; create account <i class="fas fa-arrow-right"></i></button></div>
           <p class="auth-switch">Already have an account? <a href="#" data-auth-open="login">Sign in</a></p>
@@ -113,6 +230,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    watchPasswordControls();
     const path = window.location.pathname.toLowerCase();
     if (path.endsWith('/login.html') || path.endsWith('/register.html')) {
       const params = new URLSearchParams(window.location.search);
@@ -233,15 +351,21 @@
         const email = document.getElementById('forgot-email').value.trim().toLowerCase();
         const code = widget.code();
         const pw = document.getElementById('forgot-new-password').value;
+        const confirm = document.getElementById('forgot-confirm-password').value;
         if (code.length !== 6) { fmsg(t('co.otp_bad')); return; }
         if (!pw || pw.length < 6) { fmsg('Password must be at least 6 characters.'); return; }
+        if (pw !== confirm) { fmsg('Passwords do not match.'); return; }
         const btn = e.currentTarget;
         btn.disabled = true;
         try {
           await api.otpVerify(email, 'RESET', code);
           await api.memberReset(email, pw);
           fmsg(t('au.reset_ok'), true);
-          document.getElementById('forgot-new-password').value = '';
+          ['forgot-new-password', 'forgot-confirm-password'].forEach((id) => {
+            const field = document.getElementById(id);
+            field.value = '';
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+          });
         } catch (err) {
           fmsg(err.message);
         } finally {
@@ -273,6 +397,9 @@
       async function sendRegisterOtp(isResend) {
         const email = document.getElementById('reg-email').value.trim().toLowerCase();
         if (!email) { showErr(t('au.reset_sent')); return; }
+        const password = document.getElementById('reg-password').value;
+        if (password.length < 6) { showErr('Password must be at least 6 characters.'); return; }
+        if (password !== document.getElementById('reg-confirm').value) { showErr('Passwords do not match.'); return; }
         try {
           await api.otpSend(email, 'REGISTER');
           widget.cooldown(60);

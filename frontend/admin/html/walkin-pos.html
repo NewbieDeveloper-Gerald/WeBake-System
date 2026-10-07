@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WeBake Admin — Walk-In / POS Counter</title>
+  <title>WeBake Admin — Walk-In Counter</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../css/admin-globals.css">
   <link rel="stylesheet" href="../css/admin-pos.css">
@@ -26,7 +26,7 @@
         <div class="nav-section-title">Operations</div>
         <a href="walkin-pos.html" class="nav-item-link pos-highlight active">
           <i class="fas fa-cash-register"></i>
-          <span>Walk-In / POS</span>
+          <span>Walk-In</span>
         </a>
         <a href="dashboard.html" class="nav-item-link">
           <i class="fas fa-chart-pie"></i>
@@ -82,7 +82,7 @@
             <i class="fas fa-bars"></i>
           </button>
           <div class="page-headline">
-            <h1>Walk-In / POS Counter</h1>
+            <h1>Walk-In Counter</h1>
             <p>1356 Cordero St., Lambakin, Marilao — Counter Sales Register</p>
           </div>
         </div>
@@ -122,7 +122,7 @@
                 <i class="fas fa-receipt"></i>
                 <span>Order Slip</span>
               </div>
-              <button type="button" class="btn-clear-cart" id="btn-clear-cart">Clear Slip</button>
+              <button type="button" class="btn-clear-cart" id="btn-clear-cart"><i class="fas fa-trash-alt"></i> Clear Slip</button>
             </div>
 
             <div class="pos-cart-scroll-area">
@@ -255,7 +255,7 @@
               </div>
 
               <!-- Checkout Button -->
-              <button type="button" class="btn btn-primary btn-block btn-lg" id="btn-pos-complete">
+              <button type="button" class="btn btn-success btn-block btn-lg" id="btn-pos-complete">
                 <i class="fas fa-check-circle"></i> Complete Sale &amp; Print Receipt
               </button>
             </div>
@@ -276,7 +276,7 @@
         <div id="receipt-print-area"></div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" id="btn-print-receipt">
+        <button type="button" class="btn btn-outline" id="btn-print-receipt">
           <i class="fas fa-print"></i> Print Receipt (80mm)
         </button>
       </div>

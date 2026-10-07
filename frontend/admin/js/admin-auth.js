@@ -31,7 +31,32 @@
     return (name.slice(0, 2) || 'OW').toUpperCase();
   }
 
+  function addPasswordToggle(input) {
+    if (input.dataset.toggleReady === 'true') return;
+    input.dataset.toggleReady = 'true';
+    const wrap = document.createElement('div');
+    wrap.className = 'password-input-wrap';
+    input.parentNode.insertBefore(wrap, input);
+    wrap.appendChild(input);
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'password-toggle';
+    button.setAttribute('aria-label', 'Show password');
+    button.setAttribute('aria-pressed', 'false');
+    button.innerHTML = '<i class="fas fa-eye" aria-hidden="true"></i>';
+    button.addEventListener('click', () => {
+      const reveal = input.type === 'password';
+      input.type = reveal ? 'text' : 'password';
+      button.setAttribute('aria-label', reveal ? 'Hide password' : 'Show password');
+      button.setAttribute('aria-pressed', String(reveal));
+      button.innerHTML = '<i class="fas fa-eye' + (reveal ? '-slash' : '') + '" aria-hidden="true"></i>';
+      input.focus();
+    });
+    wrap.appendChild(button);
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input[type="password"]').forEach(addPasswordToggle);
     const loginForm = document.getElementById('login-form');
     const resetForm = document.getElementById('reset-form');
 

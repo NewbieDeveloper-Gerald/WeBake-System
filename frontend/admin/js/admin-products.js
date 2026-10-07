@@ -14,6 +14,8 @@
     const ui = window.AdminUI;
     const api = window.AdminAPI;
     let editingId = null;
+    const search = document.getElementById('catalog-search');
+    const countLabel = document.getElementById('catalog-count');
 
     const modal = () => document.getElementById('modal-product');
     const open = () => modal().classList.add('active');
@@ -29,19 +31,50 @@
       try {
         const { products } = await api.products(true);
         tbody.innerHTML = products.length ? products.map((p) =>
-          '<tr' + (p.is_archived ? ' style="opacity:0.55;"' : '') + '><td><strong>' +
-          ui.esc(p.name) + '</strong>' + (p.is_archived ? ' (archived)' : '') + '</td><td>' +
+          '<tr' + (p.is_archived ? ' class="is-archived"' : '') + '><td><div class="catalog-product-name"><span class="catalog-product-icon"><i class="fas fa-bread-slice"></i></span><span><strong>' +
+          ui.esc(p.name) + '</strong>' + (p.is_archived ? '<small>Archived</small>' : '') + '</span></div></td><td>' +
           ui.pesos(p.price_bundle_centavos) + '</td><td>' + p.pieces_per_bundle + '</td><td>' +
           ui.pesos(p.piece_price_centavos) + '</td><td>' + p.stock_pieces + ' pcs</td><td>' +
           ui.pill(p.is_archived ? 'ARCHIVED' : p.stock_status) + '</td><td class="actions-cell">' +
-          '<button type="button" class="btn btn-outline btn-sm" data-edit="' + p.id + '">Edit</button> ' +
+          '<button type="button" class="btn btn-outline btn-sm" data-edit="' + p.id + '"><i class="fas fa-pen"></i> Edit</button> ' +
           (p.is_archived
-            ? '<button type="button" class="btn btn-outline btn-sm" data-restore="' + p.id + '">Restore</button>'
-            : '<button type="button" class="btn btn-outline btn-sm" data-archive="' + p.id + '">Archive</button>') +
+            ? '<button type="button" class="btn btn-success btn-sm" data-restore="' + p.id + '"><i class="fas fa-rotate-left"></i> Restore</button>'
+            : '<button type="button" class="btn btn-danger-outline btn-sm" data-archive="' + p.id + '"><i class="fas fa-box-archive"></i> Archive</button>') +
           '</td></tr>'
         ).join('') : '<tr><td colspan="7" class="muted">No products yet.</td></tr>';
+        if (countLabel) countLabel.textContent = products.length + (products.length === 1 ? ' product' : ' products');
+        applySearch();
       } catch (err) {
         tbody.innerHTML = '<tr><td colspan="7" class="error-text">' + ui.esc(err.message) + '</td></tr>';
+        if (countLabel) countLabel.textContent = 'Could not load products';
+      }
+    }
+
+    function applySearch() {
+      if (!search) return;
+      const term = search.value.trim().toLowerCase();
+      const tbody = document.getElementById('products-tbody');
+      const rows = Array.from(tbody.querySelectorAll('tr')).filter((row) => !row.classList.contains('catalog-search-empty'));
+      const isEmptyCatalog = rows.length === 1 && rows[0].textContent.toLowerCase().includes('no products yet');
+      let visible = 0;
+      rows.forEach((row) => {
+        row.hidden = !isEmptyCatalog && Boolean(term) && !row.textContent.toLowerCase().includes(term);
+        if (!row.hidden) visible += 1;
+      });
+      let empty = tbody.querySelector('.catalog-search-empty');
+      if (term && visible === 0 && rows.length > 0 && !isEmptyCatalog) {
+        if (!empty) {
+          empty = document.createElement('tr');
+          empty.className = 'catalog-search-empty';
+          empty.innerHTML = '<td colspan="7" class="muted">No products match your search.</td>';
+          tbody.appendChild(empty);
+        }
+        empty.hidden = false;
+      } else if (empty) {
+        empty.remove();
+      }
+      if (countLabel && rows.length && !isEmptyCatalog) {
+        countLabel.textContent = term ? 'Showing ' + visible + ' of ' + rows.length + ' products' : rows.length + (rows.length === 1 ? ' product' : ' products');
       }
     }
 
@@ -80,7 +113,7 @@
       const rest = e.target.closest('[data-restore]');
       try {
         if (edit) { await openForEdit(edit.dataset.edit); return; }
-        if (arch && ui.confirmAsk('Archive this product? It leaves the shop and POS, but order history stays.')) {
+        if (arch && ui.confirmAsk('Archive this product? It leaves the shop and Walk-In register, but order history stays.')) {
           await api.productArchive(arch.dataset.archive);
           await load();
         }
@@ -94,6 +127,7 @@
     });
 
     document.getElementById('btn-add-product').addEventListener('click', openForCreate);
+    if (search) search.addEventListener('input', applySearch);
     document.getElementById('btn-close-product').addEventListener('click', close);
     modal().addEventListener('click', (e) => { if (e.target === modal()) close(); });
 

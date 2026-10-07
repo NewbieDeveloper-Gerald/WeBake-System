@@ -53,8 +53,8 @@
         ui.pesos(p.piece_price_centavos) + ' / piece</div>' +
         '<div class="pos-product-stock">' + p.stock_pieces + ' pcs left</div>' +
         '<div class="pos-product-add">' +
-        '<button type="button" class="btn btn-outline btn-sm" data-add-bundle="' + p.id + '">+ Bundle</button> ' +
-        '<button type="button" class="btn btn-outline btn-sm" data-add-piece="' + p.id + '">+ Piece</button>' +
+        '<button type="button" class="btn btn-primary btn-sm pos-add-bundle" data-add-bundle="' + p.id + '"><i class="fas fa-plus"></i> Bundle</button> ' +
+        '<button type="button" class="btn btn-outline btn-sm pos-add-piece" data-add-piece="' + p.id + '"><i class="fas fa-plus"></i> Piece</button>' +
         '</div></div>'
       ).join('') || '<p class="muted">No products match.</p>';
     }
@@ -88,10 +88,10 @@
         '<div class="pos-cart-line"><div><strong>' + ui.esc(c.name) + '</strong><br>' +
         '<small class="muted">' + ui.pesos(c.unit_price) + ' / ' + c.unit.toLowerCase() + '</small></div>' +
         '<div class="pos-qty-ctrl">' +
-        '<button type="button" class="btn btn-outline btn-sm" data-dec="' + i + '">-</button>' +
+        '<button type="button" class="btn btn-outline btn-sm pos-qty-button" data-dec="' + i + '" aria-label="Decrease quantity">−</button>' +
         '<span>' + c.qty + '</span>' +
-        '<button type="button" class="btn btn-outline btn-sm" data-inc="' + i + '">+</button>' +
-        '<button type="button" class="btn btn-outline btn-sm" data-del="' + i + '">x</button>' +
+        '<button type="button" class="btn btn-outline btn-sm pos-qty-button" data-inc="' + i + '" aria-label="Increase quantity">+</button>' +
+        '<button type="button" class="btn btn-danger-outline btn-sm pos-remove-line" data-del="' + i + '" aria-label="Remove item">×</button>' +
         '</div><div><strong>' + ui.pesos(c.unit_price * c.qty) + '</strong></div></div>'
       ).join('') : '<p class="muted" style="padding:12px;">Slip is empty. Tap a product to add it.</p>';
       const total = cartTotal();

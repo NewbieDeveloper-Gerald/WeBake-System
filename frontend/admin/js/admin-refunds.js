@@ -36,7 +36,7 @@
 
     function actionsFor(r) {
       if (r.status === 'PENDING') {
-        return '<button type="button" class="btn btn-primary btn-sm" data-payout="' + r.id + '">Record payout</button> ' +
+        return '<button type="button" class="btn btn-success btn-sm" data-payout="' + r.id + '"><i class="fas fa-money-bill-transfer"></i> Record payout</button> ' +
           '<button type="button" class="btn btn-outline btn-sm" data-close="' + r.id + '">Close</button>';
       }
       if (r.status === 'AWAITING_DETAILS') {

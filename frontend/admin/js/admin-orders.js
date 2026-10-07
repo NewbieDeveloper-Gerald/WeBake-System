@@ -119,7 +119,7 @@
           ui.esc(o.order_code) + '">Collect</button>');
       }
       if (CANCELLABLE.includes(o.status)) {
-        btns.push('<button type="button" class="btn btn-outline btn-sm" data-cancel="' +
+        btns.push('<button type="button" class="btn btn-danger-outline btn-sm" data-cancel="' +
           ui.esc(o.order_code) + '">Cancel</button>');
       }
       return btns.join(' ');

@@ -382,6 +382,23 @@ input::-ms-clear {
 .form-group label { color: #4A3329; font-weight: 600; }
 .form-input, .form-select, .form-textarea { min-height: 44px; border-color: #E8DED4; border-radius: 11px; background: #FFFEFC; }
 .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: #9D6654; box-shadow: 0 0 0 4px rgba(107,53,42,.09); }
+.password-input-wrap { position: relative; width: 100%; }
+.password-input-wrap > .form-input { padding-right: 3rem; }
+.password-toggle { position: absolute; top: 50%; right: .5rem; display: grid; place-items: center; width: 34px; height: 34px; transform: translateY(-50%); border: 0; border-radius: 9px; background: transparent; color: #806E63; }
+.password-toggle:hover { background: #F6EFE9; color: #6B352A; }
+.password-toggle i { font-size: .9rem; }
+.password-strength { display: grid; grid-template-columns: minmax(80px, 1fr) auto; align-items: center; gap: .5rem; margin-top: .45rem; }
+.password-strength-track { height: 5px; overflow: hidden; border-radius: 999px; background: #EEE7E0; }
+.password-strength-track > span { display: block; width: 0; height: 100%; border-radius: inherit; background: #B83232; transition: width .18s ease, background .18s ease; }
+.password-strength[data-strength="weak"] .password-strength-track > span { background: #C84D3F; }
+.password-strength[data-strength="fair"] .password-strength-track > span { background: #D28B2E; }
+.password-strength[data-strength="good"] .password-strength-track > span { background: #9D9A3D; }
+.password-strength[data-strength="strong"] .password-strength-track > span { background: #2F7D4A; }
+.password-strength-label { color: #84776E; font-size: .68rem; line-height: 1.35; }
+.password-match-note { display: block; min-height: 1.1em; margin-top: .28rem; color: #B83232; font-size: .7rem; line-height: 1.35; }
+.password-match-note[data-state="match"] { color: #2F7D4A; }
+.form-input.is-valid { border-color: #65A77B; }
+.form-input.is-invalid { border-color: #C84D3F; }
 .cart-sidebar { box-shadow: -18px 0 55px rgba(47,29,22,.17); }
 .cart-header, .cart-footer { background: #FFFEFC; }
 .cart-item { border-bottom-color: #F0E9E2; }
