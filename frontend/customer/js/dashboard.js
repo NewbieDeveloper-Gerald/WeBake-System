@@ -14,7 +14,7 @@
     const api = window.ShopAPI;
     let savedCartLines = [];
     let savedCatalog = {};
-    let quantityOptions = [];
+    const quantityOptions = window.WEBAKE_ORDER_QUANTITY_OPTIONS || [];
     let selectedSavedIds = new Set();
 
     if (!window.ShopAuth.token()) {
@@ -190,10 +190,9 @@
     }
 
     async function load() {
-      const [{ member }, cartRes, ordersRes, prodRes, settingsRes] = await Promise.all([
-        api.profile(), api.cartGet(), api.mine(), api.products(), api.settingsPublic(),
+      const [{ member }, cartRes, ordersRes, prodRes] = await Promise.all([
+        api.profile(), api.cartGet(), api.mine(), api.products(),
       ]);
-      quantityOptions = (settingsRes.settings.order_quantity_options || []).map(Number).filter(Number.isInteger);
       const memberName = member.name || member.full_name || localStorage.getItem('webake_member_name') || '';
       document.getElementById('dash-name').value = memberName;
       if (memberName) localStorage.setItem('webake_member_name', memberName);

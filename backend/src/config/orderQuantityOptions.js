@@ -1,4 +1,4 @@
 'use strict';
 
-// One authoritative list for online bundles and POS bundle quantities.
-module.exports = Object.freeze([250, 300, 350, 400, 450, 500]);
+// Load the same options file used by the browser; both layers share one list.
+module.exports = require('../../../frontend/customer/js/order-quantity-options.js');

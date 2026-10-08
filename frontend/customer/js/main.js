@@ -18,7 +18,7 @@
     const api = window.ShopAPI;
     const auth = window.ShopAuth;
     let catalog = [];
-    let quantityOptions = [];
+    const quantityOptions = window.WEBAKE_ORDER_QUANTITY_OPTIONS || [];
     let modalQuantity = null;
     let cart = [];
     let selectedProductIds = new Set();
@@ -42,8 +42,6 @@
       ]);
       catalog = (prodRes.products || []).filter((p) => !p.is_archived);
       settings = Object.assign(settings, setRes.settings || {});
-      quantityOptions = Array.isArray(settings.order_quantity_options)
-        ? settings.order_quantity_options.map(Number).filter(Number.isInteger) : [];
       minBundles = Math.max(1, parseInt(settings.min_order_bundles, 10) || 300);
       showMinNote();
 
@@ -151,8 +149,8 @@
         Number(p.bundles_available || 0).toLocaleString() + ' bundles';
       document.getElementById('quantity-total').textContent = 'Select a quantity to see the total.';
       document.getElementById('quantity-error').hidden = true;
-      document.getElementById('add-to-cart-btn').disabled = false;
-      document.getElementById('buy-now-btn').disabled = false;
+      document.getElementById('add-to-cart-btn').disabled = quantityOptions.length === 0;
+      document.getElementById('buy-now-btn').disabled = quantityOptions.length === 0;
       document.getElementById('modal-overlay').classList.add('active');
       document.getElementById('product-modal').classList.add('active');
     }
@@ -179,6 +177,10 @@
     });
 
     function renderQuantityOptions(container, product, selected, scope) {
+      if (!quantityOptions.length) {
+        container.innerHTML = '<p class="quantity-error" role="alert">Quantity choices are unavailable. Refresh the page and try again.</p>';
+        return;
+      }
       const available = Number(product.bundles_available || 0);
       container.innerHTML = quantityOptions.map((qty) =>
         '<label class="quantity-option' + (qty === selected ? ' selected' : '') +

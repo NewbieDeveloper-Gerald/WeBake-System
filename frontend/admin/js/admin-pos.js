@@ -18,7 +18,7 @@
     const ui = window.AdminUI;
     const api = window.AdminAPI;
     let products = [];
-    let quantityOptions = [];
+    const quantityOptions = window.WEBAKE_ORDER_QUANTITY_OPTIONS || [];
     let cart = []; // {product_id, name, unit, qty, unit_price, ppb}
 
     // --- hide non-spec POS features ---
@@ -38,9 +38,8 @@
     document.getElementById('pos-search').addEventListener('input', renderGrid);
 
     async function load() {
-      const [{ products: list }, settingsRes] = await Promise.all([api.products(), api.settingsPublic()]);
+      const { products: list } = await api.products();
       products = (list || []).filter((p) => !p.is_archived);
-      quantityOptions = (settingsRes.settings.order_quantity_options || []).map(Number).filter(Number.isInteger);
       renderGrid();
       renderCart();
     }
@@ -55,9 +54,9 @@
         ui.pesos(p.piece_price_centavos) + ' / piece</div>' +
         '<div class="pos-product-stock">' + p.stock_pieces + ' pcs · ' + Number(p.bundles_available || 0) + ' bundles available</div>' +
         '<div class="pos-product-add pos-bundle-picker"><div class="pos-quantity-options" role="radiogroup" aria-label="Bundle quantity for ' + ui.esc(p.name) + '">' +
-        quantityOptions.map((qty) => '<label class="pos-quantity-option' + (qty > Number(p.bundles_available || 0) ? ' unavailable' : '') + '">' +
+        (quantityOptions.length ? quantityOptions.map((qty) => '<label class="pos-quantity-option' + (qty > Number(p.bundles_available || 0) ? ' unavailable' : '') + '">' +
           '<input type="radio" name="pos-bundle-' + p.id + '" value="' + qty + '" data-pos-quantity="' + p.id + '"' +
-          (qty > Number(p.bundles_available || 0) ? ' disabled' : '') + ' aria-label="' + qty + ' Bundles of ' + ui.esc(p.name) + '"><span>' + qty + ' Bundles</span></label>').join('') +
+          (qty > Number(p.bundles_available || 0) ? ' disabled' : '') + ' aria-label="' + qty + ' Bundles of ' + ui.esc(p.name) + '"><span>' + qty + ' Bundles</span></label>').join('') : '<span role="alert">Quantity options unavailable. Refresh this page.</span>') +
         '</div><small class="pos-quantity-total" id="pos-quantity-total-' + p.id + '">Select a quantity for total price</small>' +
         '<button type="button" class="btn btn-primary btn-sm pos-add-bundle" data-add-bundle="' + p.id + '" disabled>Add bundles</button> ' +
         '<button type="button" class="btn btn-outline btn-sm pos-add-piece" data-add-piece="' + p.id + '"><i class="fas fa-plus"></i> Piece</button>' +
