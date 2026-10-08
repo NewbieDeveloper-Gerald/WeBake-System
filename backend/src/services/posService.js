@@ -27,7 +27,8 @@ async function createSale(items, cashReceived, actor) {
       'SELECT * FROM products WHERE id = ANY($1::bigint[]) FOR UPDATE;',
       [ids]
     );
-    const byId = new Map(rows.map((p) => [p.id, p]));
+    // PostgreSQL BIGINT IDs are strings; request IDs are validated numbers.
+    const byId = new Map(rows.map((p) => [Number(p.id), p]));
 
     let total = 0;
     const lines = [];
@@ -44,8 +45,9 @@ async function createSale(items, cashReceived, actor) {
       const unitPrice = item.unit === 'BUNDLE'
         ? product.price_bundle_centavos
         : product.piece_price_centavos;
-      requiredPiecesByProduct.set(product.id,
-        (requiredPiecesByProduct.get(product.id) || 0) + pieces);
+      const productId = Number(product.id);
+      requiredPiecesByProduct.set(productId,
+        (requiredPiecesByProduct.get(productId) || 0) + pieces);
       const lineTotal = unitPrice * item.qty;
       total += lineTotal;
       lines.push({

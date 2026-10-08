@@ -158,7 +158,9 @@ async function createOrder(input, idempotencyKey, opts = {}) {
       'SELECT * FROM products WHERE id = ANY($1::bigint[]);',
       [productIds]
     );
-    const byId = new Map(products.map((p) => [p.id, p]));
+    // PostgreSQL BIGINT values arrive as strings in node-postgres, while the
+    // request validator converts product_id to a number. Normalize map keys.
+    const byId = new Map(products.map((p) => [Number(p.id), p]));
 
     let subtotal = 0;
     let totalBundles = 0;
