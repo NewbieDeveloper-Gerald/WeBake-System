@@ -37,8 +37,8 @@ const MSG = {
     invalid_fil: 'Ang contact number ay dapat 11 digit na nagsisimula sa 09.',
   },
   order: {
-    quantity_invalid_en: 'Choose one of the allowed bundle quantities: 250, 300, 350, 400, 450, or 500.',
-    quantity_invalid_fil: 'Pumili ng dami ng bundle mula sa 250, 300, 350, 400, 450, o 500.',
+    quantity_invalid_en: 'Choose one of the allowed bundle quantities: 300, 350, 400, 450, or 500.',
+    quantity_invalid_fil: 'Pumili ng dami ng bundle mula sa 300, 350, 400, 450, o 500.',
     min_bundles_en: 'Online orders require a minimum of 300 bundles in total.',
     min_bundles_fil: 'Ang online order ay kailangan ng hindi bababa sa 300 bundle sa kabuuan.',
     min_items_en: 'The order must contain at least one product.',
@@ -47,12 +47,12 @@ const MSG = {
     bad_date_fil: 'Ang petsa ng deliver ay dapat wastong petsa (YYYY-MM-DD).',
   },
   cart: {
-    quantity_invalid_en: 'Cart bundle quantities must be 250, 300, 350, 400, 450, or 500.',
-    quantity_invalid_fil: 'Ang dami ng bundle sa cart ay dapat 250, 300, 350, 400, 450, o 500.',
+    quantity_invalid_en: 'Cart bundle quantities must be 300, 350, 400, 450, or 500.',
+    quantity_invalid_fil: 'Ang dami ng bundle sa cart ay dapat 300, 350, 400, 450, o 500.',
   },
   pos: {
-    quantity_invalid_en: 'Bundle sale quantities must be 250, 300, 350, 400, 450, or 500.',
-    quantity_invalid_fil: 'Ang dami ng bundle sa sale ay dapat 250, 300, 350, 400, 450, o 500.',
+    quantity_invalid_en: 'Bundle sale quantities must be 300, 350, 400, 450, or 500.',
+    quantity_invalid_fil: 'Ang dami ng bundle sa sale ay dapat 300, 350, 400, 450, o 500.',
   },
   cancel: {
     reason_en: 'Cancellation reason must be 10 to 500 characters.',

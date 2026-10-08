@@ -73,7 +73,11 @@
     }
 
     function sanitize(lines) {
-      const ids = new Set(catalog.map((p) => p.id));
+      // Product ids arrive from the API as STRINGS (PostgreSQL BIGINT is
+      // serialized as text), while cart lines always store NUMBERS. Compare
+      // like with like, or every saved line fails the lookup and the whole
+      // cart is silently emptied on every page load.
+      const ids = new Set(catalog.map((p) => Number(p.id)));
       return (lines || []).filter((l) => ids.has(Number(l.product_id)) &&
         Number.isInteger(Number(l.bundles)) && Number(l.bundles) > 0)
         .map((l) => ({ product_id: Number(l.product_id), bundles: Number(l.bundles) }));
