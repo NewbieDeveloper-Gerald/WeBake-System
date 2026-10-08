@@ -10,6 +10,7 @@
 'use strict';
 
 const { query } = require('../config/db');
+const ORDER_QUANTITIES = require('../config/orderQuantityOptions');
 
 async function get(memberId) {
   const { rows } = await query('SELECT items FROM carts WHERE member_id = $1;', [memberId]);
@@ -20,14 +21,16 @@ async function set(memberId, items, merge) {
   let final = items;
   if (merge) {
     const current = await get(memberId);
-    const sums = new Map();
+    const merged = [];
     for (const line of [...current, ...items]) {
       const pid = Number(line.product_id);
       const qty = Number(line.bundles);
-      if (!Number.isInteger(pid) || pid <= 0 || !Number.isInteger(qty) || qty <= 0) continue;
-      sums.set(pid, (sums.get(pid) || 0) + qty);
+      if (!Number.isInteger(pid) || pid <= 0 || !ORDER_QUANTITIES.includes(qty)) continue;
+      const existing = merged.find((entry) => entry.product_id === pid);
+      if (existing && ORDER_QUANTITIES.includes(existing.bundles + qty)) existing.bundles += qty;
+      else merged.push({ product_id: pid, bundles: qty });
     }
-    final = [...sums.entries()].map(([product_id, bundles]) => ({ product_id, bundles }));
+    final = merged;
   }
   final = final.slice(0, 50);
   await query(

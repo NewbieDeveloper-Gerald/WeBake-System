@@ -126,6 +126,10 @@ async function createOrder(input, idempotencyKey, opts = {}) {
     // Idempotency: a retried request (double-click, timeout) returns the
     // ORIGINAL order instead of creating a duplicate charge/order.
     if (idempotencyKey) {
+      // Serialize requests sharing a key before the guest OTP is consumed.
+      // Without this, a simultaneous retry could lose the OTP race and get a
+      // misleading OTP_REQUIRED even though its matching order is creating.
+      await client.query('SELECT pg_advisory_xact_lock(hashtext($1));', [idempotencyKey]);
       const { rows } = await client.query(
         'SELECT * FROM orders WHERE idempotency_key = $1;',
         [idempotencyKey]
@@ -231,6 +235,19 @@ async function createOrder(input, idempotencyKey, opts = {}) {
         );
         order = rows[0];
       } catch (err) {
+        if (err.code === '23505' && idempotencyKey &&
+            err.constraint === 'orders_idempotency_key_key') {
+          // Two simultaneous retries can both miss the initial SELECT. The
+          // unique key picks one winner; return that order to the other call.
+          await client.query('ROLLBACK');
+          const { rows: existing } = await query(
+            'SELECT order_code FROM orders WHERE idempotency_key = $1;', [idempotencyKey]
+          );
+          if (existing[0]) {
+            return { duplicate: true, order: await orderView(existing[0].order_code) };
+          }
+          throw err;
+        }
         if (err.code !== '23505' || attempt === 4) throw err;
       }
     }

@@ -97,6 +97,7 @@
 
     // --- dashboard + reports ---
     dashboardStats: () => get('/api/admin/reports/dashboard'),
+    settingsPublic: () => get('/api/settings/public', { auth: false }),
     salesReport: (period, anchor) => {
       const q = new URLSearchParams({ period });
       if (anchor) q.set('anchor', anchor);

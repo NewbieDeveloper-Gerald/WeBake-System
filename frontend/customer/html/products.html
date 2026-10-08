@@ -59,13 +59,13 @@
     <h3 class="modal-product-name" id="modal-name"></h3>
     <p class="modal-product-desc" id="modal-desc"></p>
     <p class="modal-product-price" id="modal-price"></p>
-    <div class="quantity-control">
-      <span class="quantity-label">Order quantity</span>
-      <button id="qty-minus"><i class="fas fa-minus"></i></button>
-      <input type="number" id="qty-input" value="1" min="1" max="99" step="1" readonly>
-      <button id="qty-plus"><i class="fas fa-plus"></i></button>
-    </div>
-    <p class="order-unit-note" id="modal-unit-note">1 order quantity = 300 bundles × 25 pcs = 7,500 pcs</p>
+    <fieldset class="quantity-picker">
+      <legend class="quantity-label">Choose quantity</legend>
+      <div id="quantity-options" class="quantity-options" role="radiogroup" aria-label="Choose bundle quantity"></div>
+    </fieldset>
+    <p class="quantity-total" id="quantity-total" aria-live="polite">Select a quantity to see the total.</p>
+    <p class="quantity-stock" id="quantity-stock" aria-live="polite"></p>
+    <p class="quantity-error" id="quantity-error" role="alert" hidden>Please select a quantity.</p>
     <div class="modal-actions">
       <button class="btn btn-accent" id="add-to-cart-btn"><i class="fas fa-cart-plus"></i> Add to Cart</button>
       <button class="btn btn-primary" id="buy-now-btn"><i class="fas fa-bolt"></i> Checkout Now</button>

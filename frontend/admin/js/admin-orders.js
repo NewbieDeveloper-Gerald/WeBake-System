@@ -250,7 +250,7 @@
       document.getElementById('edit-cust-email').value = o.customer_email || '';
       document.getElementById('edit-cust-address').value = o.delivery_address || '';
       document.getElementById('edit-items-tbody').innerHTML = (o.items || []).map((it) =>
-        '<tr><td>' + ui.esc(it.product_name) + '</td><td>' + ui.pesos(it.price_bundle_centavos) +
+        '<tr><td>' + ui.esc(it.product_name) + '</td><td>' + ui.pesos(it.unit_price_centavos) +
         '</td><td>' + it.bundles + '</td><td class="text-right">' +
         ui.pesos(it.line_total_centavos) + '</td></tr>').join('');
       set('edit-calculated-total', ui.pesos(o.total_centavos));

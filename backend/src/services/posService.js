@@ -31,6 +31,7 @@ async function createSale(items, cashReceived, actor) {
 
     let total = 0;
     const lines = [];
+    const requiredPiecesByProduct = new Map();
     for (const item of items) {
       const product = byId.get(item.product_id);
       if (!product || product.is_archived) {
@@ -43,11 +44,8 @@ async function createSale(items, cashReceived, actor) {
       const unitPrice = item.unit === 'BUNDLE'
         ? product.price_bundle_centavos
         : product.piece_price_centavos;
-      if (product.stock_pieces < pieces) {
-        throw conflict('INSUFFICIENT_STOCK',
-          `Only ${product.stock_pieces} pcs of ${product.name} in stock.`,
-          `May ${product.stock_pieces} piraso na lang ng ${product.name}.`);
-      }
+      requiredPiecesByProduct.set(product.id,
+        (requiredPiecesByProduct.get(product.id) || 0) + pieces);
       const lineTotal = unitPrice * item.qty;
       total += lineTotal;
       lines.push({
@@ -56,6 +54,15 @@ async function createSale(items, cashReceived, actor) {
         qty: item.qty, unit_price_centavos: unitPrice,
         line_total_centavos: lineTotal, pieces,
       });
+    }
+
+    for (const [productId, requiredPieces] of requiredPiecesByProduct) {
+      const product = byId.get(productId);
+      if (product.stock_pieces < requiredPieces) {
+        throw conflict('INSUFFICIENT_STOCK',
+          `Only ${product.stock_pieces} pcs of ${product.name} in stock; ${requiredPieces} pcs are in this sale.`,
+          `May ${product.stock_pieces} piraso na lang ng ${product.name}; ${requiredPieces} piraso ang kailangan sa sale na ito.`);
+      }
     }
 
     if (cashReceived < total) {

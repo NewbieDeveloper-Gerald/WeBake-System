@@ -13,12 +13,15 @@ const { z } = require('zod');
 const config = require('../config/env');
 const { emailField, mobileField } = require('./common');
 const { ADMIN_MOVES } = require('../utils/orderMachine');
+const ORDER_QUANTITIES = require('../config/orderQuantityOptions');
 
 const MIN_BUNDLES = config.business.minOrderBundles;
 
 const orderItemSchema = z.object({
   product_id: z.coerce.number().int().positive(),
-  bundles: z.coerce.number().int().min(1).max(100000), // whole bundles only
+  bundles: z.coerce.number().int().refine((n) => ORDER_QUANTITIES.includes(n), {
+    message: 'order.quantity_invalid',
+  }),
 }).strict();
 
 const createOrderSchema = z.object({

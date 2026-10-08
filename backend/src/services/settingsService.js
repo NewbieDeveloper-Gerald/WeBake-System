@@ -14,6 +14,7 @@
 'use strict';
 
 const { query } = require('../config/db');
+const orderQuantityOptions = require('../config/orderQuantityOptions');
 
 async function getAll() {
   const { rows } = await query('SELECT key, value FROM settings;');
@@ -51,6 +52,7 @@ async function getPublic() {
     paymaya_qr: all.paymaya_qr || '',
     store_hours: all.store_hours || '',
     min_order_bundles: all.min_order_bundles || '300',
+    order_quantity_options: orderQuantityOptions,
   };
 }
 

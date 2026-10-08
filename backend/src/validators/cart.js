@@ -8,11 +8,14 @@
 'use strict';
 
 const { z } = require('zod');
+const ORDER_QUANTITIES = require('../config/orderQuantityOptions');
 
 const cartSchema = z.object({
   items: z.array(z.object({
     product_id: z.coerce.number().int().positive(),
-    bundles: z.coerce.number().int().min(1).max(100000),
+    bundles: z.coerce.number().int().refine((n) => ORDER_QUANTITIES.includes(n), {
+      message: 'cart.quantity_invalid',
+    }),
   }).strict()).max(50).default([]),
   merge: z.coerce.boolean().default(false),
 }).strict();

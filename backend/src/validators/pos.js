@@ -10,6 +10,7 @@
 
 const { z } = require('zod');
 const { centavosField } = require('./common');
+const ORDER_QUANTITIES = require('../config/orderQuantityOptions');
 
 const saleSchema = z.object({
   items: z.array(z.object({
@@ -20,4 +21,16 @@ const saleSchema = z.object({
   cash_received_centavos: centavosField,
 }).strict();
 
-module.exports = { saleSchema };
+const bundleQuantitySchema = saleSchema.superRefine((sale, ctx) => {
+  sale.items.forEach((item, index) => {
+    if (item.unit === 'BUNDLE' && !ORDER_QUANTITIES.includes(item.qty)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['items', index, 'qty'],
+        message: 'pos.quantity_invalid',
+      });
+    }
+  });
+});
+
+module.exports = { saleSchema: bundleQuantitySchema };

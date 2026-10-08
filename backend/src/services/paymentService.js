@@ -147,20 +147,27 @@ async function approveDownpayment(code, actor) {
       'SELECT * FROM order_items WHERE order_id = $1 ORDER BY product_id ASC;',
       [order.id]
     );
-    const shortages = [];
-    const deductions = [];
+    const quantitiesByProduct = new Map();
     for (const item of items) {
       if (!item.product_id) continue;
+      const saved = quantitiesByProduct.get(item.product_id) || {
+        bundles: 0, pieces_per_bundle: item.pieces_per_bundle, product_name: item.product_name,
+      };
+      saved.bundles += item.bundles;
+      quantitiesByProduct.set(item.product_id, saved);
+    }
+    const shortages = [];
+    const deductions = [];
+    for (const [productId, quantity] of [...quantitiesByProduct.entries()].sort((a, b) => a[0] - b[0])) {
       const { rows: pRows } = await client.query(
-        'SELECT * FROM products WHERE id = $1 FOR UPDATE;',
-        [item.product_id]
+        'SELECT * FROM products WHERE id = $1 FOR UPDATE;', [productId]
       );
       const product = pRows[0];
       if (!product || product.is_archived) {
-        shortages.push({ product: item.product_name, reason: 'archived or missing' });
+        shortages.push({ product: quantity.product_name, reason: 'archived or missing' });
         continue;
       }
-      const need = item.bundles * item.pieces_per_bundle;
+      const need = quantity.bundles * quantity.pieces_per_bundle;
       if (product.stock_pieces < need) {
         shortages.push({
           product: product.name,
@@ -168,7 +175,7 @@ async function approveDownpayment(code, actor) {
           available_pieces: product.stock_pieces,
         });
       } else {
-        deductions.push({ product, need, item });
+        deductions.push({ product, need, bundles: quantity.bundles });
       }
     }
     if (shortages.length > 0) {
@@ -181,7 +188,7 @@ async function approveDownpayment(code, actor) {
       );
     }
 
-    for (const { product, need, item } of deductions) {
+    for (const { product, need, bundles } of deductions) {
       await client.query(
         'UPDATE products SET stock_pieces = stock_pieces - $1 WHERE id = $2;',
         [need, product.id]
@@ -191,7 +198,7 @@ async function approveDownpayment(code, actor) {
            (product_id, change_pieces, reason, order_id, note, created_by)
          VALUES ($1, $2, 'APPROVAL_DEDUCTION', $3, $4, $5);`,
         [product.id, -need, order.id,
-          `Approve ${order.order_code}: ${item.bundles} bundles`, actor || '']
+          `Approve ${order.order_code}: ${bundles} bundles`, actor || '']
       );
     }
 

@@ -19,7 +19,8 @@ async function stats() {
     query(`SELECT COALESCE(SUM(total_centavos), 0)::int AS gross,
                   COUNT(*)::int AS n
              FROM orders
-            WHERE created_at::date = CURRENT_DATE AND status <> 'CANCELLED';`),
+            WHERE created_at::date = CURRENT_DATE
+              AND status IN ('CONFIRMED', 'IN_PRODUCTION', 'OUT_FOR_DELIVERY', 'COMPLETED');`),
     query(`SELECT COALESCE(SUM(total_centavos), 0)::int AS gross,
                   COUNT(*)::int AS n
              FROM walkin_sales WHERE created_at::date = CURRENT_DATE;`),

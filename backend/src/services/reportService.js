@@ -64,7 +64,7 @@ async function getSales(period, anchorStr) {
                   COALESCE(SUM(balance_due_centavos), 0)::int AS outstanding
              FROM orders
             WHERE created_at::date >= $1::date AND created_at::date < $2::date
-              AND status <> 'CANCELLED';`, [from, to]),
+              AND status IN ('CONFIRMED', 'IN_PRODUCTION', 'OUT_FOR_DELIVERY', 'COMPLETED');`, [from, to]),
     query(`SELECT COUNT(*)::int AS n, COALESCE(SUM(total_centavos), 0)::int AS gross
              FROM walkin_sales
             WHERE created_at::date >= $1::date AND created_at::date < $2::date;`, [from, to]),
@@ -78,7 +78,7 @@ async function getSales(period, anchorStr) {
              FROM order_items oi
              JOIN orders o ON o.id = oi.order_id
             WHERE o.created_at::date >= $1::date AND o.created_at::date < $2::date
-              AND o.status <> 'CANCELLED'
+              AND o.status IN ('CONFIRMED', 'IN_PRODUCTION', 'OUT_FOR_DELIVERY', 'COMPLETED')
             GROUP BY oi.product_id, oi.product_name
             ORDER BY revenue DESC;`, [from, to]),
     query(`SELECT product_id, product_name,

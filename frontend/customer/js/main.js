@@ -17,11 +17,9 @@
     const t = (k, v) => window.WB_I18N.t(k, v);
     const api = window.ShopAPI;
     const auth = window.ShopAuth;
-    // The shop stores bundle quantities in the API. One customer-facing order
-    // unit is 300 bundles; keeping the conversion here preserves that contract.
-    const BUNDLES_PER_ORDER_UNIT = 300;
-
     let catalog = [];
+    let quantityOptions = [];
+    let modalQuantity = null;
     let cart = [];
     let selectedProductIds = new Set();
     let settings = { min_order_bundles: '300' };
@@ -40,10 +38,12 @@
     async function init() {
       relabelStatic();
       const [prodRes, setRes] = await Promise.all([
-        api.products(), api.settingsPublic().catch(() => ({ settings: {} })),
+        api.products(), api.settingsPublic(),
       ]);
       catalog = (prodRes.products || []).filter((p) => !p.is_archived);
       settings = Object.assign(settings, setRes.settings || {});
+      quantityOptions = Array.isArray(settings.order_quantity_options)
+        ? settings.order_quantity_options.map(Number).filter(Number.isInteger) : [];
       minBundles = Math.max(1, parseInt(settings.min_order_bundles, 10) || 300);
       showMinNote();
 
@@ -139,25 +139,20 @@
       document.getElementById('modal-name').textContent = p.name;
       document.getElementById('modal-desc').textContent = p.description || '';
       document.getElementById('modal-price').textContent =
-        U.pesos(p.price_bundle_centavos * BUNDLES_PER_ORDER_UNIT) + ' per order quantity · ' +
         U.pesos(p.price_bundle_centavos) + t('shop.per_bundle') +
         ' (' + p.pieces_per_bundle + ' pcs each)';
       const imgBox = document.querySelector('.modal-product-img');
       imgBox.innerHTML = p.image_url
         ? '<img src="' + U.escapeHtml(p.image_url) + '" alt="' + U.escapeHtml(p.name) + '">'
         : '<i class="fas fa-image"></i><span>No image added</span>';
-      const qty = document.getElementById('qty-input');
-      qty.max = Math.max(1, Math.floor((p.bundles_available || 0) / BUNDLES_PER_ORDER_UNIT));
-      qty.value = 1;
-      const canOrder = Number(p.bundles_available || 0) >= BUNDLES_PER_ORDER_UNIT;
-      document.getElementById('add-to-cart-btn').disabled = !canOrder;
-      document.getElementById('buy-now-btn').disabled = !canOrder;
-      document.querySelector('.quantity-label').textContent = 'Order quantity';
-      document.getElementById('modal-unit-note').textContent =
-        (canOrder
-          ? '1 order quantity = ' + BUNDLES_PER_ORDER_UNIT + ' bundles × ' +
-            (p.pieces_per_bundle || 25) + ' pcs = ' + BUNDLES_PER_ORDER_UNIT * (p.pieces_per_bundle || 25) + ' pcs'
-          : 'Not enough stock for one order quantity (' + BUNDLES_PER_ORDER_UNIT + ' bundles required).');
+      modalQuantity = null;
+      renderQuantityOptions(document.getElementById('quantity-options'), p, null, 'product');
+      document.getElementById('quantity-stock').textContent = 'Available stock: ' +
+        Number(p.bundles_available || 0).toLocaleString() + ' bundles';
+      document.getElementById('quantity-total').textContent = 'Select a quantity to see the total.';
+      document.getElementById('quantity-error').hidden = true;
+      document.getElementById('add-to-cart-btn').disabled = false;
+      document.getElementById('buy-now-btn').disabled = false;
       document.getElementById('modal-overlay').classList.add('active');
       document.getElementById('product-modal').classList.add('active');
     }
@@ -169,32 +164,62 @@
 
     document.getElementById('modal-close').addEventListener('click', closeModal);
     document.getElementById('modal-overlay').addEventListener('click', closeModal);
-    document.getElementById('qty-minus').addEventListener('click', () => stepQty(-1));
-    document.getElementById('qty-plus').addEventListener('click', () => stepQty(1));
+    document.getElementById('quantity-options').addEventListener('change', (e) => {
+      if (!e.target.matches('[data-product-quantity]')) return;
+      modalQuantity = Number(e.target.value);
+      document.getElementById('quantity-error').hidden = true;
+      document.getElementById('quantity-total').textContent = 'Total: ' +
+        U.pesos(modalQuantity * modalProduct.price_bundle_centavos);
+    });
+    document.getElementById('quantity-options').addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' || !e.target.matches('input[type="radio"]')) return;
+      e.preventDefault();
+      e.target.checked = true;
+      e.target.dispatchEvent(new Event('change', { bubbles: true }));
+    });
 
-    function stepQty(d) {
-      const qty = document.getElementById('qty-input');
-      qty.value = Math.min(Number(qty.max || 100000), Math.max(1, Number(qty.value || 1) + d));
+    function renderQuantityOptions(container, product, selected, scope) {
+      const available = Number(product.bundles_available || 0);
+      container.innerHTML = quantityOptions.map((qty) =>
+        '<label class="quantity-option' + (qty === selected ? ' selected' : '') +
+        (qty > available ? ' unavailable' : '') + '"><input type="radio" name="' + scope + '-quantity-' +
+        product.id + '" value="' + qty + '" data-' + scope + '-quantity="' + product.id + '"' +
+        (qty === selected ? ' checked' : '') + (qty > available ? ' disabled' : '') +
+        ' aria-label="' + qty + ' Bundles" aria-describedby="quantity-stock">' +
+        '<span>' + qty + ' Bundles</span></label>'
+      ).join('');
+    }
+
+    function selectedModalQuantity() {
+      if (!modalProduct || !modalQuantity || !quantityOptions.includes(modalQuantity) ||
+          modalQuantity > Number(modalProduct.bundles_available || 0)) {
+        document.getElementById('quantity-error').hidden = false;
+        return null;
+      }
+      return modalQuantity;
     }
 
     document.getElementById('add-to-cart-btn').addEventListener('click', () => {
-      addLine(modalProduct.id, Number(document.getElementById('qty-input').value));
+      const qty = selectedModalQuantity();
+      if (!qty) return;
+      addLine(modalProduct.id, qty);
       closeModal();
       U.toast('Added to cart.');
     });
     document.getElementById('buy-now-btn').addEventListener('click', () => {
-      addLine(modalProduct.id, Number(document.getElementById('qty-input').value));
+      const qty = selectedModalQuantity();
+      if (!qty) return;
+      addLine(modalProduct.id, qty);
       selectedProductIds = new Set([Number(modalProduct.id)]);
       renderCart();
       closeModal();
       startCheckout();
     });
 
-    function addLine(productId, orderUnits) {
+    function addLine(productId, bundles) {
       const found = cart.find((l) => l.product_id === Number(productId));
-      const actualBundles = orderUnits * BUNDLES_PER_ORDER_UNIT;
-      if (found) found.bundles += actualBundles;
-      else cart.push({ product_id: Number(productId), bundles: actualBundles });
+      if (found) found.bundles = bundles;
+      else cart.push({ product_id: Number(productId), bundles });
       selectedProductIds.add(Number(productId));
       persist();
       renderCart();
@@ -234,19 +259,20 @@
         const p = byId(l.product_id);
         const name = p ? p.name : '#' + l.product_id;
         const line = p ? l.bundles * p.price_bundle_centavos : 0;
-        const units = l.bundles / BUNDLES_PER_ORDER_UNIT;
         const pieces = l.bundles * (p ? Number(p.pieces_per_bundle || 25) : 25);
+        const available = Number(p && p.bundles_available || 0);
         return '<div class="cart-line' + (selectedProductIds.has(l.product_id) ? ' is-selected' : '') + '">' +
           '<label class="cart-line-select"><input type="checkbox" data-cselect="' + l.product_id + '"' +
           (selectedProductIds.has(l.product_id) ? ' checked' : '') + ' aria-label="Select ' + U.escapeHtml(name) + ' for checkout">' +
           '<span class="cart-line-product"><strong>' + U.escapeHtml(name) + '</strong><small>' +
-          (Number.isInteger(units) ? units + ' order unit' + (units === 1 ? '' : 's') + ' · ' : '') +
           l.bundles + ' bundles · ' + pieces.toLocaleString() + ' pcs</small></span></label>' +
-          '<div class="cart-line-ctrl">' +
-          '<button type="button" data-cdec="' + i + '" aria-label="Remove one order quantity">−</button>' +
-          '<span class="cart-order-qty">' + (Number.isInteger(units) ? units : l.bundles) + '</span>' +
-          '<button type="button" data-cinc="' + i + '" aria-label="Add one order quantity">+</button>' +
-          '<button type="button" data-cdel="' + i + '" aria-label="Remove ' + U.escapeHtml(name) + '">×</button></div>' +
+          '<div class="cart-quantity-wrap"><div class="quantity-options cart-quantity-options">' + quantityOptions.map((qty) =>
+            '<label class="quantity-option' + (qty === l.bundles ? ' selected' : '') + (qty > available ? ' unavailable' : '') + '">' +
+            '<input type="radio" name="cart-quantity-' + i + '" value="' + qty + '" data-cart-quantity="' + i + '"' +
+            (qty === l.bundles ? ' checked' : '') + (qty > available ? ' disabled' : '') +
+            ' aria-label="Choose ' + qty + ' Bundles of ' + U.escapeHtml(name) + '"><span>' + qty + '</span></label>'
+          ).join('') + '</div><small>Available: ' + available.toLocaleString() + ' bundles</small>' +
+          '<button type="button" data-cdel="' + i + '" aria-label="Remove ' + U.escapeHtml(name) + '">Remove</button></div>' +
           '<div><strong>' + U.pesos(line) + '</strong></div></div>';
       }).join('') : '<p class="empty-state">' + t('cart.empty') + '</p>';
       const selected = selectedLines();
@@ -278,8 +304,6 @@
     function selectedLines() { return cart.filter((line) => selectedProductIds.has(line.product_id)); }
 
     document.getElementById('cart-items').addEventListener('click', (e) => {
-      const inc = e.target.closest('[data-cinc]');
-      const dec = e.target.closest('[data-cdec]');
       const del = e.target.closest('[data-cdel]');
       const select = e.target.closest('[data-cselect]');
       let removedProductId = null;
@@ -290,21 +314,25 @@
         renderCart();
         return;
       }
-      if (inc) cart[inc.dataset.cinc].bundles += BUNDLES_PER_ORDER_UNIT;
-      if (dec) {
-        const l = cart[dec.dataset.cdec];
-        l.bundles -= BUNDLES_PER_ORDER_UNIT;
-        if (l.bundles <= 0) {
-          removedProductId = l.product_id;
-          cart.splice(dec.dataset.cdec, 1);
-        }
-      }
       if (del) {
         removedProductId = cart[del.dataset.cdel].product_id;
         cart.splice(del.dataset.cdel, 1);
       }
       if (removedProductId !== null) selectedProductIds.delete(removedProductId);
-      if (inc || dec || del) { persist(); renderCart(); }
+      if (del) { persist(); renderCart(); }
+    });
+    document.getElementById('cart-items').addEventListener('change', (e) => {
+      const quantity = e.target.closest('[data-cart-quantity]');
+      if (!quantity) return;
+      cart[Number(quantity.dataset.cartQuantity)].bundles = Number(quantity.value);
+      persist();
+      renderCart();
+    });
+    document.getElementById('cart-items').addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' || !e.target.matches('[data-cart-quantity]')) return;
+      e.preventDefault();
+      e.target.checked = true;
+      e.target.dispatchEvent(new Event('change', { bubbles: true }));
     });
 
     function showMinNote() {
@@ -345,6 +373,11 @@
     function startCheckout() {
       co.items = selectedLines().map((line) => ({ ...line }));
       const { bundles } = totals(co.items);
+      if (co.items.some((line) => !quantityOptions.includes(line.bundles))) {
+        U.toast('Choose one of the available bundle quantities for every selected product.');
+        openCart();
+        return;
+      }
       if (!co.items.length || bundles < minBundles) {
         U.toast(t('co.below_min', { n: minBundles, have: bundles }));
         return;
@@ -502,10 +535,8 @@
       const o = co.order;
       const lines = co.items.map((l) => {
         const p = byId(l.product_id);
-        const units = l.bundles / BUNDLES_PER_ORDER_UNIT;
         return '<div class="review-line"><span>' + U.escapeHtml(p ? p.name : '#' + l.product_id) +
-          ' × ' + (Number.isInteger(units) ? units + ' order unit' + (units === 1 ? '' : 's') : l.bundles + ' bundles') +
-          ' (' + l.bundles + ' bundles)</span><span>' +
+          ' × ' + l.bundles + ' Bundles</span><span>' +
           U.pesos(p ? l.bundles * p.price_bundle_centavos : 0) + '</span></div>';
       }).join('');
       document.getElementById('review-details').innerHTML =
