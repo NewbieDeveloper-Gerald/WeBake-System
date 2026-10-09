@@ -171,7 +171,7 @@
       btn.disabled = true;
       try {
         const { receipt: r } = await api.posSale({
-          items: cart.map((c) => ({ product_id: c.product_id, unit: c.unit, qty: c.qty })),
+          items: cart.map((c) => ({ product_id: Number(c.product_id), unit: c.unit, qty: Number(c.qty) })),
           cash_received_centavos: tendered,
         });
         showReceipt(r);

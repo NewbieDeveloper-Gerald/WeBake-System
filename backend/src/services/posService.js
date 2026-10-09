@@ -22,19 +22,19 @@ async function createSale(items, cashReceived, actor) {
     await client.query('BEGIN');
 
     // Lock every product first (id order: deadlock-safe), then price + check.
-    const ids = [...new Set(items.map((i) => i.product_id))].sort((a, b) => a - b);
+    const ids = [...new Set(items.map((i) => Number(i.product_id)))].sort((a, b) => a - b);
     const { rows } = await client.query(
       'SELECT * FROM products WHERE id = ANY($1::bigint[]) FOR UPDATE;',
       [ids]
     );
-    // PostgreSQL BIGINT IDs are strings; request IDs are validated numbers.
+    // PostgreSQL BIGINT IDs are strings; normalize map keys to numbers.
     const byId = new Map(rows.map((p) => [Number(p.id), p]));
 
     let total = 0;
     const lines = [];
     const requiredPiecesByProduct = new Map();
     for (const item of items) {
-      const product = byId.get(item.product_id);
+      const product = byId.get(Number(item.product_id));
       if (!product || product.is_archived) {
         throw notFound('A product in this sale is no longer available.');
       }

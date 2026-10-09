@@ -27,9 +27,17 @@ async function get(memberId) {
   // Fallback: if cart_items has no rows, check carts.items JSONB column
   const { rows: cartRows } = await query('SELECT items FROM carts WHERE member_id = $1;', [memberId]);
   const legacyItems = (cartRows[0] && cartRows[0].items) || [];
-  return Array.isArray(legacyItems)
-    ? legacyItems.map((r) => ({ product_id: Number(r.product_id), bundles: Number(r.bundles) }))
-    : [];
+  if (!Array.isArray(legacyItems) || legacyItems.length === 0) return [];
+  const pids = legacyItems.map((r) => Number(r.product_id)).filter((id) => Number.isInteger(id) && id > 0);
+  if (pids.length === 0) return [];
+  const { rows: activeProds } = await query(
+    'SELECT id FROM products WHERE id = ANY($1::bigint[]) AND is_archived = false;',
+    [pids]
+  );
+  const activeSet = new Set(activeProds.map((p) => Number(p.id)));
+  return legacyItems
+    .filter((r) => activeSet.has(Number(r.product_id)))
+    .map((r) => ({ product_id: Number(r.product_id), bundles: Number(r.bundles) }));
 }
 
 async function set(memberId, items, merge) {

@@ -543,7 +543,7 @@
       try {
         const body = {
           customer: { name: co.name, email: co.email, contact: co.contact, address: co.address },
-          items: co.items.map((l) => ({ product_id: l.product_id, bundles: l.bundles })),
+          items: co.items.map((l) => ({ product_id: Number(l.product_id), bundles: Number(l.bundles) })),
           payment_method: co.method,
           idempotency_key: co.key,
         };

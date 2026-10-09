@@ -143,7 +143,7 @@ async function createOrder(input, idempotencyKey, opts = {}) {
     }
 
     // Authoritative catalog lookup: price comes from the DB, never the browser.
-    const productIds = [...new Set(input.items.map((i) => i.product_id))];
+    const productIds = [...new Set(input.items.map((i) => Number(i.product_id)))];
     const { rows: products } = await client.query(
       'SELECT * FROM products WHERE id = ANY($1::bigint[]);',
       [productIds]
@@ -158,7 +158,8 @@ async function createOrder(input, idempotencyKey, opts = {}) {
     for (const item of input.items) {
       const product = byId.get(Number(item.product_id));
       if (!product || product.is_archived) {
-        const productName = product ? product.name : `Product ${item.product_id}`;
+        const productName = (product && product.name && product.name.trim()) ||
+          (item.product_id ? `Product #${item.product_id}` : 'Selected product');
         throw conflict(
           'PRODUCT_UNAVAILABLE',
           `"${productName}" is no longer available. Please update your cart.`
