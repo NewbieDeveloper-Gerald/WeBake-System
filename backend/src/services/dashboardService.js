@@ -19,11 +19,12 @@ async function stats() {
     query(`SELECT COALESCE(SUM(total_centavos), 0)::int AS gross,
                   COUNT(*)::int AS n
              FROM orders
-            WHERE created_at::date = CURRENT_DATE
+            WHERE (created_at AT TIME ZONE 'Asia/Manila')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Manila')::date
               AND status IN ('CONFIRMED', 'IN_PRODUCTION', 'OUT_FOR_DELIVERY', 'COMPLETED');`),
     query(`SELECT COALESCE(SUM(total_centavos), 0)::int AS gross,
                   COUNT(*)::int AS n
-             FROM walkin_sales WHERE created_at::date = CURRENT_DATE;`),
+             FROM walkin_sales
+            WHERE (created_at AT TIME ZONE 'Asia/Manila')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Manila')::date;`),
     query(`SELECT COUNT(*)::int AS n FROM orders WHERE status = 'PAYMENT_UNDER_VERIFICATION';`),
     query(`SELECT status, COUNT(*)::int AS n FROM orders GROUP BY status;`),
     query(`SELECT order_code, customer_name, total_centavos, status, created_at

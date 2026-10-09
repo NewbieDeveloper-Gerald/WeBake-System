@@ -63,38 +63,44 @@ async function getSales(period, anchorStr) {
                   COALESCE(SUM(downpayment_paid_centavos), 0)::int AS down_collected,
                   COALESCE(SUM(balance_due_centavos), 0)::int AS outstanding
              FROM orders
-            WHERE created_at::date >= $1::date AND created_at::date < $2::date
+            WHERE (created_at AT TIME ZONE 'Asia/Manila')::date >= $1::date
+              AND (created_at AT TIME ZONE 'Asia/Manila')::date < $2::date
               AND status IN ('CONFIRMED', 'IN_PRODUCTION', 'OUT_FOR_DELIVERY', 'COMPLETED');`, [from, to]),
     query(`SELECT COUNT(*)::int AS n, COALESCE(SUM(total_centavos), 0)::int AS gross
              FROM walkin_sales
-            WHERE created_at::date >= $1::date AND created_at::date < $2::date;`, [from, to]),
+            WHERE (created_at AT TIME ZONE 'Asia/Manila')::date >= $1::date
+              AND (created_at AT TIME ZONE 'Asia/Manila')::date < $2::date;`, [from, to]),
     query(`SELECT COALESCE(SUM(amount_centavos), 0)::int AS collected
              FROM payments
             WHERE stage = 'BALANCE' AND verification_status = 'VERIFIED'
-              AND created_at::date >= $1::date AND created_at::date < $2::date;`, [from, to]),
+              AND (created_at AT TIME ZONE 'Asia/Manila')::date >= $1::date
+              AND (created_at AT TIME ZONE 'Asia/Manila')::date < $2::date;`, [from, to]),
     query(`SELECT oi.product_id, oi.product_name,
                   COALESCE(SUM(oi.bundles), 0)::int AS bundles,
                   COALESCE(SUM(oi.line_total_centavos), 0)::int AS revenue
              FROM order_items oi
              JOIN orders o ON o.id = oi.order_id
-            WHERE o.created_at::date >= $1::date AND o.created_at::date < $2::date
+            WHERE (o.created_at AT TIME ZONE 'Asia/Manila')::date >= $1::date
+              AND (o.created_at AT TIME ZONE 'Asia/Manila')::date < $2::date
               AND o.status IN ('CONFIRMED', 'IN_PRODUCTION', 'OUT_FOR_DELIVERY', 'COMPLETED')
-            GROUP BY oi.product_id, oi.product_name
-            ORDER BY revenue DESC;`, [from, to]),
+             GROUP BY oi.product_id, oi.product_name
+             ORDER BY revenue DESC;`, [from, to]),
     query(`SELECT product_id, product_name,
                   COALESCE(SUM(CASE WHEN unit = 'BUNDLE' THEN qty ELSE 0 END), 0)::int AS bundles,
                   COALESCE(SUM(CASE WHEN unit = 'PIECE' THEN qty ELSE 0 END), 0)::int AS pieces,
                   COALESCE(SUM(line_total_centavos), 0)::int AS revenue
              FROM walkin_sale_items wsi
              JOIN walkin_sales ws ON ws.id = wsi.sale_id
-            WHERE ws.created_at::date >= $1::date AND ws.created_at::date < $2::date
+            WHERE (ws.created_at AT TIME ZONE 'Asia/Manila')::date >= $1::date
+              AND (ws.created_at AT TIME ZONE 'Asia/Manila')::date < $2::date
             GROUP BY product_id, product_name
             ORDER BY revenue DESC;`, [from, to]),
     query(`SELECT COALESCE(SUM(refund_amount_centavos), 0)::int AS total,
                   COUNT(*)::int AS n
              FROM refund_requests
             WHERE status = 'REFUNDED'
-              AND processed_at::date >= $1::date AND processed_at::date < $2::date;`, [from, to]),
+              AND (processed_at AT TIME ZONE 'Asia/Manila')::date >= $1::date
+              AND (processed_at AT TIME ZONE 'Asia/Manila')::date < $2::date;`, [from, to]),
   ]);
 
   // Merge online + walk-in per-product rows by product_id (name fallback).

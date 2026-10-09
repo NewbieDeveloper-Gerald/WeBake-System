@@ -18,7 +18,6 @@
     const ui = window.AdminUI;
     const api = window.AdminAPI;
     let products = [];
-    const quantityOptions = window.WEBAKE_ORDER_QUANTITY_OPTIONS || [];
     let cart = []; // {product_id, name, unit, qty, unit_price, ppb}
 
     // --- hide non-spec POS features ---
@@ -53,51 +52,33 @@
         '<div class="pos-product-prices">' + ui.pesos(p.price_bundle_centavos) + ' / bundle<br>' +
         ui.pesos(p.piece_price_centavos) + ' / piece</div>' +
         '<div class="pos-product-stock">' + p.stock_pieces + ' pcs · ' + Number(p.bundles_available || 0) + ' bundles available</div>' +
-        '<div class="pos-product-add pos-bundle-picker"><div class="pos-quantity-options" role="radiogroup" aria-label="Bundle quantity for ' + ui.esc(p.name) + '">' +
-        (quantityOptions.length ? quantityOptions.map((qty) => '<label class="pos-quantity-option' + (qty > Number(p.bundles_available || 0) ? ' unavailable' : '') + '">' +
-          '<input type="radio" name="pos-bundle-' + p.id + '" value="' + qty + '" data-pos-quantity="' + p.id + '"' +
-          (qty > Number(p.bundles_available || 0) ? ' disabled' : '') + ' aria-label="' + qty + ' Bundles of ' + ui.esc(p.name) + '"><span>' + qty + ' Bundles</span></label>').join('') : '<span role="alert">Quantity options unavailable. Refresh this page.</span>') +
-        '</div><small class="pos-quantity-total" id="pos-quantity-total-' + p.id + '">Select a quantity for total price</small>' +
-        '<button type="button" class="btn btn-primary btn-sm pos-add-bundle" data-add-bundle="' + p.id + '" disabled>Add bundles</button> ' +
-        '<button type="button" class="btn btn-outline btn-sm pos-add-piece" data-add-piece="' + p.id + '"><i class="fas fa-plus"></i> Piece</button>' +
+        '<div class="pos-product-add">' +
+        '<button type="button" class="btn btn-primary btn-sm pos-add-bundle" data-add-bundle="' + p.id + '"' +
+        (p.stock_pieces < p.pieces_per_bundle ? ' disabled' : '') + '><i class="fas fa-plus"></i> Bundle</button> ' +
+        '<button type="button" class="btn btn-outline btn-sm pos-add-piece" data-add-piece="' + p.id + '"' +
+        (p.stock_pieces < 1 ? ' disabled' : '') + '><i class="fas fa-plus"></i> Piece</button>' +
         '</div></div>'
       ).join('') || '<p class="muted">No products match.</p>';
     }
 
     document.getElementById('pos-product-grid').addEventListener('click', (e) => {
+      const bd = e.target.closest('[data-add-bundle]');
+      if (bd) addToCart(bd.dataset.addBundle, 'BUNDLE', 1);
       const pc = e.target.closest('[data-add-piece]');
-      if (pc) addToCart(pc.dataset.addPiece, 'PIECE');
-    });
-
-    document.getElementById('pos-product-grid').addEventListener('change', (e) => {
-      const radio = e.target.closest('[data-pos-quantity]');
-      if (!radio) return;
-      const add = document.querySelector('[data-add-bundle="' + radio.dataset.posQuantity + '"]');
-      add.disabled = false;
-      const product = products.find((p) => String(p.id) === String(radio.dataset.posQuantity));
-      document.getElementById('pos-quantity-total-' + radio.dataset.posQuantity).textContent =
-        'Total: ' + ui.pesos(Number(radio.value) * Number(product.price_bundle_centavos)) +
-        ' · Available: ' + Number(product.bundles_available || 0) + ' bundles';
-    });
-    document.getElementById('pos-product-grid').addEventListener('keydown', (e) => {
-      if (e.key !== 'Enter' || !e.target.matches('[data-pos-quantity]')) return;
-      e.preventDefault();
-      e.target.checked = true;
-      e.target.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-    document.getElementById('pos-product-grid').addEventListener('click', (e) => {
-      const add = e.target.closest('[data-add-bundle]');
-      if (!add) return;
-      const selected = document.querySelector('input[name="pos-bundle-' + add.dataset.addBundle + '"]:checked');
-      if (!selected) { window.alert('Please select a bundle quantity.'); return; }
-      addToCart(add.dataset.addBundle, 'BUNDLE', Number(selected.value));
+      if (pc) addToCart(pc.dataset.addPiece, 'PIECE', 1);
     });
 
     function addToCart(id, unit, qty = 1) {
       const p = products.find((x) => String(x.id) === String(id));
       if (!p || p.stock_pieces <= 0) { window.alert('Out of stock.'); return; }
+      const neededPieces = unit === 'BUNDLE' ? qty * p.pieces_per_bundle : qty;
       const found = cart.find((c) => c.product_id === p.id && c.unit === unit);
-      if (found) found.qty = unit === 'BUNDLE' ? qty : found.qty + 1;
+      const currentPieces = found ? (found.unit === 'BUNDLE' ? found.qty * p.pieces_per_bundle : found.qty) : 0;
+      if (p.stock_pieces < currentPieces + neededPieces) {
+        window.alert('Insufficient stock of ' + p.name + '.');
+        return;
+      }
+      if (found) found.qty += qty;
       else cart.push({
         product_id: p.id, name: p.name, unit, qty, ppb: p.pieces_per_bundle,
         unit_price: unit === 'BUNDLE' ? p.price_bundle_centavos : p.piece_price_centavos,
@@ -115,16 +96,10 @@
         '<div class="pos-cart-line"><div class="pos-cart-line-info"><strong>' + ui.esc(c.name) + '</strong><br>' +
         '<small class="muted">' + ui.pesos(c.unit_price) + ' / ' + c.unit.toLowerCase() +
         (c.unit === 'BUNDLE' ? ' · ' + c.ppb + ' pcs' : '') + '</small></div>' +
-        '<div class="pos-cart-line-controls">' + (c.unit === 'BUNDLE' ? '<div class="pos-quantity-options">' + quantityOptions.map((qty) => {
-          const product = products.find((p) => p.id === c.product_id);
-          const available = Number(product && product.bundles_available || 0);
-          return '<label class="pos-quantity-option' + (qty === c.qty ? ' selected' : '') + (qty > available ? ' unavailable' : '') + '">' +
-            '<input type="radio" name="pos-cart-bundle-' + i + '" value="' + qty + '" data-cart-bundle="' + i + '"' +
-            (qty === c.qty ? ' checked' : '') + (qty > available ? ' disabled' : '') + ' aria-label="Choose ' + qty + ' Bundles"><span>' + qty + '</span></label>';
-        }).join('') + '</div>' : '<div class="pos-qty-ctrl">' +
-        '<button type="button" class="btn btn-outline btn-sm pos-qty-button" data-dec="' + i + '" aria-label="Decrease piece quantity">−</button>' +
+        '<div class="pos-cart-line-controls"><div class="pos-qty-ctrl">' +
+        '<button type="button" class="btn btn-outline btn-sm pos-qty-button" data-dec="' + i + '" aria-label="Decrease quantity">−</button>' +
         '<span>' + c.qty + '</span>' +
-        '<button type="button" class="btn btn-outline btn-sm pos-qty-button" data-inc="' + i + '" aria-label="Increase piece quantity">+</button></div>') +
+        '<button type="button" class="btn btn-outline btn-sm pos-qty-button" data-inc="' + i + '" aria-label="Increase quantity">+</button></div>' +
         '<button type="button" class="btn btn-danger-outline btn-sm pos-remove-line" data-del="' + i + '" aria-label="Remove item">×</button></div>' +
         '<div><strong>' + ui.pesos(c.unit_price * c.qty) + '</strong></div></div>'
       ).join('') : '<div class="pos-slip-empty"><span><i class="fas fa-basket-shopping"></i></span><strong>Your order slip is empty</strong><small>Choose a product to start this walk-in sale.</small></div>';
@@ -142,7 +117,16 @@
       const inc = e.target.closest('[data-inc]');
       const dec = e.target.closest('[data-dec]');
       const del = e.target.closest('[data-del]');
-      if (inc) cart[inc.dataset.inc].qty += 1;
+      if (inc) {
+        const c = cart[inc.dataset.inc];
+        const p = products.find((x) => x.id === c.product_id);
+        const pieces = c.unit === 'BUNDLE' ? (c.qty + 1) * p.pieces_per_bundle : c.qty + 1;
+        if (p && p.stock_pieces < pieces) {
+          window.alert('Cannot add more. Insufficient stock.');
+          return;
+        }
+        c.qty += 1;
+      }
       if (dec) {
         const c = cart[dec.dataset.dec];
         c.qty -= 1;
@@ -150,18 +134,6 @@
       }
       if (del) cart.splice(del.dataset.del, 1);
       if (inc || dec || del) renderCart();
-    });
-    document.getElementById('pos-cart-items-list').addEventListener('change', (e) => {
-      const bundleQty = e.target.closest('[data-cart-bundle]');
-      if (!bundleQty) return;
-      cart[Number(bundleQty.dataset.cartBundle)].qty = Number(bundleQty.value);
-      renderCart();
-    });
-    document.getElementById('pos-cart-items-list').addEventListener('keydown', (e) => {
-      if (e.key !== 'Enter' || !e.target.matches('[data-cart-bundle]')) return;
-      e.preventDefault();
-      e.target.checked = true;
-      e.target.dispatchEvent(new Event('change', { bubbles: true }));
     });
 
     document.getElementById('btn-clear-cart').addEventListener('click', () => {

@@ -34,19 +34,24 @@
       '<div class="form-row-2">' +
       '<div class="form-group"><label class="form-label">Product</label>' +
       '<select id="adjust-product" class="form-select"></select></div>' +
+      '<div class="form-group"><label class="form-label">Unit</label>' +
+      '<select id="adjust-unit" class="form-select">' +
+      '<option value="bundles">Bundles (x25 pcs)</option>' +
+      '<option value="pieces">Pieces</option></select></div></div>' +
+      '<div class="form-row-2">' +
       '<div class="form-group"><label class="form-label">Mode</label>' +
       '<select id="adjust-mode" class="form-select">' +
-      '<option value="change">Add / remove pieces</option>' +
-      '<option value="set">Set exact count</option></select></div></div>' +
+      '<option value="change">Add / remove quantity (positive adds, negative removes)</option>' +
+      '<option value="set">Set exact count</option></select></div>' +
+      '<div class="form-group"><label class="form-label" id="adjust-qty-label">Quantity</label>' +
+      '<input type="number" id="adjust-qty" class="form-input" value="0"></div></div>' +
       '<div class="form-row-2">' +
-      '<div class="form-group"><label class="form-label">Pieces (negative removes)</label>' +
-      '<input type="number" id="adjust-qty" class="form-input" value="0"></div>' +
       '<div class="form-group"><label class="form-label">Reason</label>' +
       '<select id="adjust-reason" class="form-select">' +
       '<option value="RESTOCK">RESTOCK - new delivery / baked batch</option>' +
-      '<option value="ADJUSTMENT">ADJUSTMENT - recount / correction</option></select></div></div>' +
+      '<option value="ADJUSTMENT">ADJUSTMENT - recount / correction</option></select></div>' +
       '<div class="form-group"><label class="form-label">Note</label>' +
-      '<input type="text" id="adjust-note" class="form-input" maxlength="300" placeholder="e.g. Morning delivery from commissary"></div>' +
+      '<input type="text" id="adjust-note" class="form-input" maxlength="300" placeholder="e.g. Morning delivery from commissary"></div></div>' +
       '<button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Apply Adjustment</button>' +
       '</form></div>';
     loggerRow.parentNode.insertBefore(adjustCard, loggerRow.nextSibling);
@@ -54,8 +59,14 @@
     document.getElementById('form-adjust-stock').addEventListener('submit', async (e) => {
       e.preventDefault();
       const id = document.getElementById('adjust-product').value;
+      const unit = document.getElementById('adjust-unit').value;
       const mode = document.getElementById('adjust-mode').value;
-      const qty = Number(document.getElementById('adjust-qty').value);
+      let qty = Number(document.getElementById('adjust-qty').value);
+      const product = products.find((p) => String(p.id) === String(id));
+      const ppb = (product && product.pieces_per_bundle) || 25;
+      if (unit === 'bundles') {
+        qty = Math.round(qty * ppb);
+      }
       const payload = {
         reason: document.getElementById('adjust-reason').value,
         note: document.getElementById('adjust-note').value.trim(),
