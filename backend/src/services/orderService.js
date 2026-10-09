@@ -54,10 +54,7 @@ async function findOwnedOrder(client, code, identity) {
   );
   const order = rows[0];
   if (!order) {
-    throw notFound(
-      'No matching order found for this tracking ID.',
-      'Walang nahanap na order para sa tracking ID na ito.'
-    );
+    throw notFound('No matching order found for this tracking ID.');
   }
 
   const orderEmail = (order.customer_email || '').toLowerCase();
@@ -72,10 +69,7 @@ async function findOwnedOrder(client, code, identity) {
   } else if (identity.email) {
     owned = orderEmail === identity.email.toLowerCase();
   }
-  if (!owned) throw notFound(
-    'No matching order found for this tracking ID.',
-    'Walang nahanap na order para sa tracking ID na ito.'
-  );
+  if (!owned) throw notFound('No matching order found for this tracking ID.');
   return order;
 }
 
@@ -86,10 +80,7 @@ async function findOrderForView(code, email) {
   ]);
   const order = rows[0];
   if (!order || (order.customer_email || '').toLowerCase() !== email.toLowerCase()) {
-    throw notFound(
-      'No matching order found for this tracking ID.',
-      'Walang nahanap na order para sa tracking ID na ito.'
-    );
+    throw notFound('No matching order found for this tracking ID.');
   }
   return order;
 }
@@ -147,8 +138,7 @@ async function createOrder(input, idempotencyKey, opts = {}) {
       const claimed = await consumeVerification(client, input.customer.email, 'CHECKOUT');
       if (!claimed) {
         throw fail(409, 'OTP_REQUIRED',
-          'Please verify your email with the OTP code to place this order.',
-          'Pakiberipika muna ang email gamit ang OTP code upang mai-place ang order.');
+          'Please verify your email with the OTP code to place this order.');
       }
     }
 
@@ -171,8 +161,7 @@ async function createOrder(input, idempotencyKey, opts = {}) {
         const productName = product ? product.name : `Product ${item.product_id}`;
         throw conflict(
           'PRODUCT_UNAVAILABLE',
-          `"${productName}" is no longer available. Please update your cart.`,
-          `Hindi na available ang "${productName}". Paki-update ang cart.`
+          `"${productName}" is no longer available. Please update your cart.`
         );
       }
       const lineTotal = product.price_bundle_centavos * item.bundles;
@@ -195,8 +184,7 @@ async function createOrder(input, idempotencyKey, opts = {}) {
     if (totalBundles < minBundles) {
       throw conflict(
         'BELOW_MINIMUM',
-        `Online orders require a minimum of ${minBundles} bundles in total.`,
-        `Ang online order ay kailangan ng hindi bababa sa ${minBundles} bundle sa kabuuan.`
+        `Online orders require a minimum of ${minBundles} bundles in total.`
       );
     }
 
@@ -296,7 +284,7 @@ async function orderView(code) {
     code.trim().toUpperCase(),
   ]);
   if (rows.length === 0) {
-    throw notFound('Order not found.', 'Hindi nahanap ang order.');
+    throw notFound('Order not found.');
   }
   const order = rows[0];
   const [items, refund, history, payments] = await Promise.all([
@@ -360,7 +348,7 @@ async function transition(code, to, actor, note) {
       [code.trim().toUpperCase()]
     );
     if (rows.length === 0) {
-      throw notFound('Order not found.', 'Hindi nahanap ang order.');
+      throw notFound('Order not found.');
     }
     const order = rows[0];
 
@@ -369,16 +357,14 @@ async function transition(code, to, actor, note) {
     if (!canTransition(order.status, to)) {
       throw conflict(
         'ILLEGAL_TRANSITION',
-        `Order cannot move from ${order.status} to ${to}.`,
-        `Hindi maaaring ilipat ang order mula ${order.status} patungong ${to}.`
+        `Order cannot move from ${order.status} to ${to}.`
       );
     }
     // Completion means fully paid: the cash balance must be recorded first.
     if (to === ORDER.COMPLETED && order.balance_due_centavos > 0) {
       throw conflict(
         'BALANCE_UNPAID',
-        'Record the cash balance payment before completing this order.',
-        'I-record muna ang cash balance bago i-complete ang order.'
+        'Record the cash balance payment before completing this order.'
       );
     }
 
@@ -407,7 +393,7 @@ async function recordBalance(code, actor, note) {
       [code.trim().toUpperCase()]
     );
     if (rows.length === 0) {
-      throw notFound('Order not found.', 'Hindi nahanap ang order.');
+      throw notFound('Order not found.');
     }
     const order = rows[0];
 
@@ -415,15 +401,13 @@ async function recordBalance(code, actor, note) {
     if (!collectible.includes(order.status)) {
       throw conflict(
         'BALANCE_NOT_DUE',
-        `Balance cannot be collected while the order is ${order.status}.`,
-        `Hindi maaaring kolektahin ang balance habang ${order.status} ang order.`
+        `Balance cannot be collected while the order is ${order.status}.`
       );
     }
     if (order.balance_due_centavos <= 0) {
       throw conflict(
         'BALANCE_ALREADY_PAID',
-        'The balance for this order is already fully paid.',
-        'Bayad na ang buong balance ng order na ito.'
+        'The balance for this order is already fully paid.'
       );
     }
 
@@ -465,8 +449,7 @@ async function cancelOrder(code, identity, input, changedBy = 'CUSTOMER') {
     if (!cancellableByCustomer(order.status)) {
       throw conflict(
         'ORDER_NOT_CANCELLABLE',
-        'Production has started. This order can no longer be cancelled.',
-        'Nagsimula na ang produksyon. Hindi na maaaring kanselahin ang order.'
+        'Production has started. This order can no longer be cancelled.'
       );
     }
 
@@ -533,8 +516,7 @@ async function cancelOrder(code, identity, input, changedBy = 'CUSTOMER') {
     if (err.code === '23505') {
       throw conflict(
         'REFUND_EXISTS',
-        'A refund request already exists for this order.',
-        'May refund request na para sa order na ito.'
+        'A refund request already exists for this order.'
       );
     }
     throw err;

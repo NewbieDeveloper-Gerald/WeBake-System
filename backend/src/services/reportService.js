@@ -37,8 +37,8 @@ function rangeFor(period, anchorStr) {
   if (Number.isNaN(anchor.getTime())) {
     throw Object.assign(new Error('Invalid anchor date.'), {
       status: 400, code: 'VALIDATION_ERROR',
+      message: 'Anchor must be a valid date (YYYY-MM-DD).',
       message_en: 'Anchor must be a valid date (YYYY-MM-DD).',
-      message_fil: 'Ang anchor ay dapat wastong petsa (YYYY-MM-DD).',
     });
   }
   if (period === 'weekly') {

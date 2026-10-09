@@ -44,5 +44,5 @@ Open the storefront by serving `frontend/customer/html/home.html`
 - Money: integer **centavos** in API + DB, `PHP 1,234.56` only for display.
 - Stock: stored in **pieces**; bundles shown as pieces / 25.
 - Auth: JWT Bearer tokens (`member` 7 days, `admin` 12 hours).
-- Errors: `{ success: false, code, message_en, message_fil }` - always JSON.
+- Errors: `{ success: false, code, message, message_en }` - always JSON.
 - Docs: `docs/phase-N-notes.md` explains what, why, data flow, and lessons.

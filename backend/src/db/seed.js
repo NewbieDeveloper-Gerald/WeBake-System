@@ -23,42 +23,42 @@ const { hashPassword } = require('../utils/password');
 
 // 105 pesos, 25 pieces per bundle - confirmed business constants.
 const PRODUCTS = [
-  { name: 'Mamon', slug: 'mamon', desc: 'Soft and fluffy Filipino sponge cake, perfect for merienda or pasalubong. Light, airy, and melt-in-your-mouth delicious.' },
-  { name: 'Otap', slug: 'otap', desc: 'Crispy, flaky oval-shaped puff pastry with a caramelized sugar coating. A beloved Visayan delicacy enjoyed by all ages.' },
-  { name: 'Eggnog', slug: 'eggnog', desc: 'Sweet and crumbly meringue-based cookie, delicately baked to perfection. A classic Filipino bakery staple.' },
+  { name: 'Mamon', slug: 'mamon', desc: 'Soft and fluffy sponge cake, perfect for a snack or gift. Light, airy, and melt-in-your-mouth delicious.' },
+  { name: 'Otap', slug: 'otap', desc: 'Crispy, flaky oval-shaped puff pastry with a caramelized sugar coating. A beloved bakery delicacy enjoyed by all ages.' },
+  { name: 'Eggnog', slug: 'eggnog', desc: 'Sweet and crumbly meringue-based cookie, delicately baked to perfection. A classic bakery staple.' },
   { name: 'Butter Toast', slug: 'butter-toast', desc: 'Golden, crunchy butter-toasted bread slices with a rich, buttery flavor. Ideal for wholesale.' },
   { name: 'Broas', slug: 'broas', desc: 'Light, crisp ladyfinger biscuits with a delicate sweetness. Perfect with coffee or tea.' },
   { name: 'Butter Cookies', slug: 'butter-cookies', desc: 'Rich, buttery cookies with a crisp, melt-in-your-mouth texture. A classic sweet treat.' },
   { name: 'Cracklets', slug: 'cracklets', desc: 'Light and crunchy crackers with a savory, satisfying flavor. A simple snack for any time of day.' },
-  { name: 'Jacobina', slug: 'jacobina', desc: 'Thin, crisp Filipino biscuits with a lightly sweet and buttery flavor. A classic merienda favorite.' },
+  { name: 'Jacobina', slug: 'jacobina', desc: 'Thin, crisp biscuits with a lightly sweet and buttery flavor. A classic snack favorite.' },
 ];
 
 // Clearly-labeled SAMPLE content. is_seed = true distinguishes these rows when
 // real customer reviews ship later (spec: display only for now).
 const SAMPLE_REVIEWS = [
   {
-    name: 'Sample Review - Aling Nena, Marilao',
+    name: 'Sample Review - Nena, Marilao',
     rating: 5,
-    en: 'The mamon is always soft and fresh. Our suki buyers ask for Crumbs N Rolls by name.',
-    fil: 'Laging malambot at bago ang mamon. Hinahanap talaga ng mga suki namin ang Crumbs N Rolls.',
+    en: 'The mamon is always soft and fresh. Our loyal buyers ask for Crumbs N Rolls by name.',
+    fil: '',
   },
   {
-    name: 'Sample Review - Mang Tonyo, Meycauayan',
+    name: 'Sample Review - Tonyo, Meycauayan',
     rating: 5,
     en: 'Ordered 400 bundles of otap for our bakery. Crisp, well-packed, and delivered on time.',
-    fil: 'Umorder kami ng 400 bundle ng otap. Malutong, maayos ang pack, at on time ang deliver.',
+    fil: '',
   },
   {
     name: 'Sample Review - Grace L., Santa Maria',
     rating: 4,
     en: 'Butter toast is a bestseller in our store. Consistent quality every single week.',
-    fil: 'Mabenta ang butter toast sa tindahan namin. Pare-pareho ang kalidad kada linggo.',
+    fil: '',
   },
   {
-    name: 'Sample Review - Ka Pabling, Marilao',
+    name: 'Sample Review - Pabling, Marilao',
     rating: 5,
     en: 'Fair wholesale price and honest bundle counts. Highly recommended for resellers.',
-    fil: 'Tama ang presyo at kumpleto ang bilang kada bundle. Nirerekomenda ko sa mga reseller.',
+    fil: '',
   },
 ];
 

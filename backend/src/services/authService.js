@@ -20,8 +20,8 @@ const { signMemberToken, signAdminToken } = require('../utils/jwt');
 
 const INVALID_CREDENTIALS = {
   code: 'INVALID_CREDENTIALS',
+  message: 'Invalid email or password.',
   message_en: 'Invalid email or password.',
-  message_fil: 'Mali ang email o password.',
 };
 
 function authError() {

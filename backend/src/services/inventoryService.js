@@ -72,7 +72,7 @@ async function adjust(productId, { setPieces, changePieces }, reason, note, acto
       [productId]
     );
     if (rows.length === 0) {
-      throw notFound('Product not found.', 'Hindi nahanap ang produkto.');
+      throw notFound('Product not found.');
     }
     const product = rows[0];
 
@@ -82,16 +82,14 @@ async function adjust(productId, { setPieces, changePieces }, reason, note, acto
     if (delta === 0) {
       throw conflict(
         'NO_CHANGE',
-        'The new stock equals the current stock. Nothing to save.',
-        'Pareho ang bagong stock sa kasalukuyan. Walang sine-save.'
+        'The new stock equals the current stock. Nothing to save.'
       );
     }
     const next = product.stock_pieces + delta;
     if (next < 0) {
       throw conflict(
         'INSUFFICIENT_STOCK',
-        `Cannot remove ${Math.abs(delta)} pieces. Only ${product.stock_pieces} in stock.`,
-        `Hindi maaaring bawasan ng ${Math.abs(delta)} piraso. May ${product.stock_pieces} na lang.`
+        `Cannot remove ${Math.abs(delta)} pieces. Only ${product.stock_pieces} in stock.`
       );
     }
 

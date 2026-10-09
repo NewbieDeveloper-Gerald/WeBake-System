@@ -16,8 +16,8 @@ function unauthorized(res) {
   return res.status(401).json({
     success: false,
     code: 'UNAUTHORIZED',
+    message: 'Please sign in to continue.',
     message_en: 'Please sign in to continue.',
-    message_fil: 'Mangyaring mag-sign in upang magpatuloy.',
   });
 }
 

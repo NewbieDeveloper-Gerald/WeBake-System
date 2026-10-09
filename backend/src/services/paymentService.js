@@ -48,8 +48,7 @@ async function insertHistory(client, orderId, oldStatus, newStatus, changedBy, n
 async function submitDownpayment(code, identity, { channel, reference_number }, file) {
   if (!file || !file.buffer) {
     throw fail(400, 'PROOF_REQUIRED',
-      'A proof-of-payment photo is required.',
-      'Kailangan ang larawan ng proof of payment.');
+      'A proof-of-payment photo is required.');
   }
 
   // Upload BEFORE opening the transaction: network I/O must never hold a DB
@@ -67,8 +66,7 @@ async function submitDownpayment(code, identity, { channel, reference_number }, 
     const order = await findOwnedOrder(client, code, identity);
     if (order.status !== ORDER.PAYMENT_UNDER_VERIFICATION) {
       throw conflict('PAYMENT_NOT_ACCEPTED',
-        `Downpayment cannot be submitted while the order is ${order.status}.`,
-        `Hindi maaaring magsumite ng downpayment habang ${order.status} ang order.`);
+        `Downpayment cannot be submitted while the order is ${order.status}.`);
     }
 
     const prev = await latestDownpayment(client, order.id);
@@ -76,8 +74,7 @@ async function submitDownpayment(code, identity, { channel, reference_number }, 
     if (prev) {
       if (prev.verification_status === 'PENDING') {
         throw conflict('PAYMENT_PENDING',
-          'A downpayment is already awaiting verification for this order.',
-          'May downpayment nang naghihintay ng beripikasyon para sa order na ito.');
+          'A downpayment is already awaiting verification for this order.');
       }
       if (prev.verification_status === 'REJECTED') {
         // One resubmission only: resubmit_count was set to 1 at rejection.
@@ -128,18 +125,16 @@ async function approveDownpayment(code, actor) {
     );
     const order = orderRows[0];
     if (!order) {
-      throw fail(404, 'NOT_FOUND', 'Order not found.', 'Hindi nahanap ang order.');
+      throw fail(404, 'NOT_FOUND', 'Order not found.');
     }
     if (order.status !== ORDER.PAYMENT_UNDER_VERIFICATION) {
       throw conflict('APPROVE_WRONG_STATE',
-        `Only orders under verification can be approved (current: ${order.status}).`,
-        `Mga order na under verification lang ang maaaring aprubahan (ngayon: ${order.status}).`);
+        `Only orders under verification can be approved (current: ${order.status}).`);
     }
     const payment = await latestDownpayment(client, order.id);
     if (!payment || payment.verification_status !== 'PENDING') {
       throw conflict('PAYMENT_NOT_PENDING',
-        'There is no pending downpayment to approve for this order.',
-        'Walang pending downpayment na maaaring aprubahan para sa order na ito.');
+        'There is no pending downpayment to approve for this order.');
     }
 
     // Lock products in id order, then check AND deduct atomically.
@@ -182,8 +177,7 @@ async function approveDownpayment(code, actor) {
       // Q4: block approval, hand the UI structured data for the notice email.
       throw Object.assign(
         conflict('INSUFFICIENT_STOCK',
-          'Insufficient stock to confirm this order. Notify the customer.',
-          'Kulang ang stock para i-confirm ang order. Abisuhan ang customer.'),
+          'Insufficient stock to confirm this order. Notify the customer.'),
         { details: { shortages } }
       );
     }
@@ -243,18 +237,16 @@ async function rejectDownpayment(code, actor, reason) {
     );
     const order = orderRows[0];
     if (!order) {
-      throw fail(404, 'NOT_FOUND', 'Order not found.', 'Hindi nahanap ang order.');
+      throw fail(404, 'NOT_FOUND', 'Order not found.');
     }
     if (order.status !== ORDER.PAYMENT_UNDER_VERIFICATION) {
       throw conflict('REJECT_WRONG_STATE',
-        `Only orders under verification can be rejected (current: ${order.status}).`,
-        `Mga order na under verification lang ang maaaring tanggihan (ngayon: ${order.status}).`);
+        `Only orders under verification can be rejected (current: ${order.status}).`);
     }
     const payment = await latestDownpayment(client, order.id);
     if (!payment || payment.verification_status !== 'PENDING') {
       throw conflict('PAYMENT_NOT_PENDING',
-        'There is no pending downpayment to reject for this order.',
-        'Walang pending downpayment na maaaring tanggihan para sa order na ito.');
+        'There is no pending downpayment to reject for this order.');
     }
 
     await client.query(

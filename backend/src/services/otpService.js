@@ -57,8 +57,7 @@ async function requestCode(email, purpose) {
       const retryAfter = Math.ceil(waitMs / 1000);
       throw Object.assign(
         fail(429, 'OTP_COOLDOWN',
-          `Please wait ${retryAfter} second(s) before requesting another code.`,
-          `Maghintay ng ${retryAfter} segundo bago humingi ng bagong code.`),
+          `Please wait ${retryAfter} second(s) before requesting another code.`),
         { retryAfter }
       );
     }
@@ -94,14 +93,12 @@ async function verifyCode(email, code, purpose) {
   const row = rows[0];
   if (!row || new Date(row.expires_at).getTime() < Date.now()) {
     throw fail(400, 'OTP_INVALID',
-      'Code expired or not found. Please request a new code.',
-      'Expired o hindi nahanap ang code. Humingi ng bagong code.');
+      'Code expired or not found. Please request a new code.');
   }
   if (row.attempts >= config.otp.maxAttempts) {
     await query('DELETE FROM otp_codes WHERE id = $1;', [row.id]);
     throw fail(429, 'OTP_LOCKED',
-      'Too many wrong attempts. Please request a new code.',
-      'Masyadong maraming maling pagtatangka. Humingi ng bagong code.');
+      'Too many wrong attempts. Please request a new code.');
   }
 
   const guess = hashCode(code);
@@ -113,13 +110,11 @@ async function verifyCode(email, code, purpose) {
     if (attempts >= config.otp.maxAttempts) {
       await query('DELETE FROM otp_codes WHERE id = $1;', [row.id]);
       throw fail(429, 'OTP_LOCKED',
-        'Too many wrong attempts. Please request a new code.',
-        'Masyadong maraming maling pagtatangka. Humingi ng bagong code.');
+        'Too many wrong attempts. Please request a new code.');
     }
     const left = config.otp.maxAttempts - attempts;
     throw fail(400, 'OTP_WRONG',
-      `Incorrect code. ${left} attempt(s) remaining.`,
-      `Maling code. May ${left} pagtatangka pa.`);
+      `Incorrect code. ${left} attempt(s) remaining.`);
   }
 
   await query('UPDATE otp_codes SET verified_at = NOW() WHERE id = $1;', [row.id]);

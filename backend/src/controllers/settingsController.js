@@ -15,8 +15,8 @@ async function update(req, res) {
   const settings = await settingsService.update(req.body);
   return res.json({
     success: true,
+    message: 'Settings saved.',
     message_en: 'Settings saved.',
-    message_fil: 'Na-save ang settings.',
     settings,
   });
 }

@@ -559,7 +559,7 @@
             await refreshCartCatalog();
             closeCheckout();
             openCart();
-            U.toast('A product in your cart is no longer available. Your cart has been updated.');
+            U.toast(err.message || 'A product in your cart is no longer available. Your cart has been updated.');
             return;
           } catch { /* Preserve the original checkout error if refresh fails. */ }
         }

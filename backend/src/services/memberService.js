@@ -39,8 +39,7 @@ async function register(input) {
     const claimed = await consumeVerification(client, input.email, 'REGISTER');
     if (!claimed) {
       throw fail(409, 'OTP_REQUIRED',
-        'Please verify your email with the OTP code before registering.',
-        'Pakiberipika muna ang email gamit ang OTP code bago mag-register.');
+        'Please verify your email with the OTP code before registering.');
     }
 
     const { rows: existing } = await client.query(
@@ -48,8 +47,7 @@ async function register(input) {
     );
     if (existing.length > 0) {
       throw conflict('EMAIL_EXISTS',
-        'An account with this email already exists. Please sign in instead.',
-        'May account na sa email na ito. Mag-sign in na lang.');
+        'An account with this email already exists. Please sign in instead.');
     }
 
     const passwordHash = await hashPassword(input.password);
@@ -81,8 +79,7 @@ async function register(input) {
     await client.query('ROLLBACK');
     if (err.code === '23505') {
       throw conflict('EMAIL_EXISTS',
-        'An account with this email already exists. Please sign in instead.',
-        'May account na sa email na ito. Mag-sign in na lang.');
+        'An account with this email already exists. Please sign in instead.');
     }
     throw err;
   } finally {
@@ -93,7 +90,7 @@ async function register(input) {
 async function getProfile(memberId) {
   const { rows } = await query('SELECT * FROM members WHERE id = $1;', [memberId]);
   if (rows.length === 0) {
-    throw fail(404, 'NOT_FOUND', 'Account not found.', 'Hindi nahanap ang account.');
+    throw fail(404, 'NOT_FOUND', 'Account not found.');
   }
   return publicMember(rows[0]);
 }
@@ -113,7 +110,7 @@ async function updateProfile(memberId, data) {
     values
   );
   if (rows.length === 0) {
-    throw fail(404, 'NOT_FOUND', 'Account not found.', 'Hindi nahanap ang account.');
+    throw fail(404, 'NOT_FOUND', 'Account not found.');
   }
   return publicMember(rows[0]);
 }
@@ -123,12 +120,11 @@ async function changePassword(memberId, currentPassword, newPassword) {
     'SELECT password_hash FROM members WHERE id = $1;', [memberId]
   );
   if (rows.length === 0) {
-    throw fail(404, 'NOT_FOUND', 'Account not found.', 'Hindi nahanap ang account.');
+    throw fail(404, 'NOT_FOUND', 'Account not found.');
   }
   if (!(await verifyPassword(currentPassword, rows[0].password_hash))) {
     throw fail(401, 'WRONG_PASSWORD',
-      'Current password is incorrect.',
-      'Mali ang kasalukuyang password.');
+      'Current password is incorrect.');
   }
   const passwordHash = await hashPassword(newPassword);
   await query('UPDATE members SET password_hash = $1 WHERE id = $2;',
@@ -144,8 +140,7 @@ async function resetPasswordWithOtp(email, newPassword) {
     const claimed = await consumeVerification(client, email, 'RESET');
     if (!claimed) {
       throw fail(409, 'OTP_REQUIRED',
-        'Please verify your email with the OTP code first.',
-        'Pakiberipika muna ang email gamit ang OTP code.');
+        'Please verify your email with the OTP code first.');
     }
     const passwordHash = await hashPassword(newPassword);
     const { rowCount } = await client.query(
@@ -154,8 +149,7 @@ async function resetPasswordWithOtp(email, newPassword) {
     );
     if (rowCount === 0) {
       throw fail(404, 'NOT_FOUND',
-        'No account found for this email.',
-        'Walang account sa email na ito.');
+        'No account found for this email.');
     }
     await client.query('COMMIT');
     return true;

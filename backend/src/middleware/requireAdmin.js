@@ -19,8 +19,8 @@ function requireAdmin(req, res, next) {
     return res.status(401).json({
       success: false,
       code: 'ADMIN_UNAUTHORIZED',
+      message: 'Admin sign in required.',
       message_en: 'Admin sign in required.',
-      message_fil: 'Kailangan ang pag-sign in ng admin.',
     });
   }
 

@@ -12,8 +12,8 @@ async function register(req, res) {
   const result = await memberService.register(req.body);
   return res.status(201).json({
     success: true,
+    message: 'Account created. Welcome to WeBake!',
     message_en: 'Account created. Welcome to WeBake!',
-    message_fil: 'Nagawa ang account. Maligayang pagdating sa WeBake!',
     ...result,
   });
 }
@@ -34,8 +34,8 @@ async function changePassword(req, res) {
   );
   return res.json({
     success: true,
+    message: 'Password changed successfully.',
     message_en: 'Password changed successfully.',
-    message_fil: 'Napalitan ang password.',
   });
 }
 
@@ -43,8 +43,8 @@ async function resetPassword(req, res) {
   await memberService.resetPasswordWithOtp(req.body.email, req.body.new_password);
   return res.json({
     success: true,
+    message: 'Password reset. You can now sign in.',
     message_en: 'Password reset. You can now sign in.',
-    message_fil: 'Na-reset ang password. Maaari ka nang mag-sign in.',
   });
 }
 
@@ -57,8 +57,8 @@ async function adminReset(req, res) {
   await passwordResetService.confirmAdminReset(req.body.token, req.body.new_password);
   return res.json({
     success: true,
+    message: 'Admin password reset. You can now sign in.',
     message_en: 'Admin password reset. You can now sign in.',
-    message_fil: 'Na-reset ang admin password. Maaari ka nang mag-sign in.',
   });
 }
 

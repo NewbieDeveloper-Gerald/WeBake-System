@@ -36,7 +36,7 @@ async function listAdmin() {
 async function getById(id) {
   const { rows } = await query('SELECT * FROM products WHERE id = $1;', [id]);
   if (rows.length === 0) {
-    throw notFound('Product not found.', 'Hindi nahanap ang produkto.');
+    throw notFound('Product not found.');
   }
   return inventory.toCard(rows[0]);
 }
@@ -66,8 +66,7 @@ async function create(data, actor) {
       if (err.code === '23505') {
         throw conflict(
           'DUPLICATE_PRODUCT',
-          'A product with this name already exists.',
-          'May produkto nang may ganitong pangalan.'
+          'A product with this name already exists.'
         );
       }
       throw err;
@@ -125,15 +124,14 @@ async function update(id, data) {
       values
     );
     if (rows.length === 0) {
-      throw notFound('Product not found.', 'Hindi nahanap ang produkto.');
+      throw notFound('Product not found.');
     }
     return inventory.toCard(rows[0]);
   } catch (err) {
     if (err.code === '23505') {
       throw conflict(
         'DUPLICATE_PRODUCT',
-        'A product with this name already exists.',
-        'May produkto nang may ganitong pangalan.'
+        'A product with this name already exists.'
       );
     }
     throw err;
@@ -147,7 +145,7 @@ async function setArchived(id, archived) {
     [archived, id]
   );
   if (rows.length === 0) {
-    throw notFound('Product not found.', 'Hindi nahanap ang produkto.');
+    throw notFound('Product not found.');
   }
   return inventory.toCard(rows[0]);
 }

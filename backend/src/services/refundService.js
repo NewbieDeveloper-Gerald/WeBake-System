@@ -34,8 +34,7 @@ async function submitDetails(code, identity, input) {
     if (!refund || refund.status !== REFUND.AWAITING_DETAILS) {
       throw conflict(
         'NO_AWAITING_REFUND',
-        'This order is not waiting for wallet details.',
-        'Ang order na ito ay hindi naghihintay ng wallet details.'
+        'This order is not waiting for wallet details.'
       );
     }
 
@@ -91,14 +90,13 @@ async function markRefunded(id, { admin_reference_number, note }, actor) {
     );
     const refund = rows[0];
     if (!refund) {
-      throw notFound('Refund request not found.', 'Hindi nahanap ang refund request.');
+      throw notFound('Refund request not found.');
     }
     // Money cannot be "sent" without wallet details - owner must wait for them.
     if (refund.status !== REFUND.PENDING) {
       throw conflict(
         'REFUND_NOT_PENDING',
-        `Only pending refunds can be marked refunded (current: ${refund.status}).`,
-        `Pending refunds lang ang maaaring i-mark na refunded (ngayon: ${refund.status}).`
+        `Only pending refunds can be marked refunded (current: ${refund.status}).`
       );
     }
 
@@ -139,14 +137,13 @@ async function closeWithoutRefund(id, { admin_note }, actor) {
     );
     const refund = rows[0];
     if (!refund) {
-      throw notFound('Refund request not found.', 'Hindi nahanap ang refund request.');
+      throw notFound('Refund request not found.');
     }
     const closable = [REFUND.AWAITING_DETAILS, REFUND.PENDING];
     if (!closable.includes(refund.status)) {
       throw conflict(
         'REFUND_NOT_CLOSABLE',
-        `Only awaiting or pending refunds can be closed (current: ${refund.status}).`,
-        `Awaiting o pending refunds lang ang maaaring isara (ngayon: ${refund.status}).`
+        `Only awaiting or pending refunds can be closed (current: ${refund.status}).`
       );
     }
 
@@ -182,7 +179,7 @@ async function getWithOrder(id) {
     [id]
   );
   if (rows.length === 0) {
-    throw notFound('Refund request not found.', 'Hindi nahanap ang refund request.');
+    throw notFound('Refund request not found.');
   }
   const row = rows[0];
   return {

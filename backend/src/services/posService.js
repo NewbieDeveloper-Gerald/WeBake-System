@@ -36,8 +36,7 @@ async function createSale(items, cashReceived, actor) {
     for (const item of items) {
       const product = byId.get(item.product_id);
       if (!product || product.is_archived) {
-        throw notFound('A product in this sale is no longer available.',
-          'Ang isang produkto ay hindi na available.');
+        throw notFound('A product in this sale is no longer available.');
       }
       const pieces = item.unit === 'BUNDLE'
         ? item.qty * product.pieces_per_bundle
@@ -62,16 +61,14 @@ async function createSale(items, cashReceived, actor) {
       const product = byId.get(productId);
       if (product.stock_pieces < requiredPieces) {
         throw conflict('INSUFFICIENT_STOCK',
-          `Only ${product.stock_pieces} pcs of ${product.name} in stock; ${requiredPieces} pcs are in this sale.`,
-          `May ${product.stock_pieces} piraso na lang ng ${product.name}; ${requiredPieces} piraso ang kailangan sa sale na ito.`);
+          `Only ${product.stock_pieces} pcs of ${product.name} in stock; ${requiredPieces} pcs are in this sale.`);
       }
     }
 
     if (cashReceived < total) {
       throw Object.assign(
         conflict('CASH_SHORT',
-          'Cash received is less than the total.',
-          'Kulang ang cash na natanggap sa kabuuang halaga.'),
+          'Cash received is less than the total.'),
         { details: { total_centavos: total, cash_received_centavos: cashReceived } }
       );
     }

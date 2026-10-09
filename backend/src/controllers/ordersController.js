@@ -73,8 +73,8 @@ async function cancel(req, res) {
   );
   return res.json({
     success: true,
+    message: 'Order cancelled. Your refund request is now pending.',
     message_en: 'Order cancelled. Your refund request is now pending.',
-    message_fil: 'Nakansela ang order. Pending na ang iyong refund request.',
     ...result,
   });
 }
@@ -85,8 +85,8 @@ async function refundDetails(req, res) {
   );
   return res.json({
     success: true,
+    message: 'Wallet details saved. Your refund is now pending.',
     message_en: 'Wallet details saved. Your refund is now pending.',
-    message_fil: 'Na-save ang wallet details. Pending na ang iyong refund.',
     ...result,
   });
 }

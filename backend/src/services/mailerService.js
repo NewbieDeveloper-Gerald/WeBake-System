@@ -36,8 +36,7 @@ async function sendMail({ to, subject, html, text }) {
       return { messageId: 'dev-mock-id' };
     }
     throw fail(503, 'MAILER_DISABLED',
-      'Email service is not configured. Please contact the bakery.',
-      'Hindi naka-configure ang email service. Pakikontak ang bakery.');
+      'Email service is not configured. Please contact the bakery.');
   }
   let res;
   try {
@@ -58,16 +57,14 @@ async function sendMail({ to, subject, html, text }) {
     });
   } catch (err) {
     throw fail(502, 'EMAIL_FAILED',
-      'Email service is unreachable. Please try again later.',
-      'Hindi maabot ang email service. Pakisubukang muli mamaya.');
+      'Email service is unreachable. Please try again later.');
   }
   if (!res.ok) {
     // Log Brevo's detail server-side; the client gets a generic message.
     const detail = await res.text().catch(() => '');
     console.error(`[mailer] Brevo rejected send to ${to}: HTTP ${res.status} ${detail.slice(0, 300)}`);
     throw fail(502, 'EMAIL_FAILED',
-      'Email could not be delivered. Please try again later.',
-      'Hindi naipadala ang email. Pakisubukang muli mamaya.');
+      'Email could not be delivered. Please try again later.');
   }
   return res.json().catch(() => ({}));
 }

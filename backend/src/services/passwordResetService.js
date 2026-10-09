@@ -45,8 +45,8 @@ async function requestAdminReset(email) {
     );
   }
   return {
+    message: 'If this email belongs to the owner account, a reset link is on its way.',
     message_en: 'If this email belongs to the owner account, a reset link is on its way.',
-    message_fil: 'Kung ang email na ito ay sa owner account, may reset link na paparating.',
   };
 }
 
@@ -59,8 +59,7 @@ async function confirmAdminReset(token, newPassword) {
   );
   if (rows.length === 0) {
     throw fail(400, 'RESET_INVALID',
-      'This reset link is invalid or expired. Please request a new one.',
-      'Hindi wasto o expired na ang reset link. Humingi ng bago.');
+      'This reset link is invalid or expired. Please request a new one.');
   }
   const passwordHash = await hashPassword(newPassword);
   await query(

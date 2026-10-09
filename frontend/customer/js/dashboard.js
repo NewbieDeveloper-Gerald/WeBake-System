@@ -225,6 +225,12 @@
         localStorage.setItem('webake_cart', JSON.stringify(serverLines));
       }
 
+      // Filter out products that are archived or no longer exist
+      serverLines = serverLines.filter((line) => {
+        const prod = savedCatalog[Number(line.product_id)];
+        return prod && !prod.is_archived;
+      });
+
       savedCartLines = serverLines;
       selectedSavedIds = new Set(savedCartLines.map((line) => line.product_id));
       renderSavedCart();

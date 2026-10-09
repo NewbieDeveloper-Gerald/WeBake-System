@@ -1,16 +1,8 @@
 /**
- * Bilingual email templates (pure functions: data in, {subject, html, text}).
+ * English email templates (pure functions: data in, {subject, html, text}).
  *
- * WHAT: All 8 customer/owner emails. Every body carries English FIRST, then
- * Filipino, separated by a divider - one send, both languages (confirmed Q7).
- *
- * WHY pure builders: templates render without network or database, so they
- * unit-test in milliseconds and the mailer stays a dumb HTTP client. Amounts
- * arrive in centavos and format here via formatPesos().
- *
- * LINK CONTRACTS (page paths Phase 5/6 must implement):
- * - Customer tracking:  {FRONTEND_URL}/customer/html/track.html?code=WB-XXXXX
- * - Admin reset:        {FRONTEND_URL}/admin/html/reset.html?token=...
+ * WHAT: All 8 customer/owner emails.
+ * Amounts arrive in centavos and format here via formatPesos().
  */
 
 'use strict';
@@ -48,8 +40,6 @@ function base(title, preheader, contentHtml) {
 
 const h2 = (t) => `<h2 style="margin:0 0 12px;font-size:19px;color:${BRAND.cocoa};">${t}</h2>`;
 const p = (t) => `<p style="margin:0 0 12px;font-size:14px;line-height:1.6;color:${BRAND.cocoa};">${t}</p>`;
-const divider = `<hr style="border:none;border-top:1px dashed ${BRAND.border};margin:20px 0;">`;
-const fil = (t) => `<p style="margin:0 0 12px;font-size:14px;line-height:1.6;color:${BRAND.muted};">${t}</p>`;
 const btn = (url, label) => `<p style="text-align:center;margin:20px 0;"><a href="${url}" `
   + `style="display:inline-block;padding:12px 28px;background:${BRAND.cinnamon};color:#fff;`
   + `text-decoration:none;border-radius:8px;font-weight:700;font-size:14px;">${label}</a></p>`;
@@ -77,11 +67,6 @@ function otpCode({ code, purpose, minutes }) {
     CHECKOUT: 'Verify your email to place your order',
     RESET: 'Verify your email to reset your password',
   };
-  const titlesFil = {
-    REGISTER: 'Beripikahin ang email upang ma-activate ang WeBake account',
-    CHECKOUT: 'Beripikahin ang email upang mai-place ang order',
-    RESET: 'Beripikahin ang email upang ma-reset ang password',
-  };
   const subject = `${code} is your WeBake verification code`;
   const html = base('Verification code', subject,
     h2('Your verification code')
@@ -89,10 +74,8 @@ function otpCode({ code, purpose, minutes }) {
     + `<p style="text-align:center;margin:20px 0;"><span style="display:inline-block;padding:14px 26px;`
     + `background:${BRAND.cream};border:2px dashed ${BRAND.cinnamon};border-radius:10px;`
     + `font-family:monospace;font-size:32px;font-weight:800;letter-spacing:8px;color:${BRAND.cocoa};">${code}</span></p>`
-    + p(`This code expires in ${minutes} minutes. Never share it with anyone.`)
-    + divider + fil(titlesFil[purpose] || titlesFil.CHECKOUT)
-    + fil(`Ang code ay mag-e-expire sa loob ng ${minutes} minuto. Huwag itong ibahagi kaninuman.`));
-  const text = `${titles[purpose] || ''}\nCode: ${code}\nExpires in ${minutes} minutes.\n\n${titlesFil[purpose] || ''}\nCode: ${code}`;
+    + p(`This code expires in ${minutes} minutes. Never share it with anyone.`));
+  const text = `${titles[purpose] || ''}\nCode: ${code}\nExpires in ${minutes} minutes.`;
   return { subject, html, text };
 }
 
@@ -116,14 +99,9 @@ function acknowledgementReceipt({ order, items }) {
     + money('Order total:', order.total_centavos, false)
     + money('Downpayment submitted:', order.downpayment_centavos, false)
     + money('Remaining balance (cash on delivery):', order.balance_due_centavos, true)
-    + `</table>`
-    + divider
-    + fil(`Natanggap ang order <strong>${esc(order.order_code)}</strong>. Ang iyong 50% downpayment ay `
-      + `hinihintay pang beripikahin ng bakery. Hindi pa ito patunay ng bayad.`)
-    + fil(`Kabuuang order: ${formatPesos(order.total_centavos)} - Downpayment: `
-      + `${formatPesos(order.downpayment_centavos)} - Balanseng cash: ${formatPesos(order.balance_due_centavos)}.`));
+    + `</table>`);
   const lines = items.map((it) => `- ${it.product_name} x ${it.bundles} bundle(s) = ${formatPesos(it.line_total_centavos)}`);
-  const text = `WEB AKE ACKNOWLEDGEMENT RECEIPT (PENDING VERIFICATION)\nOrder: ${order.order_code}\n`
+  const text = `WEBAKE ACKNOWLEDGEMENT RECEIPT (PENDING VERIFICATION)\nOrder: ${order.order_code}\n`
     + `Customer: ${order.customer_name} (${order.customer_contact})\nAddress: ${order.delivery_address}\n`
     + `${lines.join('\n')}\nTotal: ${formatPesos(order.total_centavos)}\n`
     + `Downpayment submitted: ${formatPesos(order.downpayment_centavos)}\n`
@@ -140,11 +118,7 @@ function downpaymentApproved({ order, trackUrl }) {
       + `for order <strong>${esc(order.order_code)}</strong> has been verified. Your order is now `
       + `<strong>Confirmed</strong> and queued for production.`)
     + p(`Please prepare <strong>${formatPesos(order.balance_due_centavos)}</strong> in cash upon delivery.`)
-    + btn(trackUrl, 'Track My Order')
-    + divider + fil(`Na-verify na ang iyong downpayment na <strong>${formatPesos(order.downpayment_centavos)}</strong> `
-      + `para sa order <strong>${esc(order.order_code)}</strong>. <strong>Confirmed</strong> na ang order at nakapila `
-      + `na sa produksyon.`)
-    + fil(`Pakihanda ang <strong>${formatPesos(order.balance_due_centavos)}</strong> na cash sa pag-deliver.`));
+    + btn(trackUrl, 'Track My Order'));
   const text = `DOWNPAYMENT VERIFIED\nOrder ${order.order_code} is now Confirmed.\n`
     + `Downpayment: ${formatPesos(order.downpayment_centavos)}\nBalance (cash): ${formatPesos(order.balance_due_centavos)}\nTrack: ${trackUrl}`;
   return { subject, html, text };
@@ -158,10 +132,7 @@ function refundRequestReceived({ order, refund }) {
     + p(`Your cancellation for order <strong>${esc(order.order_code)}</strong> was recorded. The bakery `
       + `will send <strong>${formatPesos(refund.refund_amount_centavos)}</strong> to your ${esc(refund.wallet_type)} `
       + `account (<strong>${esc(refund.account_name)}</strong>, ${esc(refund.account_number)}</strong>). `
-      + `This cannot be edited - if the number is wrong, contact the bakery immediately.`)
-    + divider + fil(`Na-record ang pagkansela ng order <strong>${esc(order.order_code)}</strong>. Ipapadala ng `
-      + `bakery ang <strong>${formatPesos(refund.refund_amount_centavos)}</strong> sa iyong ${esc(refund.wallet_type)} `
-      + `account. Hindi na ito maaaring baguhin - kung mali ang numero, kontakin agad ang bakery.`));
+      + `This cannot be edited - if the number is wrong, contact the bakery immediately.`));
   const text = `REFUND REQUEST RECEIVED\nOrder: ${order.order_code}\nAmount: ${formatPesos(refund.refund_amount_centavos)}\n`
     + `Wallet: ${refund.wallet_type} ${refund.account_number} (${refund.account_name})\nCannot be edited - contact the bakery if wrong.`;
   return { subject, html, text };
@@ -179,16 +150,8 @@ function downpaymentRejected({ order, reason, resubmitAllowed, actionUrl }) {
     : `Your downpayment proof for order <strong>${esc(order.order_code)}</strong> was rejected: `
       + `<em>${esc(reason)}</em><br><br>The order is now <strong>Cancelled</strong>. Please submit your `
       + `GCash/PayMaya wallet details at the link below so the bakery can process your refund.`;
-  const filMsg = resubmitAllowed
-    ? `Tinanggihan ang proof ng downpayment para sa order <strong>${esc(order.order_code)}</strong>: `
-      + `<em>${esc(reason)}</em><br><br>Mayroon kang <strong>ISANG pagkakataon</strong> na magsumite ulit ng `
-      + `tama. Kapag pumalya ulit, kakanselahin ang order.`
-    : `Tinanggihan ang proof ng downpayment para sa order <strong>${esc(order.order_code)}</strong>: `
-      + `<em>${esc(reason)}</em><br><br><strong>Cancelled</strong> na ang order. Pakisumite ang iyong `
-      + `GCash/PayMaya wallet details sa link sa ibaba para sa refund.`;
   const html = base('Downpayment rejected', subject,
-    h2('Downpayment rejected') + p(en) + btn(actionUrl, resubmitAllowed ? 'Resubmit Payment' : 'Submit Wallet Details')
-    + divider + fil(filMsg));
+    h2('Downpayment rejected') + p(en) + btn(actionUrl, resubmitAllowed ? 'Resubmit Payment' : 'Submit Wallet Details'));
   const text = `DOWNPAYMENT REJECTED\nOrder: ${order.order_code}\nReason: ${reason}\n`
     + (resubmitAllowed ? 'You have ONE chance to resubmit.' : 'Order cancelled. Submit wallet details for refund.')
     + `\n${actionUrl}`;
@@ -204,9 +167,7 @@ function refundCompleted({ order, refund }) {
     h2('Refund sent')
     + p(`The bakery has sent <strong>${formatPesos(refund.refund_amount_centavos)}</strong> to your `
       + `${esc(refund.wallet_type)} account (${esc(refund.account_number)}).<br>${refLine}`
-      + `Please allow a few hours for the wallet to reflect the transfer.`)
-    + divider + fil(`Naipadala na ng bakery ang <strong>${formatPesos(refund.refund_amount_centavos)}</strong> `
-      + `sa iyong ${esc(refund.wallet_type)} account. Maghintay ng ilang oras para pumasok ang pera.`));
+      + `Please allow a few hours for the wallet to reflect the transfer.`));
   const text = `REFUND SENT\nOrder: ${order.order_code}\nAmount: ${formatPesos(refund.refund_amount_centavos)}\n`
     + `Wallet: ${refund.wallet_type} ${refund.account_number}\nReference: ${refund.admin_reference_number || 'n/a'}`;
   return { subject, html, text };
@@ -219,10 +180,7 @@ function refundClosed({ order, refund }) {
     h2('Refund closed without payment')
     + p(`After review, no payment was found for order <strong>${esc(order.order_code)}</strong>, so no `
       + `refund will be sent. The bakery's note:<br><em>${esc(refund.admin_note)}</em><br><br>`
-      + `If you believe this is a mistake, reply to this email with your proof of payment.`)
-    + divider + fil(`Pagkatapos ng pagsusuri, walang nahanap na bayad para sa order `
-      + `<strong>${esc(order.order_code)}</strong>, kaya walang refund na ipapadala. Note ng bakery: `
-      + `<em>${esc(refund.admin_note)}</em>`));
+      + `If you believe this is a mistake, reply to this email with your proof of payment.`));
   const text = `REFUND CLOSED (NO PAYMENT)\nOrder: ${order.order_code}\nBakery note: ${refund.admin_note}\n`
     + `Reply with proof if this is a mistake.`;
   return { subject, html, text };
@@ -236,9 +194,7 @@ function adminResetLink({ url, minutes }) {
     + p(`A password reset was requested for the WeBake owner account. The link expires in `
       + `${minutes} minutes and works once.`)
     + btn(url, 'Reset Password')
-    + p(`If the button does not work, paste this into your browser:<br>${esc(url)}`)
-    + divider + fil(`May nag-request ng password reset para sa WeBake owner account. Mag-e-expire ang link `
-      + `sa loob ng ${minutes} minuto at isang beses lang magagamit.`));
+    + p(`If the button does not work, paste this into your browser:<br>${esc(url)}`));
   const text = `ADMIN PASSWORD RESET\nReset link (expires in ${minutes} min, one-time use):\n${url}`;
   return { subject, html, text };
 }
