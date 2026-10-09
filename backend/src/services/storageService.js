@@ -14,11 +14,11 @@
 
 'use strict';
 
-const { createClient } = require('@supabase/supabase-js');
+const { StorageClient } = require('@supabase/storage-js');
 const config = require('../config/env');
 const { fail } = require('../utils/serviceError');
 
-const PROOFS_BUCKET = config.storage.proofsBucket;
+const PROOFS_BUCKET = config.storage.proofsBucket || 'payment-proofs';
 let client = null;
 
 function isEnabled() {
@@ -31,9 +31,13 @@ function getClient() {
       'File storage is not configured. Please contact the bakery.');
   }
   if (!client) {
-    client = createClient(config.storage.url, config.storage.serviceRoleKey, {
-      auth: { persistSession: false },
+    const rawUrl = config.storage.url.replace(/\/$/, '');
+    const storageUrl = rawUrl.endsWith('/storage/v1') ? rawUrl : `${rawUrl}/storage/v1`;
+    const storage = new StorageClient(storageUrl, {
+      apikey: config.storage.serviceRoleKey,
+      Authorization: `Bearer ${config.storage.serviceRoleKey}`,
     });
+    client = { storage };
   }
   return client;
 }

@@ -96,6 +96,7 @@ const config = {
   storage: {
     url: optional('SUPABASE_URL', ''),
     serviceRoleKey: optional('SUPABASE_SERVICE_ROLE_KEY', ''),
+    proofsBucket: optional('SUPABASE_PROOFS_BUCKET', 'payment-proofs'),
   },
 
   business: {
