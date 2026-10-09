@@ -26,6 +26,7 @@
     let memberEmail = '';
     let minBundles = 300;
     let cartWriteQueue = Promise.resolve();
+    let isDirectSingleCheckout = false;
 
     const co = { // checkout session state
       name: '', email: '', contact: '', address: '',
@@ -48,7 +49,16 @@
       if (auth.token()) {
         try {
           const [cartRes, profRes] = await Promise.all([api.cartGet(), api.profile()]);
-          cart = sanitize(cartRes.items || []);
+          let serverLines = sanitize(cartRes.items || []);
+          if (!serverLines.length) {
+            const guestLines = loadGuest();
+            if (guestLines.length) {
+              serverLines = guestLines;
+              api.cartPut(serverLines, false).catch(() => {});
+            }
+          }
+          cart = serverLines;
+          localStorage.setItem('webake_cart', JSON.stringify(cart));
           memberEmail = (profRes.member && profRes.member.email) || '';
         } catch {
           cart = loadGuest();
@@ -79,7 +89,8 @@
       // cart is silently emptied on every page load.
       const ids = new Set(catalog.map((p) => Number(p.id)));
       return (lines || []).filter((l) => ids.has(Number(l.product_id)) &&
-        Number.isInteger(Number(l.bundles)) && Number(l.bundles) > 0)
+        Number.isInteger(Number(l.bundles)) && Number(l.bundles) > 0 &&
+        (!quantityOptions.length || quantityOptions.includes(Number(l.bundles))))
         .map((l) => ({ product_id: Number(l.product_id), bundles: Number(l.bundles) }));
     }
 
@@ -90,13 +101,12 @@
     }
 
     function persist() {
-      if (!auth.token()) {
-        localStorage.setItem('webake_cart', JSON.stringify(cart));
-        return;
-      }
-      // Save each updated snapshot in order so the dashboard sees the same
-      // cart even when a customer navigates away immediately after editing.
-      const snapshot = cart.map((line) => ({ ...line }));
+      // Keep localStorage in sync immediately as local cache and backup
+      localStorage.setItem('webake_cart', JSON.stringify(cart));
+      if (!auth.token()) return;
+
+      // Save each updated snapshot to the member account in Supabase
+      const snapshot = cart.map((line) => ({ product_id: Number(line.product_id), bundles: Number(line.bundles) }));
       cartWriteQueue = cartWriteQueue
         .catch(() => {})
         .then(() => api.cartPut(snapshot, false))
@@ -215,6 +225,7 @@
     document.getElementById('buy-now-btn').addEventListener('click', () => {
       const qty = selectedModalQuantity();
       if (!qty) return;
+      isDirectSingleCheckout = true;
       addLine(modalProduct.id, qty);
       selectedProductIds = new Set([Number(modalProduct.id)]);
       renderCart();
@@ -372,6 +383,7 @@
         U.toast(t('co.below_min', { n: minBundles, have: bundles }));
         return;
       }
+      isDirectSingleCheckout = false;
       closeCart();
       startCheckout();
     });
@@ -429,7 +441,9 @@
 
     document.getElementById('info-back-btn').addEventListener('click', () => {
       closeCheckout();
-      openCart();
+      if (!isDirectSingleCheckout) {
+        openCart();
+      }
     });
 
     // OTP widget for the checkout step.
@@ -453,16 +467,24 @@
       co.contact = document.getElementById('cust-contact').value.trim();
       co.email = document.getElementById('cust-email').value.trim().toLowerCase();
       co.address = document.getElementById('cust-address').value.trim();
-      // Members ordering with their own verified email skip the OTP step.
-      if (auth.token() && memberEmail &&
-          memberEmail.toLowerCase() === co.email) {
-        await createOrderThenPayment();
-        return;
+
+      const proceedBtn = document.getElementById('info-proceed-btn');
+      if (proceedBtn) {
+        proceedBtn.disabled = true;
+        proceedBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending code...';
       }
-      ensureOtp().clear();
-      document.getElementById('checkout-otp-email-display').textContent = co.email;
-      gotoStep('step-otp');
-      await sendCheckoutOtp(false);
+
+      try {
+        ensureOtp().clear();
+        document.getElementById('checkout-otp-email-display').textContent = co.email;
+        gotoStep('step-otp');
+        await sendCheckoutOtp(false);
+      } finally {
+        if (proceedBtn) {
+          proceedBtn.disabled = false;
+          proceedBtn.innerHTML = '<i class="fas fa-arrow-right"></i> Proceed to Payment';
+        }
+      }
     });
 
     document.getElementById('otp-back-btn').addEventListener('click', () => gotoStep('step-info'));
@@ -487,14 +509,29 @@
       window.setTimeout(() => { el.style.display = 'none'; }, 4000);
     }
 
+    let isVerifyingOtp = false;
+
     async function verifyCheckoutOtp(code) {
+      if (isVerifyingOtp) return;
       if (!code || code.length !== 6) { showOtpError(t('co.otp_bad')); return; }
+      isVerifyingOtp = true;
+      const verifyBtn = document.getElementById('otp-verify-btn');
+      if (verifyBtn) {
+        verifyBtn.disabled = true;
+        verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+      }
       try {
         await api.otpVerify(co.email, 'CHECKOUT', code);
         await createOrderThenPayment();
       } catch (err) {
         ensureOtp().clear();
         showOtpError(err.message);
+      } finally {
+        isVerifyingOtp = false;
+        if (verifyBtn) {
+          verifyBtn.disabled = false;
+          verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i> Verify';
+        }
       }
     }
 
@@ -526,7 +563,7 @@
             return;
           } catch { /* Preserve the original checkout error if refresh fails. */ }
         }
-        gotoStep(auth.token() && memberEmail.toLowerCase() === co.email ? 'step-info' : 'step-otp');
+        gotoStep('step-otp');
         U.toast(err.message);
       }
     }
@@ -629,11 +666,7 @@
         const form = new FormData();
         form.append('channel', co.method);
         form.append('reference_number', ref);
-        // Guests identify with email; members with their token (unless the
-        // order email differs from the member email - then email too).
-        const sameMember = auth.token() && memberEmail &&
-          memberEmail.toLowerCase() === co.email;
-        if (!sameMember) form.append('email', co.email);
+        form.append('email', co.email);
         form.append('proof', file);
         await api.submitPayment(co.order.order_code, form, auth.token() || undefined);
         showSuccess();

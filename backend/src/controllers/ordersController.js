@@ -39,13 +39,9 @@ function memberFromHeader(req) {
 }
 
 async function create(req, res) {
-  // Members with their own verified email skip guest OTP; everyone else must
-  // present a fresh CHECKOUT verification (consumed inside the transaction).
-  const member = memberFromHeader(req);
-  const sameEmail = member
-    && (member.email || '').toLowerCase() === (req.body.customer.email || '').toLowerCase();
+  // All checkouts require verified OTP email verification per the customer ordering flow.
   const result = await orderService.createOrder(req.body, idempotencyKey(req), {
-    requireCheckoutOtp: !sameEmail,
+    requireCheckoutOtp: true,
   });
   // 200 on idempotent replay (nothing new created), 201 on a fresh order.
   return res.status(result.duplicate ? 200 : 201).json({

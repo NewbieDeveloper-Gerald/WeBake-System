@@ -166,7 +166,7 @@ async function createOrder(input, idempotencyKey, opts = {}) {
     let totalBundles = 0;
     const lines = [];
     for (const item of input.items) {
-      const product = byId.get(item.product_id);
+      const product = byId.get(Number(item.product_id));
       if (!product || product.is_archived) {
         const productName = product ? product.name : `Product ${item.product_id}`;
         throw conflict(
@@ -229,8 +229,8 @@ async function createOrder(input, idempotencyKey, opts = {}) {
             generateOrderCode(), memberId,
             input.customer.name.trim(), email,
             input.customer.contact, input.customer.address.trim(),
-            input.delivery_date || null, input.delivery_time,
-            input.notes, subtotal, total, downpayment, balance,
+            input.delivery_date || null, input.delivery_time || '',
+            input.notes || '', subtotal, total, downpayment, balance,
             input.payment_method, ORDER.PAYMENT_UNDER_VERIFICATION,
             idempotencyKey || null,
           ]

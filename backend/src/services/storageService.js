@@ -45,6 +45,15 @@ function extFor(mimetype) {
 async function uploadProof(buffer, { orderCode, mimetype }) {
   const safe = orderCode.replace(/[^A-Z0-9-]/gi, '');
   const path = `${safe}/${Date.now()}-proof.${extFor(mimetype)}`;
+  if (!isEnabled()) {
+    if (config.nodeEnv !== 'production') {
+      console.log(`[storage:dev] Mock proof uploaded for order ${orderCode}: ${path}`);
+      return { path: `dev-proofs/${path}` };
+    }
+    throw fail(503, 'STORAGE_DISABLED',
+      'File storage is not configured. Please contact the bakery.',
+      'Hindi naka-configure ang file storage. Pakikontak ang bakery.');
+  }
   const { error } = await getClient().storage
     .from(PROOFS_BUCKET)
     .upload(path, buffer, { contentType: mimetype, upsert: false });
@@ -59,6 +68,14 @@ async function uploadProof(buffer, { orderCode, mimetype }) {
 
 /** 15-minute signed URL for admin viewing of a private proof. */
 async function signedViewUrl(path, seconds = 900) {
+  if (!isEnabled()) {
+    if (config.nodeEnv !== 'production') {
+      return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="100%" height="100%" fill="%23eee"/><text x="50%" y="50%" font-size="14" text-anchor="middle" fill="%23666">Proof Mock (${path})</text></svg>`;
+    }
+    throw fail(503, 'STORAGE_DISABLED',
+      'File storage is not configured. Please contact the bakery.',
+      'Hindi naka-configure ang file storage. Pakikontak ang bakery.');
+  }
   const { data, error } = await getClient().storage
     .from(PROOFS_BUCKET)
     .createSignedUrl(path, seconds);

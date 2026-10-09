@@ -31,6 +31,10 @@ function trackUrl(orderCode) {
 
 async function sendMail({ to, subject, html, text }) {
   if (!isEnabled()) {
+    if (config.nodeEnv !== 'production') {
+      console.log(`[mailer:dev] Mock email to ${to}: ${subject}`);
+      return { messageId: 'dev-mock-id' };
+    }
     throw fail(503, 'MAILER_DISABLED',
       'Email service is not configured. Please contact the bakery.',
       'Hindi naka-configure ang email service. Pakikontak ang bakery.');

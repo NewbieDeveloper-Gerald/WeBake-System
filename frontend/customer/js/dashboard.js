@@ -139,6 +139,7 @@
     });
 
     async function saveSavedCart() {
+      localStorage.setItem('webake_cart', JSON.stringify(savedCartLines));
       try {
         await api.cartPut(savedCartLines.map((line) => ({ product_id: Number(line.product_id), bundles: Number(line.bundles) })), false);
       } catch (err) {
@@ -158,11 +159,11 @@
       }
       const selected = lines.filter((line) => selectedSavedIds.has(Number(line.product_id)));
       const cartTotal = selected.reduce((sum, line) => {
-        const product = savedCatalog[line.product_id];
+        const product = savedCatalog[Number(line.product_id)];
         return sum + (product ? Number(line.bundles || 0) * Number(product.price_bundle_centavos || 0) : 0);
       }, 0);
       container.innerHTML = '<div class="saved-cart-list">' + lines.map((line, index) => {
-        const product = savedCatalog[line.product_id];
+        const product = savedCatalog[Number(line.product_id)];
         const name = product ? product.name : '#' + line.product_id;
         const bundles = Number(line.bundles || 0);
         const pieces = bundles * Number(product && product.pieces_per_bundle || 25);
@@ -203,8 +204,28 @@
       document.getElementById('dash-address').value = member.address || '';
 
       // Saved cart, enriched with live catalog names/prices.
-      savedCatalog = Object.fromEntries((prodRes.products || []).map((p) => [p.id, p]));
-      savedCartLines = (cartRes.items || []).map((line) => ({ product_id: Number(line.product_id), bundles: Number(line.bundles) }));
+      savedCatalog = Object.fromEntries((prodRes.products || []).map((p) => [Number(p.id), p]));
+      
+      let serverLines = (cartRes.items || [])
+        .filter((line) => !quantityOptions.length || quantityOptions.includes(Number(line.bundles)))
+        .map((line) => ({ product_id: Number(line.product_id), bundles: Number(line.bundles) }));
+
+      // If server cart is empty, check if there are items saved in localStorage to sync
+      if (!serverLines.length) {
+        try {
+          const local = JSON.parse(localStorage.getItem('webake_cart') || '[]')
+            .filter((line) => !quantityOptions.length || quantityOptions.includes(Number(line.bundles)))
+            .map((line) => ({ product_id: Number(line.product_id), bundles: Number(line.bundles) }));
+          if (local.length) {
+            serverLines = local;
+            api.cartPut(serverLines, false).catch(() => {});
+          }
+        } catch { /* ignore */ }
+      } else {
+        localStorage.setItem('webake_cart', JSON.stringify(serverLines));
+      }
+
+      savedCartLines = serverLines;
       selectedSavedIds = new Set(savedCartLines.map((line) => line.product_id));
       renderSavedCart();
 
