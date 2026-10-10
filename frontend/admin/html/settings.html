@@ -98,19 +98,19 @@
       <!-- Content Area -->
       <main class="content-area">
         <form id="form-bakery-settings">
-          <!-- Card 1: Payment Credentials -->
+          <!-- Card: Payment Credentials & Bakery Settings -->
           <div class="admin-card">
             <div class="card-header">
               <div class="card-title-group">
-                <h3><i class="fas fa-wallet text-primary"></i> Payment Credentials Management</h3>
-                <p>Receiving mobile numbers and QR code images shown on checkout and walk-in counter</p>
+                <h3><i class="fas fa-wallet text-primary"></i> Payment Credentials &amp; Settings</h3>
+                <p>Receiving mobile numbers, QR code images, and order thresholds shown on customer checkout</p>
               </div>
             </div>
             <div class="card-body">
               <div class="form-row-3">
                 <div class="form-group">
                   <label class="form-label form-label-required">Account Name (Merchant)</label>
-                  <input type="text" id="set-acc-name" class="form-input" placeholder="Gerald V." required>
+                  <input type="text" id="set-acc-name" class="form-input" placeholder="WeBake Owner" required>
                 </div>
                 <div class="form-group">
                   <label class="form-label form-label-required">GCash Receiving Number (11 digits)</label>
@@ -122,95 +122,63 @@
                 </div>
               </div>
 
-              <!-- QR Code Upload / Link Row -->
-              <div class="form-row-2">
+              <!-- QR Code Selection Row (No Drag and Drop - Select & Preview Only) -->
+              <div class="form-row-2" style="margin-top:1.5rem;">
                 <div class="form-group">
                   <label class="form-label"><i class="fas fa-qrcode text-primary"></i> GCash QR Code Image</label>
-                  <div class="qr-upload-container" id="dropzone-gcash">
-                    <div class="qr-upload-body">
-                      <div class="qr-preview-box">
-                        <img id="preview-gcash-qr" src="../../assets/qr-gcash-placeholder.png" alt="GCash QR Preview">
-                      </div>
-                      <div class="qr-upload-actions">
-                        <div class="qr-drop-text">
-                          <strong>Select or Drag &amp; drop GCash QR</strong>
-                          <span>File image only (PNG, JPG, WebP)</span>
-                        </div>
-                        <div class="qr-btn-row">
-                          <label class="btn btn-outline btn-sm" for="file-gcash-qr" style="cursor:pointer;">
-                            <i class="fas fa-folder-open"></i> Choose Image
-                          </label>
-                          <input type="file" id="file-gcash-qr" accept="image/*" style="display:none;">
-                          <button type="button" class="btn btn-danger-outline btn-sm" id="btn-reset-gcash-qr" title="Reset to default QR">
-                            <i class="fas fa-rotate-left"></i> Reset
-                          </button>
-                        </div>
-                        <input type="hidden" id="set-gcash-qr">
-                        <div id="status-gcash-qr" style="font-size:0.75rem; color:var(--text-muted);"><i class="fas fa-check-circle text-success"></i> Current QR active</div>
-                      </div>
+                  <div style="display:flex; flex-direction:column; gap:0.75rem; padding:1.25rem; border:1px solid #e0d0c5; border-radius:10px; background:#faf7f5;">
+                    <div style="display:flex; justify-content:center; align-items:center; min-height:180px; background:#fff; border-radius:8px; border:1px solid #e5ded9; padding:10px;">
+                      <img id="preview-gcash-qr" src="../../assets/qr-gcash-placeholder.png" alt="GCash QR Code Preview" style="max-width:180px; max-height:180px; object-fit:contain; border-radius:6px;">
                     </div>
+                    <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+                      <label class="btn btn-outline btn-sm" for="file-gcash-qr" style="cursor:pointer; margin:0;">
+                        <i class="fas fa-image"></i> Select GCash QR Image
+                      </label>
+                      <input type="file" id="file-gcash-qr" accept="image/*" style="display:none;">
+                      <button type="button" class="btn btn-danger-outline btn-sm" id="btn-reset-gcash-qr">
+                        <i class="fas fa-rotate-left"></i> Reset to Default
+                      </button>
+                    </div>
+                    <input type="hidden" id="set-gcash-qr">
+                    <div id="status-gcash-qr" style="font-size:0.78rem; color:var(--text-muted);"><i class="fas fa-check-circle text-success"></i> Current QR active</div>
                   </div>
                 </div>
 
                 <div class="form-group">
                   <label class="form-label"><i class="fas fa-qrcode text-primary"></i> PayMaya QR Code Image</label>
-                  <div class="qr-upload-container" id="dropzone-maya">
-                    <div class="qr-upload-body">
-                      <div class="qr-preview-box">
-                        <img id="preview-maya-qr" src="../../assets/qr-paymaya-placeholder.png" alt="PayMaya QR Preview">
-                      </div>
-                      <div class="qr-upload-actions">
-                        <div class="qr-drop-text">
-                          <strong>Select or Drag &amp; drop Maya QR</strong>
-                          <span>File image only (PNG, JPG, WebP)</span>
-                        </div>
-                        <div class="qr-btn-row">
-                          <label class="btn btn-outline btn-sm" for="file-maya-qr" style="cursor:pointer;">
-                            <i class="fas fa-folder-open"></i> Choose Image
-                          </label>
-                          <input type="file" id="file-maya-qr" accept="image/*" style="display:none;">
-                          <button type="button" class="btn btn-danger-outline btn-sm" id="btn-reset-maya-qr" title="Reset to default QR">
-                            <i class="fas fa-rotate-left"></i> Reset
-                          </button>
-                        </div>
-                        <input type="hidden" id="set-maya-qr">
-                        <div id="status-maya-qr" style="font-size:0.75rem; color:var(--text-muted);"><i class="fas fa-check-circle text-success"></i> Current QR active</div>
-                      </div>
+                  <div style="display:flex; flex-direction:column; gap:0.75rem; padding:1.25rem; border:1px solid #e0d0c5; border-radius:10px; background:#faf7f5;">
+                    <div style="display:flex; justify-content:center; align-items:center; min-height:180px; background:#fff; border-radius:8px; border:1px solid #e5ded9; padding:10px;">
+                      <img id="preview-maya-qr" src="../../assets/qr-paymaya-placeholder.png" alt="PayMaya QR Code Preview" style="max-width:180px; max-height:180px; object-fit:contain; border-radius:6px;">
                     </div>
+                    <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+                      <label class="btn btn-outline btn-sm" for="file-maya-qr" style="cursor:pointer; margin:0;">
+                        <i class="fas fa-image"></i> Select Maya QR Image
+                      </label>
+                      <input type="file" id="file-maya-qr" accept="image/*" style="display:none;">
+                      <button type="button" class="btn btn-danger-outline btn-sm" id="btn-reset-maya-qr">
+                        <i class="fas fa-rotate-left"></i> Reset to Default
+                      </button>
+                    </div>
+                    <input type="hidden" id="set-maya-qr">
+                    <div id="status-maya-qr" style="font-size:0.78rem; color:var(--text-muted);"><i class="fas fa-check-circle text-success"></i> Current QR active</div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <!-- Card 2: Operating Hours & Delivery Policy -->
-          <div class="admin-card">
-            <div class="card-header">
-              <div class="card-title-group">
-                <h3><i class="fas fa-clock text-primary"></i> Operating Hours &amp; Delivery Policy</h3>
-                <p>Define same-day baking cutoffs and covered coverage zones</p>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="form-row-2">
+              <!-- Order Rules Row -->
+              <div class="form-row-2" style="margin-top:1.5rem; border-top:1px solid #eee; padding-top:1.25rem;">
                 <div class="form-group">
-                  <label class="form-label">Store Operating Hours</label>
-                  <input type="text" id="set-store-hours" class="form-input" placeholder="6:00 AM - 8:00 PM">
+                  <label class="form-label">Minimum Online Order (bundles, all products combined)</label>
+                  <input type="number" id="set-min-bundles" class="form-input" min="1" max="100000" value="300" required>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Baking Cut-Off Time (for Same-Day Wholesale)</label>
-                  <input type="text" id="set-cutoff-time" class="form-input" placeholder="2:00 PM">
+                  <label class="form-label">Default Low-Stock Alert for New Products (pieces)</label>
+                  <input type="number" id="set-low-stock" class="form-input" min="0" max="10000000" value="500" required>
                 </div>
               </div>
-
-              <div class="form-group">
-                <label class="form-label">Standard Delivery Areas Covered</label>
-                <input type="text" id="set-delivery-areas" class="form-input" placeholder="Marilao, Meycauayan, Bocaue, Caloocan, Valenzuela, QC">
-                <p class="form-hint">Shown in customer delivery terms during checkout</p>
-              </div>
             </div>
-            <div class="card-footer">
-              <button type="submit" class="btn btn-primary btn-lg">
+            <div class="card-footer" style="padding:1.25rem 1.5rem; border-top:1px solid #eee; background:#fff;">
+              <button type="submit" class="btn btn-primary btn-lg" id="btn-save-settings">
                 <i class="fas fa-save"></i> Save Bakery Settings
               </button>
             </div>

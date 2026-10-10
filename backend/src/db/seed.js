@@ -71,7 +71,6 @@ function defaultSettings() {
     account_name: 'Juan D. (placeholder)',
     gcash_qr: 'assets/qr-gcash-placeholder.png',
     paymaya_qr: 'assets/qr-paymaya-placeholder.png',
-    store_hours: '6:00 AM - 8:00 PM',
     bakery_address: '1356 Cordero St., Lambakin, Marilao, Bulacan',
     min_order_bundles: String(config.business.minOrderBundles),
     default_low_stock_pieces: String(config.business.defaultLowStockPieces),

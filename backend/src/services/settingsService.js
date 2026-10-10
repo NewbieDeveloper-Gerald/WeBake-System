@@ -50,7 +50,6 @@ async function getPublic() {
     account_name: all.account_name || '',
     gcash_qr: all.gcash_qr || '',
     paymaya_qr: all.paymaya_qr || '',
-    store_hours: all.store_hours || '',
     min_order_bundles: all.min_order_bundles || '300',
     order_quantity_options: orderQuantityOptions,
   };

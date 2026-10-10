@@ -18,7 +18,6 @@ const updateSettingsSchema = z.object({
   account_name: z.string().trim().min(2).max(100).optional(),
   gcash_qr: z.string().trim().max(5_000_000).optional(),
   paymaya_qr: z.string().trim().max(5_000_000).optional(),
-  store_hours: z.string().trim().max(100).optional(),
   min_order_bundles: z.coerce.number().int().min(1).max(100000).optional(),
   default_low_stock_pieces: z.coerce.number().int().min(0).max(10000000).optional(),
 }).strict();
