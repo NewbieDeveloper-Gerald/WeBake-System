@@ -903,7 +903,7 @@
           const name = nameParts[0].trim();
           const loc = nameParts[1] ? nameParts[1].trim() : 'Bulacan';
           const initials = name.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase() || 'CR';
-          const text = r.text_en || r.text_fil || '';
+          const text = r.text_en || r.text || '';
           return '<div class="review-card">' +
             '<div class="review-stars">' + stars + '</div>' +
             '<p class="review-quote">"' + U.escapeHtml(text) + '"</p>' +

@@ -33,9 +33,6 @@ const createOrderSchema = z.object({
   }).strict(),
   items: z.array(orderItemSchema).min(1, { message: 'order.min_items' }),
   payment_method: z.enum(['GCASH', 'MAYA']),
-  delivery_date: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'order.bad_date' }).optional(),
-  delivery_time: z.string().trim().max(50).default(''),
-  notes: z.string().trim().max(500).default(''),
   // Idempotency key: safe retries (double-clicks, timeouts) never duplicate.
   // The controller also accepts it via the X-Idempotency-Key header.
   idempotency_key: z.string().trim().min(8).max(64).optional(),

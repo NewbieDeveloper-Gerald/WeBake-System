@@ -30,7 +30,7 @@ const reviewSubmitSchema = z.object({
 // GET /api/reviews - public testimonials, latest first
 router.get('/', asyncHandler(async (req, res) => {
   const productId = req.query.product_id ? Number(req.query.product_id) : null;
-  let sql = `SELECT id, display_name, rating, text_en, text_fil, created_at, product_id, order_id
+  let sql = `SELECT id, display_name, rating, text_en, created_at, product_id, order_id
                FROM reviews `;
   const params = [];
   if (productId) {
@@ -170,8 +170,8 @@ router.post('/', requireMember, validateBody(reviewSubmitSchema), asyncHandler(a
     : (name || order.customer_name || 'Customer');
 
   const { rows: newRows } = await query(
-    `INSERT INTO reviews (order_id, product_id, member_id, display_name, rating, text_en, text_fil, is_seed)
-     VALUES ($1, $2, $3, $4, $5, $6, $6, false)
+    `INSERT INTO reviews (order_id, product_id, member_id, display_name, rating, text_en, is_seed)
+     VALUES ($1, $2, $3, $4, $5, $6, false)
      RETURNING id, order_id, product_id, display_name, rating, text_en, created_at;`,
     [order.id, product_id, req.member.id, displayName, rating, text]
   );

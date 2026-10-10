@@ -22,7 +22,6 @@ const updateProfileSchema = z.object({
   name: z.string().trim().min(2).max(100).optional(),
   contact: mobileField.optional(),
   address: z.string().trim().min(5).max(300).optional(),
-  locale: z.enum(['en', 'fil']).optional(),
 }).strict();
 
 const changePasswordSchema = z.object({

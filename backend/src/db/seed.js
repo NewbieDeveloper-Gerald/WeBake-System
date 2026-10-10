@@ -105,13 +105,13 @@ async function seedProducts() {
   for (const p of PRODUCTS) {
     // DO NOTHING preserves stock_pieces on re-runs (see file header).
     const res = await query(
-      `INSERT INTO products (name, slug, description, price_bundle_centavos,
+      `INSERT INTO products (name, description, price_bundle_centavos,
                               pieces_per_bundle, piece_price_centavos,
                               stock_pieces, low_stock_threshold_pieces, image_url)
-       VALUES ($1, $2, $3, 10500, 25, 500, 0, $4, '')
+       VALUES ($1, $2, 10500, 25, 500, 0, $3, '')
        ON CONFLICT (name) DO NOTHING
        RETURNING id;`,
-      [p.name, p.slug, p.desc, config.business.defaultLowStockPieces]
+      [p.name, p.desc, config.business.defaultLowStockPieces]
     );
     console.log(res.rows.length > 0 ? `[seed] product added: ${p.name}` : `[seed] product exists: ${p.name}`);
   }
@@ -125,8 +125,8 @@ async function seedReviews() {
   }
   for (const r of SAMPLE_REVIEWS) {
     await query(
-      'INSERT INTO reviews (display_name, rating, text_en, text_fil, is_seed) VALUES ($1, $2, $3, $4, true);',
-      [r.name, r.rating, r.en, r.fil]
+      'INSERT INTO reviews (display_name, rating, text_en, is_seed) VALUES ($1, $2, $3, true);',
+      [r.name, r.rating, r.en]
     );
   }
   console.log(`[seed] sample reviews added: ${SAMPLE_REVIEWS.length}`);

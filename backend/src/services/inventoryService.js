@@ -43,7 +43,6 @@ function toCard(row) {
   return {
     id: row.id,
     name: row.name,
-    slug: row.slug,
     description: row.description,
     price_bundle_centavos: row.price_bundle_centavos,
     pieces_per_bundle: row.pieces_per_bundle,

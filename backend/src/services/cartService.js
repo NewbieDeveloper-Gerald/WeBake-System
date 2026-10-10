@@ -20,24 +20,7 @@ async function get(memberId) {
       ORDER BY ci.product_id ASC;`,
     [memberId]
   );
-  if (rows.length > 0) {
-    return rows.map((r) => ({ product_id: Number(r.product_id), bundles: Number(r.bundles) }));
-  }
-
-  // Fallback: if cart_items has no rows, check carts.items JSONB column
-  const { rows: cartRows } = await query('SELECT items FROM carts WHERE member_id = $1;', [memberId]);
-  const legacyItems = (cartRows[0] && cartRows[0].items) || [];
-  if (!Array.isArray(legacyItems) || legacyItems.length === 0) return [];
-  const pids = legacyItems.map((r) => Number(r.product_id)).filter((id) => Number.isInteger(id) && id > 0);
-  if (pids.length === 0) return [];
-  const { rows: activeProds } = await query(
-    'SELECT id FROM products WHERE id = ANY($1::bigint[]) AND is_archived = false;',
-    [pids]
-  );
-  const activeSet = new Set(activeProds.map((p) => Number(p.id)));
-  return legacyItems
-    .filter((r) => activeSet.has(Number(r.product_id)))
-    .map((r) => ({ product_id: Number(r.product_id), bundles: Number(r.bundles) }));
+  return rows.map((r) => ({ product_id: Number(r.product_id), bundles: Number(r.bundles) }));
 }
 
 async function set(memberId, items, merge) {
@@ -59,9 +42,9 @@ async function set(memberId, items, merge) {
 
   // 1. Ensure member has a row in public.carts (required by cart_items foreign key)
   await query(
-    `INSERT INTO carts (member_id, items, updated_at) VALUES ($1, $2, NOW())
-     ON CONFLICT (member_id) DO UPDATE SET items = EXCLUDED.items, updated_at = NOW();`,
-    [memberId, JSON.stringify(final)]
+    `INSERT INTO carts (member_id, updated_at) VALUES ($1, NOW())
+     ON CONFLICT (member_id) DO UPDATE SET updated_at = NOW();`,
+    [memberId]
   );
 
   // 2. Populate public.cart_items table
@@ -84,7 +67,7 @@ async function set(memberId, items, merge) {
 
 async function clear(memberId) {
   await query('DELETE FROM cart_items WHERE member_id = $1;', [memberId]);
-  await query("UPDATE carts SET items = '[]'::jsonb, updated_at = NOW() WHERE member_id = $1;", [memberId]);
+  await query('UPDATE carts SET updated_at = NOW() WHERE member_id = $1;', [memberId]);
 }
 
 module.exports = { get, set, clear };

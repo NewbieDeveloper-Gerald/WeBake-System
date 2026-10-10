@@ -26,7 +26,6 @@ function publicMember(row) {
     email: row.email,
     contact: row.contact,
     address: row.address,
-    locale: row.locale,
     emailVerified: row.email_verified_at !== null,
   };
 }
@@ -53,16 +52,16 @@ async function register(input) {
     const passwordHash = await hashPassword(input.password);
     const { rows } = await client.query(
       `INSERT INTO members
-         (full_name, email, email_verified_at, contact, address, password_hash, locale)
-       VALUES ($1, $2, NOW(), $3, $4, $5, 'en')
+         (full_name, email, email_verified_at, contact, address, password_hash)
+       VALUES ($1, $2, NOW(), $3, $4, $5)
        RETURNING *;`,
       [input.name.trim(), input.email, input.contact, input.address.trim(), passwordHash]
     );
     const member = rows[0];
 
     await client.query(
-      'INSERT INTO carts (member_id, items) VALUES ($1, $2) ON CONFLICT DO NOTHING;',
-      [member.id, JSON.stringify([])]
+      'INSERT INTO carts (member_id) VALUES ($1) ON CONFLICT DO NOTHING;',
+      [member.id]
     );
 
     // Link pre-registration guest orders by verified email.
@@ -101,7 +100,6 @@ async function updateProfile(memberId, data) {
   if (data.name !== undefined) { values.push(data.name.trim()); fields.push(`full_name = $${values.length}`); }
   if (data.contact !== undefined) { values.push(data.contact); fields.push(`contact = $${values.length}`); }
   if (data.address !== undefined) { values.push(data.address.trim()); fields.push(`address = $${values.length}`); }
-  if (data.locale !== undefined) { values.push(data.locale); fields.push(`locale = $${values.length}`); }
   if (fields.length === 0) return getProfile(memberId);
 
   values.push(memberId);

@@ -209,17 +209,16 @@ async function createOrder(input, idempotencyKey, opts = {}) {
         const { rows } = await client.query(
           `INSERT INTO orders
              (order_code, member_id, customer_name, customer_email, customer_contact,
-              delivery_address, delivery_date, delivery_time, notes,
+              delivery_address,
               subtotal_centavos, total_centavos, downpayment_centavos,
               balance_due_centavos, payment_method, status, idempotency_key)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
            RETURNING *;`,
           [
             generateOrderCode(), memberId,
             input.customer.name.trim(), email,
             input.customer.contact, input.customer.address.trim(),
-            input.delivery_date || null, input.delivery_time || '',
-            input.notes || '', subtotal, total, downpayment, balance,
+            subtotal, total, downpayment, balance,
             input.payment_method, ORDER.PAYMENT_UNDER_VERIFICATION,
             idempotencyKey || null,
           ]

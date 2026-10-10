@@ -15,10 +15,6 @@ const { query, getClient } = require('../config/db');
 const { notFound, conflict } = require('../utils/serviceError');
 const inventory = require('./inventoryService');
 
-function slugify(name) {
-  return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-}
-
 /** Customer shop + POS: visible products only, with live stock status. */
 async function listPublic() {
   const { rows } = await query(
@@ -49,12 +45,12 @@ async function create(data, actor) {
     try {
       const { rows } = await client.query(
         `INSERT INTO products
-           (name, slug, description, price_bundle_centavos, pieces_per_bundle,
+           (name, description, price_bundle_centavos, pieces_per_bundle,
             piece_price_centavos, stock_pieces, low_stock_threshold_pieces, image_url)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          RETURNING *;`,
         [
-          data.name.trim(), slugify(data.name), data.description,
+          data.name.trim(), data.description,
           data.price_bundle_centavos, data.pieces_per_bundle,
           data.piece_price_centavos, data.initial_stock_pieces,
           data.low_stock_threshold_pieces, data.image_url,
@@ -62,7 +58,7 @@ async function create(data, actor) {
       );
       product = rows[0];
     } catch (err) {
-      // 23505 = unique violation (duplicate name or slug). Translate to 409.
+      // 23505 = unique violation (duplicate name). Translate to 409.
       if (err.code === '23505') {
         throw conflict(
           'DUPLICATE_PRODUCT',
@@ -110,10 +106,6 @@ async function update(id, data) {
       values.push(key === 'name' ? data[key].trim() : data[key]);
       fields.push(`${column} = $${values.length}`);
     }
-  }
-  if (data.name !== undefined) {
-    values.push(slugify(data.name));
-    fields.push(`slug = $${values.length}`);
   }
   if (fields.length === 0) return getById(id); // nothing to change
 
