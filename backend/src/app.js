@@ -46,6 +46,18 @@ function createApp() {
   // Hide the Server header fingerprint ("X-Powered-By: Express").
   app.disable('x-powered-by');
 
+  // Security headers: harden against sniffing, clickjacking, and enforce HTTPS in prod.
+  app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+      res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    }
+    next();
+  });
+
   const allowedOrigins = [config.cors.frontendUrl, config.cors.devOrigin]
     .filter((o) => o && o.length > 0);
 
