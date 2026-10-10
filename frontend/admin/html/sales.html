@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WeBake Admin — Sales &amp; Revenue Reports</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/admin-globals.css">
+  <link rel="stylesheet" href="../css/admin-catalog.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo-icon">
+          <i class="fas fa-bread-slice"></i>
+        </div>
+        <div class="brand-text">
+          <h2>WeBake</h2>
+          <span>Admin Portal</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Operations</div>
+        <a href="walkin-pos.html" class="nav-item-link pos-highlight">
+          <i class="fas fa-cash-register"></i>
+          <span>Walk-In</span>
+        </a>
+        <a href="dashboard.html" class="nav-item-link">
+          <i class="fas fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="sales.html" class="nav-item-link active">
+          <i class="fas fa-chart-line"></i>
+          <span>Sales</span>
+        </a>
+        <a href="orders.html" class="nav-item-link">
+          <i class="fas fa-clipboard-list"></i>
+          <span>Orders &amp; Verify</span>
+          <span class="nav-badge" id="sidebar-orders-badge">0</span>
+        </a>
+        <a href="refunds.html" class="nav-item-link">
+          <i class="fas fa-undo-alt"></i>
+          <span>Refunds Queue</span>
+          <span class="nav-badge" id="sidebar-refunds-badge">0</span>
+        </a>
+
+        <div class="nav-section-title">Bakery Management</div>
+        <a href="inventory.html" class="nav-item-link">
+          <i class="fas fa-boxes-stacked"></i>
+          <span>Daily Inventory</span>
+        </a>
+        <a href="products.html" class="nav-item-link">
+          <i class="fas fa-tags"></i>
+          <span>Product Catalog</span>
+        </a>
+        <a href="settings.html" class="nav-item-link">
+          <i class="fas fa-cog"></i>
+          <span>Bakery Settings</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="staff-profile-card">
+          <div class="staff-avatar" id="staff-initials">OW</div>
+          <div class="staff-details">
+            <div class="staff-name" id="staff-email">Owner</div>
+          </div>
+        </div>
+        <div class="sidebar-actions">
+          <a href="../../customer/html/home.html" target="_blank" class="btn-sidebar" title="Open Customer Storefront">
+            <i class="fas fa-external-link-alt"></i> Store
+          </a>
+          <button type="button" class="btn-sidebar" id="btn-logout" title="Sign out">
+            <i class="fas fa-sign-out-alt"></i> Out
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <!-- Topbar -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-toggle" aria-label="Toggle Navigation">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="page-headline">
+            <h1>Sales &amp; Revenue</h1>
+            <p>Today, weekly, and monthly sales overview with PDF export</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button type="button" class="btn btn-primary btn-sm" id="btn-quick-export">
+            <i class="fas fa-file-pdf"></i> Export Sales PDF
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <main class="content-area">
+        <!-- Sales Stat Cards -->
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 1.5rem;">
+          <div class="stat-card">
+            <div class="stat-label"><i class="fas fa-calendar-day text-primary"></i> Today's Sales</div>
+            <div class="stat-value" id="stat-today-sales">₱0.00</div>
+            <div class="stat-sub" id="stat-today-sub">0 orders today</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label"><i class="fas fa-calendar-week text-success"></i> Weekly Sales</div>
+            <div class="stat-value" id="stat-week-sales">₱0.00</div>
+            <div class="stat-sub" id="stat-week-sub">This week (Mon–Sun)</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label"><i class="fas fa-calendar-alt text-warning"></i> Monthly Sales</div>
+            <div class="stat-value" id="stat-month-sales">₱0.00</div>
+            <div class="stat-sub" id="stat-month-sub">Current calendar month</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label"><i class="fas fa-wallet text-info"></i> Period Net Revenue</div>
+            <div class="stat-value" id="stat-net-sales">₱0.00</div>
+            <div class="stat-sub" id="stat-refund-sub">₱0.00 refunded</div>
+          </div>
+        </div>
+
+        <!-- Sales Report Filter & Table Card -->
+        <div class="admin-card">
+          <div class="card-header" style="flex-wrap:wrap; gap:1rem; align-items:center;">
+            <div class="card-title-group">
+              <h3><i class="fas fa-receipt text-primary"></i> Sales Report Breakdown</h3>
+              <p id="sales-period-label">Select period and date to view detailed breakdown</p>
+            </div>
+            <div class="card-actions" style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+              <select id="sales-period-select" class="form-select form-select-sm" style="min-width:130px;">
+                <option value="daily" selected>Daily (Today)</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+              <input type="date" id="sales-anchor-date" class="form-input form-input-sm" style="min-width:140px;">
+              <button type="button" class="btn btn-outline btn-sm" id="btn-refresh-sales">
+                <i class="fas fa-rotate"></i> Refresh
+              </button>
+              <button type="button" class="btn btn-primary btn-sm" id="btn-export-sales-pdf">
+                <i class="fas fa-file-pdf"></i> Export PDF
+              </button>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <!-- Channel summary bar -->
+            <div style="display:flex; gap:1.5rem; flex-wrap:wrap; padding:1rem; background:#FBF8F4; border-radius:12px; margin-bottom:1.5rem; border:1px solid #EEDBCE;">
+              <div>
+                <span class="text-muted" style="font-size:0.78rem; display:block;">Online Orders</span>
+                <strong style="color:#6B352A; font-size:1.05rem;" id="sum-online-amt">₱0.00</strong>
+              </div>
+              <div style="border-left:1px solid #E5D5C8; padding-left:1.5rem;">
+                <span class="text-muted" style="font-size:0.78rem; display:block;">Walk-In POS</span>
+                <strong style="color:#2D6A4F; font-size:1.05rem;" id="sum-walkin-amt">₱0.00</strong>
+              </div>
+              <div style="border-left:1px solid #E5D5C8; padding-left:1.5rem;">
+                <span class="text-muted" style="font-size:0.78rem; display:block;">Total Bundles</span>
+                <strong style="color:#333; font-size:1.05rem;" id="sum-bundles-count">0 bdls</strong>
+              </div>
+              <div style="border-left:1px solid #E5D5C8; padding-left:1.5rem;">
+                <span class="text-muted" style="font-size:0.78rem; display:block;">Orders Count</span>
+                <strong style="color:#333; font-size:1.05rem;" id="sum-orders-count">0</strong>
+              </div>
+            </div>
+
+            <!-- Product Sales Breakdown Table -->
+            <h4 style="font-size:0.95rem; margin-bottom:0.75rem; color:#4F2A22;">
+              <i class="fas fa-bread-slice"></i> Sales By Product
+            </h4>
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Bundles Sold</th>
+                    <th>Pieces Sold</th>
+                    <th>Total Sales</th>
+                    <th style="text-align:right;">Share of Sales</th>
+                  </tr>
+                </thead>
+                <tbody id="sales-by-product-tbody">
+                  <tr><td colspan="5" class="muted text-center" style="padding:2rem;">Loading sales report…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/admin-api.js"></script>
+  <script src="../js/admin-ui.js"></script>
+  <script src="../js/admin-sales.js"></script>
+</body>
+</html>

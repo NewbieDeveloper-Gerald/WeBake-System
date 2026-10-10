@@ -65,9 +65,10 @@
     ApiError,
     baseUrl,
 
-    // --- catalog + public settings ---
+    // --- catalog + public settings + reviews ---
     products: () => get('/products'),
     settingsPublic: () => get('/settings/public'),
+    reviews: () => get('/reviews'),
 
     // --- OTP (send, then verify, THEN the gated action) ---
     otpSend: (email, purpose) => post('/otp/send', { email, purpose }),

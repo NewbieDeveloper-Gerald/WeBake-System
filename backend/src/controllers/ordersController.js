@@ -113,13 +113,15 @@ async function recordBalance(req, res) {
 async function adminCancel(req, res) {
   const result = await orderService.cancelOrder(
     req.params.code, { adminBypass: true }, { reason: req.body.reason },
-    `ADMIN:${req.admin.email}`
+    'ADMIN'
   );
   const view = await orderService.orderView(req.params.code);
-  mailer.bestEffort(
-    mailer.sendRefundReceived(view.customer_email, { order: view, refund: result.refund }),
-    `refund-received ${view.order_code}`
-  );
+  if (result.refund && result.refund.status !== 'CLOSED_NO_PAYMENT') {
+    mailer.bestEffort(
+      mailer.sendRefundReceived(view.customer_email, { order: view, refund: result.refund }),
+      `refund-received ${view.order_code}`
+    );
+  }
   return res.json({ success: true, ...result });
 }
 

@@ -131,8 +131,18 @@ async function approveDownpayment(code, actor) {
       throw conflict('APPROVE_WRONG_STATE',
         `Only orders under verification can be approved (current: ${order.status}).`);
     }
-    const payment = await latestDownpayment(client, order.id);
-    if (!payment || payment.verification_status !== 'PENDING') {
+    let payment = await latestDownpayment(client, order.id);
+    if (!payment) {
+      const { rows: newP } = await client.query(
+        `INSERT INTO payments
+           (order_id, stage, channel, amount_centavos, reference_number,
+            verification_status, verified_at)
+         VALUES ($1, 'DOWNPAYMENT', $2, $3, 'ADMIN_MANUAL_VERIFIED', 'VERIFIED', NOW())
+         RETURNING *;`,
+        [order.id, order.payment_method || 'GCASH', order.downpayment_centavos]
+      );
+      payment = newP[0];
+    } else if (payment.verification_status !== 'PENDING') {
       throw conflict('PAYMENT_NOT_PENDING',
         'There is no pending downpayment to approve for this order.');
     }

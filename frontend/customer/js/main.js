@@ -45,6 +45,7 @@
       settings = Object.assign(settings, setRes.settings || {});
       minBundles = Math.max(1, parseInt(settings.min_order_bundles, 10) || 300);
       showMinNote();
+      loadReviews().catch(() => {});
 
       if (auth.token()) {
         try {
@@ -562,6 +563,10 @@
         const token = auth.token() || undefined;
         const { order } = await api.createOrder(body, token);
         co.order = order;
+        try {
+          const sRes = await api.settingsPublic();
+          if (sRes && sRes.settings) Object.assign(settings, sRes.settings);
+        } catch { /* use existing cached settings */ }
         renderReview();
         setMethod(co.method);
         gotoStep('step-payment');
@@ -623,9 +628,9 @@
         isGcash ? (settings.gcash_number || '-') : (settings.paymaya_number || '-');
       document.getElementById('qr-name-display').textContent = settings.account_name || '-';
       const img = document.getElementById('payment-qr-img');
-      const src = qrSrc(method);
-      img.style.display = src ? '' : 'none';
-      if (src) img.src = src;
+      const src = qrSrc(method) || ('../../assets/qr-' + (isGcash ? 'gcash' : 'paymaya') + '-placeholder.png');
+      img.style.display = '';
+      img.src = src;
       const ref = document.getElementById('gcash-ref');
       ref.value = '';
       ref.maxLength = isGcash ? 13 : 16;
@@ -724,6 +729,36 @@
       init().catch(() => {});
     });
     document.getElementById('success-nav-btn').addEventListener('click', closeCheckout);
+
+    /* ---------------- customer reviews (dynamic from database) ---------------- */
+
+    async function loadReviews() {
+      const container = document.getElementById('reviews-container');
+      if (!container) return;
+      try {
+        const { reviews: list } = await api.reviews();
+        if (!list || !list.length) return;
+        container.innerHTML = list.map((r) => {
+          const stars = Array.from({ length: 5 }, (_, i) =>
+            '<i class="' + (i < (r.rating || 5) ? 'fas' : 'far') + ' fa-star"></i>'
+          ).join('');
+          const nameParts = String(r.display_name || 'Customer').replace(/^Sample Review\s*-\s*/i, '').split(',');
+          const name = nameParts[0].trim();
+          const loc = nameParts[1] ? nameParts[1].trim() : 'Bulacan';
+          const initials = name.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase() || 'CR';
+          const text = r.text_en || r.text_fil || '';
+          return '<div class="review-card">' +
+            '<div class="review-stars">' + stars + '</div>' +
+            '<p class="review-quote">"' + U.escapeHtml(text) + '"</p>' +
+            '<div class="review-author">' +
+            '<div class="review-avatar">' + U.escapeHtml(initials) + '</div>' +
+            '<div class="review-author-info">' +
+            '<h4>' + U.escapeHtml(name) + '</h4>' +
+            '<small>' + U.escapeHtml(loc) + '</small>' +
+            '</div></div></div>';
+        }).join('');
+      } catch { /* Preserve fallback static cards */ }
+    }
 
     /* ---------------- static English labels ---------------- */
 

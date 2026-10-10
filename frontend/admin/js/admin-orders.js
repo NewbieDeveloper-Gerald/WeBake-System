@@ -108,8 +108,11 @@
     function actionsFor(o) {
       const btns = [];
       if (o.status === 'PAYMENT_UNDER_VERIFICATION') {
-        btns.push('<button type="button" class="btn btn-primary btn-sm" data-verify="' +
-          ui.esc(o.order_code) + '">Verify</button>');
+        const hasProof = !!queueByCode[o.order_code];
+        btns.push('<button type="button" class="btn ' + (hasProof ? 'btn-primary' : 'btn-outline') + ' btn-sm" data-verify="' +
+          ui.esc(o.order_code) + '">' + (hasProof ? 'Verify Payment' : 'Awaiting Proof') + '</button>');
+        btns.push('<button type="button" class="btn btn-outline btn-sm" data-details="' +
+          ui.esc(o.order_code) + '">Details</button>');
       } else {
         btns.push('<button type="button" class="btn btn-outline btn-sm" data-details="' +
           ui.esc(o.order_code) + '">Details</button>');
@@ -154,8 +157,12 @@
         if (c) {
           const reason = window.prompt('Cancel ' + c.dataset.cancel + '? Type the reason (min 5 characters):');
           if (!reason) return;
-          await api.cancelOrder(c.dataset.cancel, reason);
-          window.alert('Order cancelled. The customer was emailed about the refund.');
+          if (reason.trim().length < 5) {
+            window.alert('Cancellation reason must be at least 5 characters.');
+            return;
+          }
+          await api.cancelOrder(c.dataset.cancel, reason.trim());
+          window.alert('Order cancelled.');
           await load();
         }
       } catch (err) {
@@ -166,9 +173,13 @@
     // --- verify modal ---
     function openVerify(code) {
       const row = queueByCode[code];
-      if (!row) { window.alert('This order is no longer awaiting verification.'); load(); return; }
+      const o = row ? row.order : orders.find((x) => x.order_code === code);
+      if (!o) { window.alert('Order not found.'); load(); return; }
       currentCode = code;
-      const { order: o, payment: p } = row;
+      const p = row ? row.payment : {
+        channel: o.payment_method || 'GCASH',
+        reference_number: '(None submitted yet)',
+      };
       set('verify-order-id', o.order_code);
       set('verify-cust-name', o.customer_name);
       set('verify-cust-contact', o.customer_contact);
@@ -180,10 +191,16 @@
       set('verify-ref-number', p.reference_number);
       const img = document.getElementById('verify-proof-image');
       const none = document.getElementById('verify-no-proof');
-      if (row.proof_url) {
+      if (row && row.proof_url) {
         img.src = row.proof_url; img.style.display = ''; none.style.display = 'none';
       } else {
         img.style.display = 'none'; none.style.display = '';
+        const msgEl = none.querySelector('p');
+        if (msgEl) {
+          msgEl.textContent = row
+            ? 'No screenshot attached for this transaction.'
+            : 'Customer placed order but has not uploaded payment proof yet.';
+        }
       }
       document.getElementById('verify-rejection-box').classList.remove('active');
       document.getElementById('verify-rejection-reason').value = '';

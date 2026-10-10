@@ -32,18 +32,20 @@
     const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
     form.insertBefore(extra, submitBtn || null);
 
-    function resolveQr(raw) {
+    function resolveQr(raw, fallback = 'assets/qr-gcash-placeholder.png') {
       const v = String(raw || '').trim();
-      if (!v || /^(https?:|\/|data:|\.\.\/)/.test(v)) return v;
+      if (!v) return '../../' + fallback;
+      if (/^(https?:|\/|data:|\.\.\/)/.test(v)) return v;
       return '../../' + v;
     }
 
     // Live QR previews from the path textboxes.
-    [['set-gcash-qr', 'preview-gcash-qr'], ['set-maya-qr', 'preview-maya-qr']].forEach(([input, img]) => {
+    [['set-gcash-qr', 'preview-gcash-qr', 'assets/qr-gcash-placeholder.png'],
+     ['set-maya-qr', 'preview-maya-qr', 'assets/qr-paymaya-placeholder.png']].forEach(([input, img, fb]) => {
       const el = document.getElementById(input);
       if (el) {
         el.addEventListener('input', (e) => {
-          document.getElementById(img).src = resolveQr(e.target.value);
+          document.getElementById(img).src = resolveQr(e.target.value, fb);
         });
       }
     });
@@ -107,15 +109,15 @@
       if (resetBtn) {
         resetBtn.addEventListener('click', () => {
           textInput.value = defaultPath;
-          previewImg.src = resolveQr(defaultPath);
+          previewImg.src = resolveQr(defaultPath, defaultPath);
           if (fileInput) fileInput.value = '';
           ui.toast('QR reset to default template.', 'info');
         });
       }
     }
 
-    setupQrUploader('dropzone-gcash', 'file-gcash-qr', 'set-gcash-qr', 'preview-gcash-qr', 'btn-reset-gcash-qr', '../img/gcash-qr.svg');
-    setupQrUploader('dropzone-maya', 'file-maya-qr', 'set-maya-qr', 'preview-maya-qr', 'btn-reset-maya-qr', '../img/paymaya-qr.svg');
+    setupQrUploader('dropzone-gcash', 'file-gcash-qr', 'set-gcash-qr', 'preview-gcash-qr', 'btn-reset-gcash-qr', 'assets/qr-gcash-placeholder.png');
+    setupQrUploader('dropzone-maya', 'file-maya-qr', 'set-maya-qr', 'preview-maya-qr', 'btn-reset-maya-qr', 'assets/qr-paymaya-placeholder.png');
 
     async function load() {
       const { settings: s } = await api.settingsGet();
@@ -127,8 +129,8 @@
       setVal('set-store-hours', s.store_hours);
       setVal('set-min-bundles', s.min_order_bundles || '300');
       setVal('set-low-stock', s.default_low_stock_pieces || '500');
-      if (s.gcash_qr) document.getElementById('preview-gcash-qr').src = resolveQr(s.gcash_qr);
-      if (s.paymaya_qr) document.getElementById('preview-maya-qr').src = resolveQr(s.paymaya_qr);
+      if (s.gcash_qr) document.getElementById('preview-gcash-qr').src = resolveQr(s.gcash_qr, 'assets/qr-gcash-placeholder.png');
+      if (s.paymaya_qr) document.getElementById('preview-maya-qr').src = resolveQr(s.paymaya_qr, 'assets/qr-paymaya-placeholder.png');
     }
 
     function setVal(id, v) {
@@ -143,8 +145,8 @@
       try {
         await api.settingsUpdate({
           account_name: document.getElementById('set-acc-name').value.trim(),
-          gcash_number: document.getElementById('set-gcash-num').value.trim(),
-          paymaya_number: document.getElementById('set-maya-num').value.trim(),
+          gcash_number: document.getElementById('set-gcash-num').value.replace(/[\s-]/g, '').trim(),
+          paymaya_number: document.getElementById('set-maya-num').value.replace(/[\s-]/g, '').trim(),
           gcash_qr: document.getElementById('set-gcash-qr').value.trim(),
           paymaya_qr: document.getElementById('set-maya-qr').value.trim(),
           store_hours: document.getElementById('set-store-hours').value.trim(),

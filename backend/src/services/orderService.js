@@ -488,6 +488,20 @@ async function cancelOrder(code, identity, input, changedBy = 'CUSTOMER') {
     // Admin path: wallet unknown -> AWAITING_DETAILS with NULL wallet fields;
     // customer submits them later. reason_source stays in the CHECK set.
     const isAdmin = changedBy !== 'CUSTOMER';
+    const historyChangedBy = changedBy && changedBy.startsWith('ADMIN')
+      ? 'ADMIN'
+      : (changedBy === 'SYSTEM' ? 'SYSTEM' : 'CUSTOMER');
+
+    const { rows: pRows } = await client.query(
+      'SELECT 1 FROM payments WHERE order_id = $1 AND verification_status != $2 LIMIT 1;',
+      [order.id, 'REJECTED']
+    );
+    const hasPayment = order.downpayment_paid_centavos > 0 || pRows.length > 0;
+    const refundStatus = hasPayment
+      ? (isAdmin ? REFUND.AWAITING_DETAILS : REFUND.PENDING)
+      : REFUND.CLOSED_NO_PAYMENT;
+    const refundAmount = hasPayment ? order.downpayment_centavos : 0;
+
     const { rows: refunds } = await client.query(
       `INSERT INTO refund_requests
          (order_id, reason, reason_source, wallet_type, account_number,
@@ -495,15 +509,15 @@ async function cancelOrder(code, identity, input, changedBy = 'CUSTOMER') {
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *;`,
       [order.id, input.reason.trim(), isAdmin ? 'ADMIN_REJECTION' : 'CUSTOMER',
-        isAdmin ? null : input.wallet_type,
-        isAdmin ? null : input.account_number,
-        isAdmin ? '' : input.account_name.trim(),
-        order.downpayment_centavos,
-        isAdmin ? REFUND.AWAITING_DETAILS : REFUND.PENDING]
+        isAdmin ? null : (input.wallet_type || null),
+        isAdmin ? '' : (input.account_number || ''),
+        isAdmin ? '' : ((input.account_name && input.account_name.trim()) || ''),
+        refundAmount,
+        refundStatus]
     );
 
     await insertHistory(client, order.id, order.status, ORDER.CANCELLED,
-      changedBy, `Cancelled by ${isAdmin ? 'admin' : 'customer'}. Reason: ${input.reason.trim()}`);
+      historyChangedBy, `Cancelled by ${isAdmin ? 'admin' : 'customer'}. Reason: ${input.reason.trim()}`);
 
     await client.query('COMMIT');
     return {

@@ -90,16 +90,24 @@
           ? '<div class="catalog-product-thumb-box"><img src="' + ui.esc(p.image_url) + '" class="catalog-product-img" alt="' + ui.esc(p.name) + '" onerror="this.onerror=null;this.parentElement.innerHTML=\'<span class=\\\'catalog-product-icon\\\'><i class=\\\'fas fa-bread-slice\\\'></i></span>\';"></div>'
           : '<span class="catalog-product-icon"><i class="fas fa-bread-slice"></i></span>';
 
+        const statusPill = p.is_archived
+          ? '<span class="catalog-status-badge status-archived"><i class="fas fa-box-archive"></i> Archived</span>'
+          : p.stock_status === 'OUT_OF_STOCK'
+            ? '<span class="catalog-status-badge status-out"><i class="fas fa-circle-xmark"></i> Out of Stock</span>'
+            : p.stock_status === 'LOW_STOCK'
+              ? '<span class="catalog-status-badge status-low"><i class="fas fa-triangle-exclamation"></i> Low Stock</span>'
+              : '<span class="catalog-status-badge status-ok"><i class="fas fa-circle-check"></i> In Stock</span>';
+
         return '<tr' + (p.is_archived ? ' class="is-archived"' : '') + '>' +
           '<td><div class="catalog-product-name">' + thumbHtml +
-          '<span><strong>' + ui.esc(p.name) + '</strong>' +
-          (p.is_archived ? '<small style="color:#C53030;font-weight:600;"><i class="fas fa-box-archive"></i> Archived</small>' : '') +
-          '</span></div></td>' +
-          '<td><strong>' + ui.pesos(p.price_bundle_centavos) + '</strong></td>' +
-          '<td>' + p.pieces_per_bundle + ' pcs</td>' +
-          '<td>' + ui.pesos(p.piece_price_centavos) + '</td>' +
-          '<td>' + p.stock_pieces + ' pcs <small class="text-muted">(' + Number(p.bundles_available || 0) + ' bdls)</small></td>' +
-          '<td>' + ui.pill(p.is_archived ? 'ARCHIVED' : p.stock_status) + '</td>' +
+          '<div class="catalog-name-meta"><strong>' + ui.esc(p.name) + '</strong>' +
+          (p.is_archived ? '<small class="text-danger"><i class="fas fa-box-archive"></i> Archived</small>' : '<small class="text-muted">' + (p.description ? ui.esc(p.description.slice(0, 45) + (p.description.length > 45 ? '…' : '')) : 'Standard bakery item') + '</small>') +
+          '</div></div></td>' +
+          '<td><span class="catalog-price-bundle">' + ui.pesos(p.price_bundle_centavos) + '</span></td>' +
+          '<td><span class="catalog-pcs-pill">' + p.pieces_per_bundle + ' pcs</span></td>' +
+          '<td><span class="catalog-price-piece">' + ui.pesos(p.piece_price_centavos) + '</span></td>' +
+          '<td><div class="catalog-stock-group"><strong class="stock-qty">' + p.stock_pieces.toLocaleString() + ' pcs</strong><span class="stock-bdls">(' + Number(p.bundles_available || 0) + ' bdls)</span></div></td>' +
+          '<td>' + statusPill + '</td>' +
           '<td class="actions-cell">' +
           '<button type="button" class="btn btn-outline btn-sm" data-edit="' + p.id + '"><i class="fas fa-pen"></i> Edit</button> ' +
           (p.is_archived
