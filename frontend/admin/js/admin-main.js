@@ -79,6 +79,79 @@
     confirmAsk(message) {
       return window.confirm(message);
     },
+    /** Polished in-page modal alert replacing browser native pop-up. */
+    alert(message, title) {
+      return new Promise((resolve) => {
+        let backdrop = document.getElementById('admin-modal-alert');
+        if (!backdrop) {
+          backdrop = document.createElement('div');
+          backdrop.id = 'admin-modal-alert';
+          backdrop.className = 'admin-modal-alert-backdrop';
+          backdrop.innerHTML =
+            '<div class="admin-modal-alert-dialog" role="dialog" aria-modal="true">' +
+            '<div class="admin-modal-alert-icon" id="admin-modal-alert-icon"><i class="fas fa-info"></i></div>' +
+            '<h3 class="admin-modal-alert-title" id="admin-modal-alert-title">Notice</h3>' +
+            '<div class="admin-modal-alert-text" id="admin-modal-alert-text"></div>' +
+            '<button type="button" class="btn btn-primary admin-modal-alert-btn" id="admin-modal-alert-btn">OK</button>' +
+            '</div>';
+          document.body.appendChild(backdrop);
+        }
+        const textEl = document.getElementById('admin-modal-alert-text');
+        const titleEl = document.getElementById('admin-modal-alert-title');
+        const iconEl = document.getElementById('admin-modal-alert-icon');
+        const btn = document.getElementById('admin-modal-alert-btn');
+
+        const msgStr = String(message || '');
+        const isErr = /error|fail|cannot|short|insufficient|out of stock|required/i.test(msgStr);
+        const isSuccess = /saved|updated|created|success|confirmed|verified|completed|restored|sent|closed/i.test(msgStr);
+
+        iconEl.className = 'admin-modal-alert-icon' + (isErr ? ' is-error' : (isSuccess ? ' is-success' : ''));
+        iconEl.innerHTML = isErr ? '<i class="fas fa-exclamation-triangle"></i>' : (isSuccess ? '<i class="fas fa-check"></i>' : '<i class="fas fa-info"></i>');
+        titleEl.textContent = title || (isErr ? 'Notice' : (isSuccess ? 'Success' : 'Information'));
+        textEl.textContent = msgStr;
+
+        backdrop.classList.add('is-active');
+        btn.focus();
+
+        const close = () => {
+          backdrop.classList.remove('is-active');
+          btn.removeEventListener('click', onOk);
+          backdrop.removeEventListener('click', onBackdrop);
+          document.removeEventListener('keydown', onKey);
+          resolve();
+        };
+        const onOk = () => close();
+        const onBackdrop = (e) => { if (e.target === backdrop) close(); };
+        const onKey = (e) => {
+          if (e.key === 'Escape' || e.key === 'Enter') {
+            e.preventDefault();
+            close();
+          }
+        };
+        btn.addEventListener('click', onOk);
+        backdrop.addEventListener('click', onBackdrop);
+        document.addEventListener('keydown', onKey);
+      });
+    },
+    /** Toast notification helper */
+    toast(message, type = 'info') {
+      let toastEl = document.getElementById('admin-toast');
+      if (!toastEl) {
+        toastEl = document.createElement('div');
+        toastEl.id = 'admin-toast';
+        document.body.appendChild(toastEl);
+      }
+      toastEl.className = type === 'success' ? 'toast-success' : type === 'danger' ? 'toast-danger' : '';
+      toastEl.textContent = message;
+      toastEl.classList.add('active');
+      clearTimeout(toastEl._timer);
+      toastEl._timer = setTimeout(() => toastEl.classList.remove('active'), 3200);
+    },
+  };
+
+  // Replace native browser window.alert across all admin views
+  window.alert = function (message) {
+    window.AdminUI.alert(message);
   };
 
   document.addEventListener('DOMContentLoaded', () => {

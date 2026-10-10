@@ -248,8 +248,7 @@
     function renderAuthButtons() {
       const signoutHtml =
         '<button type="button" class="btn btn-signout btn-sm" data-signout>' +
-        '<span class="signout-default">' + t('nav.signout') + '</span>' +
-        '<span class="signout-hover">' + t('nav.signin') + '</span>' +
+        t('nav.signout') +
         '</button>';
 
       document.querySelectorAll('.auth-buttons').forEach((box) => {
@@ -342,14 +341,15 @@
 
       async function sendResetOtp(isResend) {
         const email = document.getElementById('forgot-email').value.trim().toLowerCase();
-        if (!email) { fmsg(t('au.reset_sent')); return; }
+        if (!email) { fmsg('Please enter your email address.'); return; }
         try {
           await api.otpSend(email, 'RESET');
           widget.cooldown(60);
           document.getElementById('forgot-otp-wrap').style.display = 'block';
           fmsg(t('au.reset_sent'), true);
         } catch (err) {
-          fmsg(err.message);
+          document.getElementById('forgot-otp-wrap').style.display = 'none';
+          fmsg(err.message || 'No account found with this email address.');
         }
       }
 

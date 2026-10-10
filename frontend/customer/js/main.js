@@ -428,6 +428,12 @@
     }
 
     async function prefillInfo() {
+      api.settingsPublic().then((res) => {
+        if (res && res.settings) {
+          Object.assign(settings, res.settings);
+          setMethod(co.method || 'GCASH');
+        }
+      }).catch(() => {});
       if (!auth.token()) return;
       try {
         const { member: m } = await api.profile();

@@ -56,6 +56,18 @@ async function requestCode(email, purpose) {
     }
   }
 
+  // Password reset rule: reject immediately if email has no registered account.
+  if (purpose === 'RESET') {
+    const { rows: existing } = await query(
+      'SELECT id FROM members WHERE email = $1 LIMIT 1;',
+      [clean]
+    );
+    if (existing.length === 0) {
+      throw fail(404, 'ACCOUNT_NOT_FOUND',
+        'No account found with this email address. Please check your email or create an account.');
+    }
+  }
+
   // Resend cooldown: one code per minute per email+purpose.
   const { rows: recent } = await query(
     `SELECT created_at FROM otp_codes

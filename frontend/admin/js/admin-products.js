@@ -1,9 +1,8 @@
 /**
- * admin-products: catalog table + add/edit modal + archive/restore.
+ * admin-products: catalog table + add/edit modal + archive/restore + KPI metrics + category filters.
  *
- * WHAT: Lists products (archived included, greyed), saves through the admin
- * product endpoints, and converts the owner's peso inputs to centavos before
- * sending (the API only speaks integer centavos).
+ * WHAT: Lists products with live KPI counters, category filter pills,
+ * instant search, image thumbnail previews, and in-page modal dialogs.
  */
 (function () {
   'use strict';
@@ -14,87 +13,152 @@
     const ui = window.AdminUI;
     const api = window.AdminAPI;
     let editingId = null;
+    let cachedProducts = [];
+    let currentFilter = 'all';
+
     const search = document.getElementById('catalog-search');
     const countLabel = document.getElementById('catalog-count');
 
     const modal = () => document.getElementById('modal-product');
     const open = () => modal().classList.add('active');
-    const close = () => modal().classList.remove('active');
+    const close = () => {
+      modal().classList.remove('active');
+      document.getElementById('prod-image-preview-wrap').style.display = 'none';
+    };
 
     /** Pesos string -> integer centavos (rounded, never float-stored). */
     function toCentavos(pesos) {
       return Math.round(Number(pesos) * 100);
     }
 
+    function updateKpiCards(products) {
+      const total = products.length;
+      const inStock = products.filter((p) => !p.is_archived && p.stock_pieces > 0).length;
+      const lowOrOut = products.filter((p) => !p.is_archived && (p.stock_pieces <= p.low_stock_threshold_pieces || p.stock_pieces === 0)).length;
+      const archived = products.filter((p) => p.is_archived).length;
+
+      const setEl = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
+      setEl('stat-total-products', total);
+      setEl('stat-instock-products', inStock);
+      setEl('stat-lowstock-products', lowOrOut);
+      setEl('stat-archived-products', archived);
+    }
+
     async function load() {
       const tbody = document.getElementById('products-tbody');
       try {
         const { products } = await api.products(true);
-        tbody.innerHTML = products.length ? products.map((p) =>
-          '<tr' + (p.is_archived ? ' class="is-archived"' : '') + '><td><div class="catalog-product-name"><span class="catalog-product-icon"><i class="fas fa-bread-slice"></i></span><span><strong>' +
-          ui.esc(p.name) + '</strong>' + (p.is_archived ? '<small>Archived</small>' : '') + '</span></div></td><td>' +
-          ui.pesos(p.price_bundle_centavos) + '</td><td>' + p.pieces_per_bundle + '</td><td>' +
-          ui.pesos(p.piece_price_centavos) + '</td><td>' + p.stock_pieces + ' pcs</td><td>' +
-          ui.pill(p.is_archived ? 'ARCHIVED' : p.stock_status) + '</td><td class="actions-cell">' +
-          '<button type="button" class="btn btn-outline btn-sm" data-edit="' + p.id + '"><i class="fas fa-pen"></i> Edit</button> ' +
-          (p.is_archived
-            ? '<button type="button" class="btn btn-success btn-sm" data-restore="' + p.id + '"><i class="fas fa-rotate-left"></i> Restore</button>'
-            : '<button type="button" class="btn btn-danger-outline btn-sm" data-archive="' + p.id + '"><i class="fas fa-box-archive"></i> Archive</button>') +
-          '</td></tr>'
-        ).join('') : '<tr><td colspan="7" class="muted">No products yet.</td></tr>';
-        if (countLabel) countLabel.textContent = products.length + (products.length === 1 ? ' product' : ' products');
-        applySearch();
+        cachedProducts = products || [];
+        updateKpiCards(cachedProducts);
+        renderTable();
       } catch (err) {
         tbody.innerHTML = '<tr><td colspan="7" class="error-text">' + ui.esc(err.message) + '</td></tr>';
         if (countLabel) countLabel.textContent = 'Could not load products';
       }
     }
 
-    function applySearch() {
-      if (!search) return;
-      const term = search.value.trim().toLowerCase();
+    function renderTable() {
       const tbody = document.getElementById('products-tbody');
-      const rows = Array.from(tbody.querySelectorAll('tr')).filter((row) => !row.classList.contains('catalog-search-empty'));
-      const isEmptyCatalog = rows.length === 1 && rows[0].textContent.toLowerCase().includes('no products yet');
-      let visible = 0;
-      rows.forEach((row) => {
-        row.hidden = !isEmptyCatalog && Boolean(term) && !row.textContent.toLowerCase().includes(term);
-        if (!row.hidden) visible += 1;
-      });
-      let empty = tbody.querySelector('.catalog-search-empty');
-      if (term && visible === 0 && rows.length > 0 && !isEmptyCatalog) {
-        if (!empty) {
-          empty = document.createElement('tr');
-          empty.className = 'catalog-search-empty';
-          empty.innerHTML = '<td colspan="7" class="muted">No products match your search.</td>';
-          tbody.appendChild(empty);
+      const term = (search ? search.value.trim().toLowerCase() : '');
+
+      let filtered = cachedProducts.filter((p) => {
+        // Category filter
+        if (currentFilter === 'active' && p.is_archived) return false;
+        if (currentFilter === 'archived' && !p.is_archived) return false;
+        if (currentFilter === 'low_stock' && (p.is_archived || p.stock_pieces > p.low_stock_threshold_pieces)) return false;
+
+        // Search text filter
+        if (term) {
+          const match = p.name.toLowerCase().includes(term) ||
+            (p.description && p.description.toLowerCase().includes(term));
+          if (!match) return false;
         }
-        empty.hidden = false;
-      } else if (empty) {
-        empty.remove();
+        return true;
+      });
+
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="muted" style="text-align:center;padding:2rem;">No products match your filter criteria.</td></tr>';
+        if (countLabel) countLabel.textContent = '0 products matching';
+        return;
       }
-      if (countLabel && rows.length && !isEmptyCatalog) {
-        countLabel.textContent = term ? 'Showing ' + visible + ' of ' + rows.length + ' products' : rows.length + (rows.length === 1 ? ' product' : ' products');
+
+      tbody.innerHTML = filtered.map((p) => {
+        const thumbHtml = p.image_url
+          ? '<div class="catalog-product-thumb-box"><img src="' + ui.esc(p.image_url) + '" class="catalog-product-img" alt="' + ui.esc(p.name) + '" onerror="this.onerror=null;this.parentElement.innerHTML=\'<span class=\\\'catalog-product-icon\\\'><i class=\\\'fas fa-bread-slice\\\'></i></span>\';"></div>'
+          : '<span class="catalog-product-icon"><i class="fas fa-bread-slice"></i></span>';
+
+        return '<tr' + (p.is_archived ? ' class="is-archived"' : '') + '>' +
+          '<td><div class="catalog-product-name">' + thumbHtml +
+          '<span><strong>' + ui.esc(p.name) + '</strong>' +
+          (p.is_archived ? '<small style="color:#C53030;font-weight:600;"><i class="fas fa-box-archive"></i> Archived</small>' : '') +
+          '</span></div></td>' +
+          '<td><strong>' + ui.pesos(p.price_bundle_centavos) + '</strong></td>' +
+          '<td>' + p.pieces_per_bundle + ' pcs</td>' +
+          '<td>' + ui.pesos(p.piece_price_centavos) + '</td>' +
+          '<td>' + p.stock_pieces + ' pcs <small class="text-muted">(' + Number(p.bundles_available || 0) + ' bdls)</small></td>' +
+          '<td>' + ui.pill(p.is_archived ? 'ARCHIVED' : p.stock_status) + '</td>' +
+          '<td class="actions-cell">' +
+          '<button type="button" class="btn btn-outline btn-sm" data-edit="' + p.id + '"><i class="fas fa-pen"></i> Edit</button> ' +
+          (p.is_archived
+            ? '<button type="button" class="btn btn-success btn-sm" data-restore="' + p.id + '"><i class="fas fa-rotate-left"></i> Restore</button>'
+            : '<button type="button" class="btn btn-danger-outline btn-sm" data-archive="' + p.id + '"><i class="fas fa-box-archive"></i> Archive</button>') +
+          '</td></tr>';
+      }).join('');
+
+      if (countLabel) {
+        countLabel.textContent = term || currentFilter !== 'all'
+          ? 'Showing ' + filtered.length + ' of ' + cachedProducts.length + ' products'
+          : cachedProducts.length + (cachedProducts.length === 1 ? ' product' : ' products');
       }
+    }
+
+    // Filter pills click handling
+    document.querySelectorAll('#catalog-filters [data-filter]').forEach((pill) => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('#catalog-filters [data-filter]').forEach((p) => p.classList.remove('active'));
+        pill.classList.add('active');
+        currentFilter = pill.dataset.filter;
+        renderTable();
+      });
+    });
+
+    if (search) search.addEventListener('input', renderTable);
+
+    // Live preview for image input in modal
+    const prodImgInput = document.getElementById('prod-image');
+    const prodImgPreview = document.getElementById('prod-image-preview');
+    const prodImgWrap = document.getElementById('prod-image-preview-wrap');
+    if (prodImgInput) {
+      prodImgInput.addEventListener('input', () => {
+        const val = prodImgInput.value.trim();
+        if (val) {
+          prodImgPreview.src = val;
+          prodImgWrap.style.display = 'flex';
+        } else {
+          prodImgWrap.style.display = 'none';
+        }
+      });
     }
 
     function openForCreate() {
       editingId = null;
-      document.getElementById('product-modal-title').textContent = 'Add Product';
+      document.getElementById('product-modal-title').innerHTML = '<i class="fas fa-plus-circle text-primary"></i> Add New Product';
       document.getElementById('product-form').reset();
       document.getElementById('prod-pieces').value = 25;
       document.getElementById('prod-threshold').value = 500;
       document.getElementById('prod-stock-wrap').style.display = '';
+      if (prodImgWrap) prodImgWrap.style.display = 'none';
       open();
     }
 
     async function openForEdit(id) {
-      // The list response already carries every field; find the row locally.
-      const { products } = await api.products(true);
-      const p = products.find((x) => String(x.id) === String(id));
+      const p = cachedProducts.find((x) => String(x.id) === String(id));
       if (!p) return;
       editingId = p.id;
-      document.getElementById('product-modal-title').textContent = 'Edit: ' + p.name;
+      document.getElementById('product-modal-title').innerHTML = '<i class="fas fa-pen text-primary"></i> Edit: ' + ui.esc(p.name);
       document.getElementById('prod-name').value = p.name;
       document.getElementById('prod-desc').value = p.description || '';
       document.getElementById('prod-price').value = (p.price_bundle_centavos / 100).toFixed(2);
@@ -102,6 +166,14 @@
       document.getElementById('prod-piece-price').value = (p.piece_price_centavos / 100).toFixed(2);
       document.getElementById('prod-threshold').value = p.low_stock_threshold_pieces;
       document.getElementById('prod-image').value = p.image_url || '';
+
+      if (p.image_url && prodImgPreview) {
+        prodImgPreview.src = p.image_url;
+        prodImgWrap.style.display = 'flex';
+      } else if (prodImgWrap) {
+        prodImgWrap.style.display = 'none';
+      }
+
       // Stock adjusts on the Inventory page, never by editing the product.
       document.getElementById('prod-stock-wrap').style.display = 'none';
       open();
@@ -113,22 +185,25 @@
       const rest = e.target.closest('[data-restore]');
       try {
         if (edit) { await openForEdit(edit.dataset.edit); return; }
-        if (arch && ui.confirmAsk('Archive this product? It leaves the shop and Walk-In register, but order history stays.')) {
+        if (arch && ui.confirmAsk('Archive this product? It will be hidden from the customer storefront and Walk-In register, but past order history remains preserved.')) {
           await api.productArchive(arch.dataset.archive);
+          ui.toast('Product archived.', 'info');
           await load();
         }
         if (rest) {
           await api.productRestore(rest.dataset.restore);
+          ui.toast('Product restored to catalog.', 'success');
           await load();
         }
       } catch (err) {
-        window.alert(err.message);
+        ui.alert(err.message, 'Product Action Failed');
       }
     });
 
     document.getElementById('btn-add-product').addEventListener('click', openForCreate);
-    if (search) search.addEventListener('input', applySearch);
     document.getElementById('btn-close-product').addEventListener('click', close);
+    const cancelBtn = document.getElementById('btn-cancel-product');
+    if (cancelBtn) cancelBtn.addEventListener('click', close);
     modal().addEventListener('click', (e) => { if (e.target === modal()) close(); });
 
     document.getElementById('product-form').addEventListener('submit', async (e) => {
@@ -147,14 +222,16 @@
         };
         if (editingId) {
           await api.productUpdate(editingId, payload);
+          ui.toast('Product "' + payload.name + '" updated successfully!', 'success');
         } else {
           payload.initial_stock_pieces = Number(document.getElementById('prod-stock').value || 0);
           await api.productCreate(payload);
+          ui.toast('Product "' + payload.name + '" added to catalog!', 'success');
         }
         close();
         await load();
       } catch (err) {
-        window.alert(err.message);
+        ui.alert(err.message, 'Save Product Failed');
       } finally {
         btn.disabled = false;
       }

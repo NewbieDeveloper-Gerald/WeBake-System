@@ -112,16 +112,12 @@
   min-width: 88px;
   padding: 0.35rem 0.85rem;
 }
-.btn-signout .signout-hover { display: none; }
-.btn-signout .signout-default { display: inline; }
 .btn-signout:hover {
   background: #dc2626 !important;
   border-color: #dc2626 !important;
   color: #ffffff !important;
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
 }
-.btn-signout:hover .signout-default { display: none; }
-.btn-signout:hover .signout-hover { display: inline; color: #ffffff !important; }
 
 /* Existing Account Notice Card in Registration */
 .auth-notice-card {

@@ -124,25 +124,55 @@
               <!-- QR Code Upload / Link Row -->
               <div class="form-row-2">
                 <div class="form-group">
-                  <label class="form-label">GCash QR Code Image (URL or Upload)</label>
-                  <input type="text" id="set-gcash-qr" class="form-input" placeholder="../img/gcash-qr.svg">
-                  <input type="file" id="file-gcash-qr" class="form-input" accept="image/*">
-                  <div class="detail-section-box">
-                    <span class="detail-section-title">Current GCash QR Preview</span>
-                    <div class="pos-qr-thumbnail">
-                      <img id="preview-gcash-qr" src="../img/gcash-qr.svg" alt="GCash QR">
+                  <label class="form-label"><i class="fas fa-qrcode text-primary"></i> GCash QR Code Image</label>
+                  <div class="qr-upload-container" id="dropzone-gcash">
+                    <div class="qr-upload-body">
+                      <div class="qr-preview-box">
+                        <img id="preview-gcash-qr" src="../img/gcash-qr.svg" alt="GCash QR Preview">
+                      </div>
+                      <div class="qr-upload-actions">
+                        <div class="qr-drop-text">
+                          <strong>Drag &amp; drop GCash QR here</strong>
+                          <span>or choose an image file below</span>
+                        </div>
+                        <div class="qr-btn-row">
+                          <label class="btn btn-outline btn-sm" for="file-gcash-qr" style="cursor:pointer;">
+                            <i class="fas fa-folder-open"></i> Choose Image
+                          </label>
+                          <input type="file" id="file-gcash-qr" accept="image/*" style="display:none;">
+                          <button type="button" class="btn btn-danger-outline btn-sm" id="btn-reset-gcash-qr" title="Reset to default QR">
+                            <i class="fas fa-rotate-left"></i> Reset
+                          </button>
+                        </div>
+                        <input type="text" id="set-gcash-qr" class="form-input form-input-sm" placeholder="Image URL or data URL" style="font-size:0.75rem;">
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label">PayMaya QR Code Image (URL or Upload)</label>
-                  <input type="text" id="set-maya-qr" class="form-input" placeholder="../img/paymaya-qr.svg">
-                  <input type="file" id="file-maya-qr" class="form-input" accept="image/*">
-                  <div class="detail-section-box">
-                    <span class="detail-section-title">Current Maya QR Preview</span>
-                    <div class="pos-qr-thumbnail">
-                      <img id="preview-maya-qr" src="../img/paymaya-qr.svg" alt="Maya QR">
+                  <label class="form-label"><i class="fas fa-qrcode text-primary"></i> PayMaya QR Code Image</label>
+                  <div class="qr-upload-container" id="dropzone-maya">
+                    <div class="qr-upload-body">
+                      <div class="qr-preview-box">
+                        <img id="preview-maya-qr" src="../img/paymaya-qr.svg" alt="PayMaya QR Preview">
+                      </div>
+                      <div class="qr-upload-actions">
+                        <div class="qr-drop-text">
+                          <strong>Drag &amp; drop Maya QR here</strong>
+                          <span>or choose an image file below</span>
+                        </div>
+                        <div class="qr-btn-row">
+                          <label class="btn btn-outline btn-sm" for="file-maya-qr" style="cursor:pointer;">
+                            <i class="fas fa-folder-open"></i> Choose Image
+                          </label>
+                          <input type="file" id="file-maya-qr" accept="image/*" style="display:none;">
+                          <button type="button" class="btn btn-danger-outline btn-sm" id="btn-reset-maya-qr" title="Reset to default QR">
+                            <i class="fas fa-rotate-left"></i> Reset
+                          </button>
+                        </div>
+                        <input type="text" id="set-maya-qr" class="form-input form-input-sm" placeholder="Image URL or data URL" style="font-size:0.75rem;">
+                      </div>
                     </div>
                   </div>
                 </div>

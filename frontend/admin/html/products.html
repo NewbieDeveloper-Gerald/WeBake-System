@@ -55,29 +55,75 @@
       </header>
 
       <main class="content-area">
+        <!-- Summary Stats Cards -->
+        <div class="stats-grid" style="margin-bottom: 1.25rem;">
+          <div class="stat-card">
+            <div class="stat-label">Total Products</div>
+            <div class="stat-value" id="stat-total-products">—</div>
+            <div class="stat-sub">in bakery catalog</div>
+          </div>
+          <div class="stat-card highlight">
+            <div class="stat-label">Active &amp; In Stock</div>
+            <div class="stat-value" id="stat-instock-products">—</div>
+            <div class="stat-sub">ready for sale</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Low / Out of Stock</div>
+            <div class="stat-value" id="stat-lowstock-products" style="color:var(--danger, #dc3545);">—</div>
+            <div class="stat-sub">needs production</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Archived</div>
+            <div class="stat-value" id="stat-archived-products">—</div>
+            <div class="stat-sub">hidden from storefront</div>
+          </div>
+        </div>
+
+        <!-- Catalog Surface -->
         <section class="catalog-surface">
           <div class="catalog-toolbar">
             <div class="catalog-heading">
-              <h2>Bakery products</h2>
-              <p>Manage the items customers can order.</p>
+              <h2>Bakery Products</h2>
+              <p>Manage items, bundle configurations, and pricing.</p>
             </div>
-            <label class="catalog-search" for="catalog-search">
-              <i class="fas fa-search" aria-hidden="true"></i>
-              <input id="catalog-search" type="search" placeholder="Search products" aria-label="Search products" autocomplete="off">
-            </label>
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+              <div class="pos-category-filters" id="catalog-filters">
+                <button type="button" class="pos-filter-pill active" data-filter="all">All</button>
+                <button type="button" class="pos-filter-pill" data-filter="active">Active</button>
+                <button type="button" class="pos-filter-pill" data-filter="low_stock">Low Stock</button>
+                <button type="button" class="pos-filter-pill" data-filter="archived">Archived</button>
+              </div>
+              <label class="catalog-search" for="catalog-search">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <input id="catalog-search" type="search" placeholder="Search products..." aria-label="Search products" autocomplete="off">
+              </label>
+            </div>
           </div>
-          <div class="catalog-meta"><span id="catalog-count">Loading products…</span><span>Prices shown in Philippine pesos</span></div>
+          <div class="catalog-meta">
+            <span id="catalog-count">Loading products…</span>
+            <span>All wholesale prices in Philippine Pesos (PHP)</span>
+          </div>
           <div class="table-responsive">
-          <table class="dash-table catalog-table">
-            <thead>
-              <tr><th>Product</th><th>Bundle price</th><th>Pcs/bundle</th><th>Piece price</th><th>Stock</th><th>Status</th><th>Actions</th></tr>
-            </thead>
-            <tbody id="products-tbody"><tr><td colspan="7" class="muted">Loading…</td></tr></tbody>
-          </table>
+            <table class="dash-table catalog-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Bundle Price</th>
+                  <th>Pcs/Bundle</th>
+                  <th>Piece Price</th>
+                  <th>Stock Available</th>
+                  <th>Status</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="products-tbody">
+                <tr><td colspan="7" class="muted">Loading products…</td></tr>
+              </tbody>
+            </table>
           </div>
         </section>
         <p class="catalog-note">
-          Archiving hides a product from the shop and Walk-In register while preserving all order history.
+          <i class="fas fa-info-circle text-primary"></i> Archiving hides a product from the shop and Walk-In register while preserving all order history.
           Stock is adjusted on the <a href="inventory.html">Daily Inventory</a> page.
         </p>
       </main>
@@ -94,44 +140,49 @@
       <form id="product-form">
         <div class="modal-body">
           <div class="form-group">
-            <label class="form-label" for="prod-name">Name</label>
-            <input type="text" id="prod-name" class="form-input" required minlength="2" maxlength="80">
+            <label class="form-label" for="prod-name">Product Name *</label>
+            <input type="text" id="prod-name" class="form-input" required minlength="2" maxlength="80" placeholder="e.g. Classic Spanish Bread">
           </div>
           <div class="form-group">
             <label class="form-label" for="prod-desc">Description</label>
-            <textarea id="prod-desc" class="form-input" rows="2" maxlength="1000"></textarea>
+            <textarea id="prod-desc" class="form-input" rows="2" maxlength="1000" placeholder="Freshly baked daily with buttery crumb and rich filling..."></textarea>
           </div>
           <div class="form-row-2">
             <div class="form-group">
-              <label class="form-label" for="prod-price">Bundle price (pesos)</label>
+              <label class="form-label" for="prod-price">Bundle Price (Pesos) *</label>
               <input type="number" id="prod-price" class="form-input" required min="1" step="0.01" placeholder="105.00">
             </div>
             <div class="form-group">
-              <label class="form-label" for="prod-pieces">Pieces per bundle</label>
+              <label class="form-label" for="prod-pieces">Pieces Per Bundle *</label>
               <input type="number" id="prod-pieces" class="form-input" required min="1" value="25">
             </div>
           </div>
           <div class="form-row-2">
             <div class="form-group">
-              <label class="form-label" for="prod-piece-price">Walk-In piece price (pesos)</label>
+              <label class="form-label" for="prod-piece-price">Walk-In Piece Price (Pesos) *</label>
               <input type="number" id="prod-piece-price" class="form-input" required min="0.01" step="0.01" placeholder="5.00">
             </div>
             <div class="form-group">
-              <label class="form-label" for="prod-threshold">Low-stock threshold (pieces)</label>
+              <label class="form-label" for="prod-threshold">Low-Stock Alert (Pieces) *</label>
               <input type="number" id="prod-threshold" class="form-input" required min="0" value="500">
             </div>
           </div>
           <div class="form-group" id="prod-stock-wrap">
-            <label class="form-label" for="prod-stock">Opening stock (pieces, new products only)</label>
+            <label class="form-label" for="prod-stock">Initial Stock (Pieces, new products only)</label>
             <input type="number" id="prod-stock" class="form-input" min="0" value="0">
           </div>
           <div class="form-group">
-            <label class="form-label" for="prod-image">Image URL (optional)</label>
-            <input type="text" id="prod-image" class="form-input" maxlength="500" placeholder="assets/… or https://…">
+            <label class="form-label" for="prod-image">Product Image URL (optional)</label>
+            <input type="text" id="prod-image" class="form-input" maxlength="500" placeholder="assets/img/spanish-bread.png or https://...">
+            <div id="prod-image-preview-wrap" style="margin-top:0.6rem; display:none; align-items:center; gap:0.75rem;">
+              <img id="prod-image-preview" src="" alt="Product Preview" style="width:60px; height:60px; object-fit:cover; border-radius:8px; border:1px solid #ddd;">
+              <span style="font-size:0.78rem; color:var(--text-muted);">Preview of product image</span>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary" id="btn-save-product"><i class="fas fa-save"></i> Save</button>
+          <button type="button" class="btn btn-outline" id="btn-cancel-product">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-product"><i class="fas fa-save"></i> Save Product</button>
         </div>
       </form>
     </div>

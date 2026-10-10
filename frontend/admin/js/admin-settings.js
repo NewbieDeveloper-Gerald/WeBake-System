@@ -1,13 +1,9 @@
 /**
- * admin-settings: bakery configuration form (legacy shell).
+ * admin-settings: bakery configuration form with interactive QR upload & live sync.
  *
- * WHAT: Loads all settings into the form, saves partial updates. Wallet
- * numbers keep the 09XXXXXXXXX format; QR fields are PATHS to committed
- * images (no upload endpoint on the free tier - see docs/render-integration).
- *
- * LEGACY ADAPTATIONS: cutoff time + delivery areas have no backend keys and
- * are hidden; the QR file pickers are hidden (paths only); minimum order +
- * low-stock default inputs are injected (admin-editable business rules).
+ * WHAT: Loads all settings into the form, saves partial updates. Supports
+ * drag-and-drop & file selection for GCash & Maya QR codes (read as DataURL),
+ * which directly reflect in customer checkout payments.
  */
 (function () {
   'use strict';
@@ -25,11 +21,6 @@
       const group = el && el.closest('.form-group');
       if (group) group.style.display = 'none';
     });
-    // No QR upload endpoint: keep the path textboxes, hide the file pickers.
-    ['file-gcash-qr', 'file-maya-qr'].forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = 'none';
-    });
 
     // Inject the two business-rule settings the backend DOES own.
     const extra = document.createElement('div');
@@ -41,8 +32,6 @@
     const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
     form.insertBefore(extra, submitBtn || null);
 
-    // Stored QR paths are site-root-relative (e.g. assets/x.png); this page
-    // sits two levels deep, so resolve before previewing (same rule as checkout).
     function resolveQr(raw) {
       const v = String(raw || '').trim();
       if (!v || /^(https?:|\/|data:|\.\.\/)/.test(v)) return v;
@@ -51,10 +40,82 @@
 
     // Live QR previews from the path textboxes.
     [['set-gcash-qr', 'preview-gcash-qr'], ['set-maya-qr', 'preview-maya-qr']].forEach(([input, img]) => {
-      document.getElementById(input).addEventListener('input', (e) => {
-        document.getElementById(img).src = resolveQr(e.target.value);
-      });
+      const el = document.getElementById(input);
+      if (el) {
+        el.addEventListener('input', (e) => {
+          document.getElementById(img).src = resolveQr(e.target.value);
+        });
+      }
     });
+
+    // Wire Drag & Drop and File Picker for QR images
+    function setupQrUploader(dropzoneId, fileInputId, textInputId, previewImgId, resetBtnId, defaultPath) {
+      const dropzone = document.getElementById(dropzoneId);
+      const fileInput = document.getElementById(fileInputId);
+      const textInput = document.getElementById(textInputId);
+      const previewImg = document.getElementById(previewImgId);
+      const resetBtn = document.getElementById(resetBtnId);
+
+      function handleFile(file) {
+        if (!file || !file.type.startsWith('image/')) {
+          ui.alert('Please select or drop a valid image file (PNG, JPG, SVG, WebP).');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const dataUrl = e.target.result;
+          textInput.value = dataUrl;
+          previewImg.src = dataUrl;
+          ui.toast('QR image loaded! Click "Save Bakery Settings" to apply.', 'success');
+        };
+        reader.readAsDataURL(file);
+      }
+
+      if (fileInput) {
+        fileInput.addEventListener('change', (e) => {
+          if (e.target.files && e.target.files[0]) {
+            handleFile(e.target.files[0]);
+          }
+        });
+      }
+
+      if (dropzone) {
+        ['dragenter', 'dragover'].forEach((eventName) => {
+          dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.add('dragover');
+          });
+        });
+
+        ['dragleave', 'drop'].forEach((eventName) => {
+          dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove('dragover');
+          });
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+          const dt = e.dataTransfer;
+          if (dt && dt.files && dt.files[0]) {
+            handleFile(dt.files[0]);
+          }
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+          textInput.value = defaultPath;
+          previewImg.src = resolveQr(defaultPath);
+          if (fileInput) fileInput.value = '';
+          ui.toast('QR reset to default template.', 'info');
+        });
+      }
+    }
+
+    setupQrUploader('dropzone-gcash', 'file-gcash-qr', 'set-gcash-qr', 'preview-gcash-qr', 'btn-reset-gcash-qr', '../img/gcash-qr.svg');
+    setupQrUploader('dropzone-maya', 'file-maya-qr', 'set-maya-qr', 'preview-maya-qr', 'btn-reset-maya-qr', '../img/paymaya-qr.svg');
 
     async function load() {
       const { settings: s } = await api.settingsGet();
@@ -90,14 +151,14 @@
           min_order_bundles: Number(document.getElementById('set-min-bundles').value),
           default_low_stock_pieces: Number(document.getElementById('set-low-stock').value),
         });
-        window.alert('Settings saved. The checkout page reads them immediately.');
+        ui.alert('Bakery settings saved! Payment credentials and QR codes are now updated live for customer checkout.', 'Settings Saved');
       } catch (err) {
-        window.alert(err.message);
+        ui.alert(err.message, 'Error Saving Settings');
       } finally {
         if (btn) btn.disabled = false;
       }
     });
 
-    load().catch((err) => window.alert(err.message));
+    load().catch((err) => ui.alert(err.message, 'Failed to Load Settings'));
   });
 })();

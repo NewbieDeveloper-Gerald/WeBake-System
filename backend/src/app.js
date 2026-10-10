@@ -60,10 +60,8 @@ function createApp() {
     allowedHeaders: ['Content-Type', 'Authorization'],
   }));
 
-  // Parse JSON bodies (10kb cap: login payloads are tiny; huge bodies are abuse).
-  // NOTE: proof photos upload as multipart via multer, not JSON - the cap does
-  // not apply to them (multer enforces its own 5MB file limit).
-  app.use(express.json({ limit: '10kb' }));
+  // Parse JSON bodies (5mb cap to accommodate admin QR image uploads).
+  app.use(express.json({ limit: '5mb' }));
 
   // --- Routes ---
   app.use('/health', healthRoutes); // Render health check path
