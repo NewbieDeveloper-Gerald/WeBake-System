@@ -88,4 +88,29 @@ async function signedViewUrl(path, seconds = 900) {
   return data.signedUrl;
 }
 
-module.exports = { PROOFS_BUCKET, isEnabled, uploadProof, signedViewUrl };
+const PRODUCT_IMAGES_BUCKET = 'product-images';
+
+/** Upload public product photo to Supabase product-images bucket. */
+async function uploadProductImage(buffer, { filename, mimetype }) {
+  const ext = extFor(mimetype);
+  const cleanName = String(filename || 'product').replace(/\.[^/.]+$/, '').replace(/[^a-z0-9_-]/gi, '-').toLowerCase();
+  const path = `${cleanName}-${Date.now()}.${ext}`;
+  if (!isEnabled()) {
+    if (config.nodeEnv !== 'production') {
+      return { url: `data:${mimetype};base64,${buffer.toString('base64')}`, path };
+    }
+    throw fail(503, 'STORAGE_DISABLED', 'File storage is not configured.');
+  }
+  const { error } = await getClient().storage
+    .from(PRODUCT_IMAGES_BUCKET)
+    .upload(path, buffer, { contentType: mimetype, upsert: true });
+  if (error) {
+    console.error('[storage] product image upload failed:', error.message);
+    throw fail(502, 'UPLOAD_FAILED', 'Product photo could not be saved to Supabase Storage.');
+  }
+  const rawUrl = config.storage.url.replace(/\/$/, '');
+  const publicUrl = `${rawUrl}/storage/v1/object/public/${PRODUCT_IMAGES_BUCKET}/${path}`;
+  return { url: publicUrl, path };
+}
+
+module.exports = { PROOFS_BUCKET, PRODUCT_IMAGES_BUCKET, isEnabled, uploadProof, signedViewUrl, uploadProductImage };

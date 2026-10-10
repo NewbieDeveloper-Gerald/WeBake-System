@@ -41,8 +41,12 @@
     const headers = {};
     let body;
     if (opts.body !== undefined) {
-      headers['Content-Type'] = 'application/json';
-      body = JSON.stringify(opts.body);
+      if (typeof FormData !== 'undefined' && opts.body instanceof FormData) {
+        body = opts.body;
+      } else {
+        headers['Content-Type'] = 'application/json';
+        body = JSON.stringify(opts.body);
+      }
     }
     if (opts.auth !== false) {
       const token = getToken();
@@ -139,6 +143,7 @@
     productUpdate: (id, data) => put('/api/admin/products/' + encodeURIComponent(id), data),
     productArchive: (id) => request('DELETE', '/api/admin/products/' + encodeURIComponent(id)),
     productRestore: (id) => post('/api/admin/products/' + encodeURIComponent(id) + '/restore', {}),
+    productUploadImage: (formData) => request('POST', '/api/admin/products/upload-image', { body: formData }),
 
     // --- inventory (adjust reasons: RESTOCK adds, ADJUSTMENT corrects) ---
     lowStock: () => get('/api/admin/products/low-stock'),

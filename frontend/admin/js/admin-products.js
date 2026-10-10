@@ -148,26 +148,58 @@
     const prodImgFilename = document.getElementById('prod-image-filename');
 
     if (prodImgFile) {
-      prodImgFile.addEventListener('change', () => {
+      prodImgFile.addEventListener('change', async () => {
         const file = prodImgFile.files && prodImgFile.files[0];
         if (!file) return;
         if (!file.type.startsWith('image/')) {
           ui.alert('Please select an image file (PNG, JPG, WebP, etc.).', 'Invalid File');
           return;
         }
-        if (file.size > 4 * 1024 * 1024) {
-          ui.alert('Image must be under 4MB in size.', 'File Too Large');
+        if (file.size > 5 * 1024 * 1024) {
+          ui.alert('Image must be under 5MB in size.', 'File Too Large');
           return;
         }
+
+        // 1. Show immediate local thumbnail preview
         const reader = new FileReader();
         reader.onload = (ev) => {
-          if (prodImgInput) prodImgInput.value = ev.target.result;
           if (prodImgPreview) prodImgPreview.src = ev.target.result;
           if (prodImgWrap) prodImgWrap.style.display = 'flex';
           if (prodImgClear) prodImgClear.style.display = 'inline-block';
-          if (prodImgFilename) prodImgFilename.textContent = file.name;
         };
         reader.readAsDataURL(file);
+
+        // 2. Upload directly to Supabase product-images bucket via API
+        if (prodImgFilename) prodImgFilename.innerHTML = '<i class="fas fa-spinner fa-spin text-primary"></i> Uploading to Supabase Storage...';
+        try {
+          const formData = new FormData();
+          formData.append('image', file);
+          const res = await api.productUploadImage(formData);
+          if (res && res.image_url) {
+            if (prodImgInput) prodImgInput.value = res.image_url;
+            if (prodImgPreview) prodImgPreview.src = res.image_url;
+            if (prodImgFilename) prodImgFilename.innerHTML = '<i class="fas fa-check-circle text-success"></i> Uploaded to Supabase product-images: ' + ui.esc(file.name);
+            ui.toast('Image uploaded to Supabase Storage!', 'success');
+          }
+        } catch (err) {
+          console.warn('Storage upload fallback:', err.message);
+          if (prodImgFilename) prodImgFilename.innerHTML = '<i class="fas fa-info-circle text-muted"></i> Ready: ' + ui.esc(file.name);
+        }
+      });
+    }
+
+    if (prodImgInput) {
+      prodImgInput.addEventListener('input', () => {
+        const val = prodImgInput.value.trim();
+        if (val) {
+          if (prodImgPreview) prodImgPreview.src = val;
+          if (prodImgWrap) prodImgWrap.style.display = 'flex';
+          if (prodImgClear) prodImgClear.style.display = 'inline-block';
+          if (prodImgFilename) prodImgFilename.textContent = 'Custom Image URL';
+        } else {
+          if (prodImgPreview) prodImgPreview.src = '';
+          if (prodImgWrap) prodImgWrap.style.display = 'none';
+        }
       });
     }
 

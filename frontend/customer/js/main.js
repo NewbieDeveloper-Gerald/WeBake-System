@@ -483,6 +483,7 @@
     function closeCheckout() {
       const coOverlay = document.getElementById('checkout-overlay');
       if (coOverlay) coOverlay.classList.remove('active');
+      if (typeof clearProofSelection === 'function') clearProofSelection();
     }
 
     const proceedCheckoutBtn = document.getElementById('proceed-checkout');
@@ -740,7 +741,9 @@
 
     function qrSrc(which) {
       const raw = which === 'GCASH' ? settings.gcash_qr : settings.paymaya_qr;
-      if (!raw) return '';
+      if (!raw || String(raw).startsWith('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQ')) {
+        return '../../assets/qr-' + (which === 'GCASH' ? 'gcash' : 'paymaya') + '-placeholder.png';
+      }
       if (/^(https?:|\/|data:|\.\.\/)/.test(raw)) return raw;
       return '../../' + raw; // stored root-relative, page sits in customer/html/
     }
@@ -778,6 +781,53 @@
         ref.maxLength = isGcash ? 13 : 16;
         ref.placeholder = isGcash ? 'e.g. 1000123456789 (13 digits)' : 'e.g. 1000123456789012 (16 digits)';
       }
+    }
+
+    /* --- Payment proof file selection, preview, and removal --- */
+    const proofInput = document.getElementById('gcash-proof');
+    const proofInputWrap = document.getElementById('proof-input-wrap');
+    const proofPreviewWrap = document.getElementById('proof-preview-wrap');
+    const proofPreviewImg = document.getElementById('proof-preview-img');
+    const proofFilename = document.getElementById('proof-filename');
+    const proofFilesize = document.getElementById('proof-filesize');
+    const btnRemoveProof = document.getElementById('btn-remove-proof');
+
+    function clearProofSelection() {
+      if (proofInput) proofInput.value = '';
+      if (proofPreviewImg) proofPreviewImg.src = '';
+      if (proofPreviewWrap) proofPreviewWrap.style.display = 'none';
+      if (proofInputWrap) proofInputWrap.style.display = '';
+    }
+
+    if (proofInput) {
+      proofInput.addEventListener('change', () => {
+        const file = proofInput.files && proofInput.files[0];
+        if (!file) {
+          clearProofSelection();
+          return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          payError('Screenshot must be 5MB or smaller.');
+          clearProofSelection();
+          return;
+        }
+        payError(null);
+        if (proofFilename) proofFilename.textContent = file.name;
+        if (proofFilesize) proofFilesize.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+        if (proofPreviewImg) {
+          const reader = new FileReader();
+          reader.onload = (e) => { proofPreviewImg.src = e.target.result; };
+          reader.readAsDataURL(file);
+        }
+        if (proofInputWrap) proofInputWrap.style.display = 'none';
+        if (proofPreviewWrap) proofPreviewWrap.style.display = 'flex';
+      });
+    }
+
+    if (btnRemoveProof) {
+      btnRemoveProof.addEventListener('click', () => {
+        clearProofSelection();
+      });
     }
 
     const btnGcash = document.getElementById('btn-method-gcash');
@@ -877,8 +927,7 @@
       orderAgainBtn.addEventListener('click', () => {
         const ref = document.getElementById('gcash-ref');
         if (ref) ref.value = '';
-        const proof = document.getElementById('gcash-proof');
-        if (proof) proof.value = '';
+        clearProofSelection();
         co.order = null;
         closeCheckout();
         init().catch(() => {});

@@ -118,8 +118,61 @@
         '<div class="form-group"><label>Reference number</label>' +
         '<input class="form-input" id="tp-ref" required autocomplete="off"></div></div>' +
         '<div class="form-group"><label>Payment screenshot</label>' +
-        '<input class="form-input" id="tp-proof" type="file" accept="image/*" required></div>' +
+        '<div id="tp-proof-input-wrap"><input class="form-input" id="tp-proof" type="file" accept="image/*" required></div>' +
+        '<div id="tp-proof-preview-wrap" style="display:none; margin-top:8px; padding:10px; border:1px solid #e0d0c5; border-radius:8px; background:#fffcf9; align-items:center; gap:12px;">' +
+        '<img id="tp-proof-preview-img" src="" alt="Receipt Preview" style="width:52px; height:52px; object-fit:cover; border-radius:6px; border:1px solid #ddd;">' +
+        '<div style="flex:1; min-width:0;">' +
+        '<div id="tp-proof-filename" style="font-size:0.85rem; font-weight:600; color:var(--primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">receipt.png</div>' +
+        '<div id="tp-proof-filesize" style="font-size:0.75rem; color:#888;">Selected image</div>' +
+        '</div>' +
+        '<button type="button" class="btn btn-danger-outline btn-sm" id="btn-remove-tp-proof" style="padding:0.35rem 0.75rem; font-size:0.8rem;"><i class="fas fa-trash"></i> Remove</button>' +
+        '</div></div>' +
         '<button type="submit" class="btn btn-primary">Submit payment</button></form>';
+
+      const tpProofInput = document.getElementById('tp-proof');
+      const tpInputWrap = document.getElementById('tp-proof-input-wrap');
+      const tpPreviewWrap = document.getElementById('tp-proof-preview-wrap');
+      const tpPreviewImg = document.getElementById('tp-proof-preview-img');
+      const tpFilename = document.getElementById('tp-proof-filename');
+      const tpFilesize = document.getElementById('tp-proof-filesize');
+      const btnRemoveTpProof = document.getElementById('btn-remove-tp-proof');
+
+      function clearTpProof() {
+        if (tpProofInput) tpProofInput.value = '';
+        if (tpPreviewImg) tpPreviewImg.src = '';
+        if (tpPreviewWrap) tpPreviewWrap.style.display = 'none';
+        if (tpInputWrap) tpInputWrap.style.display = '';
+      }
+
+      if (tpProofInput) {
+        tpProofInput.addEventListener('change', () => {
+          const file = tpProofInput.files && tpProofInput.files[0];
+          if (!file) {
+            clearTpProof();
+            return;
+          }
+          if (file.size > 5 * 1024 * 1024) {
+            U.toast('Screenshot must be 5MB or smaller.');
+            clearTpProof();
+            return;
+          }
+          if (tpFilename) tpFilename.textContent = file.name;
+          if (tpFilesize) tpFilesize.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+          if (tpPreviewImg) {
+            const reader = new FileReader();
+            reader.onload = (ev) => { tpPreviewImg.src = ev.target.result; };
+            reader.readAsDataURL(file);
+          }
+          if (tpInputWrap) tpInputWrap.style.display = 'none';
+          if (tpPreviewWrap) tpPreviewWrap.style.display = 'flex';
+        });
+      }
+
+      if (btnRemoveTpProof) {
+        btnRemoveTpProof.addEventListener('click', () => {
+          clearTpProof();
+        });
+      }
 
       document.getElementById('track-pay-form').addEventListener('submit', async (e) => {
         e.preventDefault();

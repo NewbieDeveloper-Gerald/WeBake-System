@@ -29,6 +29,36 @@ const router = express.Router();
 
 router.use(requireAdmin);
 
+const multer = require('multer');
+const { uploadProductImage } = require('../services/storageService');
+
+const imageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+  fileFilter(req, file, cb) {
+    if (['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) return cb(null, true);
+    const err = new Error('Only JPG, PNG, or WebP images are allowed.');
+    err.code = 'BAD_FILE_TYPE';
+    return cb(err);
+  },
+}).single('image');
+
+router.post('/upload-image', (req, res, next) => {
+  imageUpload(req, res, async (err) => {
+    if (err) return res.status(400).json({ success: false, message: err.message });
+    if (!req.file) return res.status(400).json({ success: false, message: 'No image file uploaded.' });
+    try {
+      const result = await uploadProductImage(req.file.buffer, {
+        filename: req.file.originalname,
+        mimetype: req.file.mimetype,
+      });
+      return res.json({ success: true, image_url: result.url });
+    } catch (e) {
+      return next(e);
+    }
+  });
+});
+
 router.get('/movements', asyncHandler(productsController.movements));
 router.get('/low-stock', asyncHandler(productsController.lowStock));
 router.get('/', asyncHandler(productsController.listAdmin));
