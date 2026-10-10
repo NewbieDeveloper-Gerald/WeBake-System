@@ -16,13 +16,19 @@
     async function load() {
       const { stats: s } = await api.dashboardStats();
 
-    set('stat-online', ui.pesos(s.sales_today.online_gross_centavos));
-      set('stat-online-count', s.sales_today.online_count + ' order(s)');
-      set('stat-walkin', ui.pesos(s.sales_today.walkin_gross_centavos));
-      set('stat-walkin-count', s.sales_today.walkin_count + ' sale(s)');
-      set('stat-combined', ui.pesos(
-        s.sales_today.online_gross_centavos + s.sales_today.walkin_gross_centavos
-      ));
+      const onlineCollected = s.sales_today.online_collected_centavos != null
+        ? s.sales_today.online_collected_centavos
+        : (s.sales_today.online_gross_centavos || 0);
+      const walkinCollected = s.sales_today.walkin_gross_centavos || 0;
+      const combinedTotal = s.sales_today.combined_centavos != null
+        ? s.sales_today.combined_centavos
+        : (onlineCollected + walkinCollected);
+
+      set('stat-combined', ui.pesos(combinedTotal));
+      set('stat-online', ui.pesos(onlineCollected));
+      set('stat-online-count', (s.sales_today.online_count || 0) + ' order(s)');
+      set('stat-walkin', ui.pesos(walkinCollected));
+      set('stat-walkin-count', (s.sales_today.walkin_count || 0) + ' sale(s)');
       set('stat-pending', String(s.pending_verification));
       set('stat-outstanding', ui.pesos(s.outstanding_balances_centavos));
 

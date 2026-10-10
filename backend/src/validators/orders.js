@@ -103,6 +103,8 @@ const transitionSchema = z.object({
 }).strict();
 
 const recordBalanceSchema = z.object({
+  amount_centavos: z.coerce.number().int().positive().optional(),
+  amount: z.coerce.number().positive().optional(),
   note: z.string().trim().max(300).default(''),
 }).strict();
 

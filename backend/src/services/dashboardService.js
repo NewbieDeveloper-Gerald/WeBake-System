@@ -14,13 +14,19 @@ const inventoryService = require('./inventoryService');
 
 async function stats() {
   const [
-    todayOnline, todayWalkin, pending, byStatus, recent, refunds, outstanding,
+    todayOnlinePayments, todayRefunds, todayWalkin, pending, byStatus, recent, refunds, outstanding,
   ] = await Promise.all([
-    query(`SELECT COALESCE(SUM(total_centavos), 0)::int AS gross,
-                  COUNT(*)::int AS n
-             FROM orders
-            WHERE (created_at AT TIME ZONE 'Asia/Manila')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Manila')::date
-              AND status IN ('CONFIRMED', 'IN_PRODUCTION', 'OUT_FOR_DELIVERY', 'COMPLETED');`),
+    query(`SELECT COALESCE(SUM(p.amount_centavos), 0)::int AS collected,
+                  COUNT(DISTINCT o.id)::int AS order_count
+             FROM payments p
+             JOIN orders o ON o.id = p.order_id
+            WHERE p.verification_status = 'VERIFIED'
+              AND (COALESCE(p.verified_at, p.created_at) AT TIME ZONE 'Asia/Manila')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Manila')::date
+              AND o.status != 'CANCELLED';`),
+    query(`SELECT COALESCE(SUM(refund_amount_centavos), 0)::int AS refunded_today
+             FROM refund_requests
+            WHERE status = 'REFUNDED'
+              AND (processed_at AT TIME ZONE 'Asia/Manila')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Manila')::date;`),
     query(`SELECT COALESCE(SUM(total_centavos), 0)::int AS gross,
                   COUNT(*)::int AS n
              FROM walkin_sales
@@ -38,11 +44,18 @@ async function stats() {
   const alertCount = (refundCounts.AWAITING_DETAILS || 0) + (refundCounts.PENDING || 0);
   const lowStock = await inventoryService.lowStock();
 
+  const onlineCollected = Math.max(0, todayOnlinePayments.rows[0].collected - todayRefunds.rows[0].refunded_today);
+  const walkinGross = todayWalkin.rows[0].gross;
+  const combinedToday = onlineCollected + walkinGross;
+
   return {
     sales_today: {
-      online_gross_centavos: todayOnline.rows[0].gross,
-      online_count: todayOnline.rows[0].n,
-      walkin_gross_centavos: todayWalkin.rows[0].gross,
+      combined_centavos: combinedToday,
+      online_collected_centavos: onlineCollected,
+      online_gross_centavos: onlineCollected,
+      online_count: todayOnlinePayments.rows[0].order_count,
+      walkin_gross_centavos: walkinGross,
+      walkin_collected_centavos: walkinGross,
       walkin_count: todayWalkin.rows[0].n,
     },
     pending_verification: pending.rows[0].n,

@@ -182,6 +182,36 @@
       if (addBtn) addBtn.disabled = quantityOptions.length === 0;
       const buyBtn = document.getElementById('buy-now-btn');
       if (buyBtn) buyBtn.disabled = quantityOptions.length === 0;
+
+      const reviewBar = document.getElementById('product-modal-review-bar');
+      if (reviewBar) {
+        if (!auth.token()) {
+          reviewBar.innerHTML = '<p style="font-size:0.83rem; color:#8C7E75; margin:0;"><i class="fas fa-info-circle"></i> You can review this product after your order is completed.</p>';
+        } else {
+          reviewBar.innerHTML = '<p style="font-size:0.83rem; color:#8C7E75; margin:0;"><i class="fas fa-spinner fa-spin"></i> Checking review eligibility...</p>';
+          api.reviewEligibility(p.id).then((res) => {
+            if (res.eligible && res.available && res.available.length) {
+              const eligibleOrder = res.available[0];
+              reviewBar.innerHTML = '<button type="button" class="btn btn-outline btn-sm btn-block" id="btn-prod-modal-review" style="color:#B58A44; border-color:#B58A44; padding:0.4rem 0.8rem;"><i class="fas fa-star" style="color:#F59E0B"></i> Leave a Review for this Product</button>';
+              document.getElementById('btn-prod-modal-review').addEventListener('click', () => {
+                closeModal();
+                openReviewModalWith({
+                  order_id: eligibleOrder.order_id,
+                  order_code: eligibleOrder.order_code,
+                  product_id: p.id,
+                  product_name: p.name,
+                });
+              });
+            } else {
+              reviewBar.innerHTML = '<p style="font-size:0.83rem; color:#8C7E75; margin:0;"><i class="fas fa-info-circle"></i> ' +
+                U.escapeHtml(res.message || 'You can review this product after your order is completed.') + '</p>';
+            }
+          }).catch(() => {
+            reviewBar.innerHTML = '<p style="font-size:0.83rem; color:#8C7E75; margin:0;"><i class="fas fa-info-circle"></i> You can review this product after your order is completed.</p>';
+          });
+        }
+      }
+
       const mo = document.getElementById('modal-overlay');
       if (mo) mo.classList.add('active');
       const pm = document.getElementById('product-modal');
@@ -822,7 +852,7 @@
       document.getElementById('success-order-id-card').innerHTML =
         '<div class="success-id-card"><span>Order ID</span><strong>' + U.escapeHtml(o.order_code) +
         '</strong><a href="track.html?code=' + encodeURIComponent(o.order_code) +
-        '">Track this order</a></div>';
+        '">Check order status</a></div>';
       document.getElementById('success-downpayment-summary').innerHTML =
         '<div class="success-summary"><div class="review-line"><span>Downpayment submitted</span><strong>' +
         U.pesos(o.downpayment_centavos) + '</strong></div>' +
@@ -907,7 +937,75 @@
         revModal.classList.remove('active');
       }
     }
-    if (openRevBtn) openRevBtn.addEventListener('click', openReviewModal);
+
+    function openReviewModalWith(opts) {
+      if (!opts) return;
+      const oIdEl = document.getElementById('rev-order-id');
+      if (oIdEl) oIdEl.value = opts.order_id || '';
+      const oCodeEl = document.getElementById('rev-order-code');
+      if (oCodeEl) oCodeEl.value = opts.order_code || '';
+      const pIdEl = document.getElementById('rev-product-id');
+      if (pIdEl) pIdEl.value = opts.product_id || '';
+      const pNameEl = document.getElementById('rev-product-name');
+      if (pNameEl) pNameEl.value = opts.product_name || '';
+
+      const selGrp = document.getElementById('rev-product-select-group');
+      if (selGrp) selGrp.style.display = 'none';
+      const pnGrp = document.getElementById('rev-product-name-group');
+      if (pnGrp) pnGrp.style.display = opts.product_name ? 'block' : 'none';
+      const ocGrp = document.getElementById('rev-order-code-group');
+      if (ocGrp) ocGrp.style.display = opts.order_code ? 'block' : 'none';
+
+      const textEl = document.getElementById('rev-text');
+      if (textEl) textEl.value = '';
+      if (starBox) {
+        starBox.querySelectorAll('[data-star]').forEach((s) => { s.className = 'fas fa-star'; });
+      }
+      if (document.getElementById('rev-rating')) document.getElementById('rev-rating').value = '5';
+      openReviewModal();
+    }
+
+    if (openRevBtn) {
+      openRevBtn.addEventListener('click', async () => {
+        if (!auth.token()) {
+          U.toast('You can review this product after your order is completed. Please sign in to check your orders.');
+          return;
+        }
+        try {
+          const res = await api.reviewEligibility();
+          if (!res.eligible || !res.available || !res.available.length) {
+            U.toast(res.message || 'You can review this product after your order is completed.');
+            return;
+          }
+          const selGroup = document.getElementById('rev-product-select-group');
+          const sel = document.getElementById('rev-product-select');
+          if (selGroup && sel) {
+            sel.innerHTML = res.available.map((it, idx) =>
+              '<option value="' + idx + '">' + U.escapeHtml(it.product_name) + ' (Order #' + U.escapeHtml(it.order_code) + ')</option>'
+            ).join('');
+            selGroup.style.display = res.available.length > 1 ? 'block' : 'none';
+            const selectItem = (idx) => {
+              const it = res.available[idx];
+              if (!it) return;
+              const oId = document.getElementById('rev-order-id');
+              if (oId) oId.value = it.order_id;
+              const pId = document.getElementById('rev-product-id');
+              if (pId) pId.value = it.product_id;
+              const pn = document.getElementById('rev-product-name');
+              if (pn) pn.value = it.product_name;
+              const oc = document.getElementById('rev-order-code');
+              if (oc) oc.value = it.order_code;
+            };
+            sel.onchange = () => selectItem(Number(sel.value));
+            selectItem(0);
+          }
+          openReviewModal();
+        } catch (err) {
+          U.toast(err.message || 'Could not verify eligibility.');
+        }
+      });
+    }
+
     if (revClose) revClose.addEventListener('click', closeReviewModal);
     if (revCancel) revCancel.addEventListener('click', closeReviewModal);
     if (revOverlay) revOverlay.addEventListener('click', closeReviewModal);
@@ -931,14 +1029,26 @@
     if (revForm) {
       revForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const orderId = document.getElementById('rev-order-id')?.value;
+        const productId = document.getElementById('rev-product-id')?.value;
         const name = (document.getElementById('rev-name')?.value || '').trim();
         const location = (document.getElementById('rev-location')?.value || '').trim() || 'Bulacan';
         const rating = Number(document.getElementById('rev-rating')?.value) || 5;
         const text = (document.getElementById('rev-text')?.value || '').trim();
+
+        if (!orderId || !productId) {
+          U.toast('Please select an eligible completed order item to review.');
+          return;
+        }
+
         const submitBtn = document.getElementById('review-submit-btn');
         if (submitBtn) submitBtn.disabled = true;
         try {
-          await api.reviewSubmit({ name, location, rating, text });
+          await api.reviewSubmit({
+            order_id: Number(orderId),
+            product_id: Number(productId),
+            name, location, rating, text,
+          });
           U.toast('Review submitted! Thank you for your feedback.');
           revForm.reset();
           if (starBox) {

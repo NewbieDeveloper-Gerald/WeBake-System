@@ -27,7 +27,7 @@
         <a href="orders.html" class="nav-item-link"><i class="fas fa-clipboard-list"></i><span>Orders &amp; Verify</span><span class="nav-badge" id="sidebar-orders-badge">0</span></a>
         <a href="refunds.html" class="nav-item-link"><i class="fas fa-undo-alt"></i><span>Refunds Queue</span><span class="nav-badge" id="sidebar-refunds-badge">0</span></a>
         <div class="nav-section-title">Bakery Management</div>
-        <a href="inventory.html" class="nav-item-link"><i class="fas fa-boxes-stacked"></i><span>Daily Inventory</span></a>
+        <a href="products.html#section-stock-adjustment" class="nav-item-link"><i class="fas fa-boxes-stacked"></i><span>Daily Inventory</span></a>
         <a href="products.html" class="nav-item-link active"><i class="fas fa-tags"></i><span>Product Catalog</span></a>
         <a href="settings.html" class="nav-item-link"><i class="fas fa-cog"></i><span>Bakery Settings</span></a>
       </nav>
@@ -126,9 +126,98 @@
             </table>
           </div>
         </section>
-        <p class="catalog-note">
+
+        <!-- Manual Stock Adjustment Section -->
+        <section class="admin-card" id="section-stock-adjustment" style="margin-top: 1.5rem;">
+          <div class="card-header">
+            <div class="card-title-group">
+              <h3><i class="fas fa-sliders-h text-primary"></i> Manual Stock Adjustment</h3>
+              <p>Add a delivery (RESTOCK), record baking production, or correct counts (ADJUSTMENT). Every change is logged.</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <form id="form-adjust-stock">
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="form-label" for="adjust-product">Product *</label>
+                  <select id="adjust-product" class="form-select" required></select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="adjust-unit">Unit *</label>
+                  <select id="adjust-unit" class="form-select">
+                    <option value="bundles">Bundles (x25 pcs)</option>
+                    <option value="pieces">Pieces</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="form-label" for="adjust-mode">Adjustment Mode *</label>
+                  <select id="adjust-mode" class="form-select">
+                    <option value="change">Add / Remove quantity (positive adds, negative removes)</option>
+                    <option value="set">Set exact count</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="adjust-qty" id="adjust-qty-label">Quantity *</label>
+                  <input type="number" id="adjust-qty" class="form-input" value="0" required>
+                </div>
+              </div>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="form-label" for="adjust-reason">Reason *</label>
+                  <select id="adjust-reason" class="form-select">
+                    <option value="RESTOCK">RESTOCK - new delivery / baked batch</option>
+                    <option value="ADJUSTMENT">ADJUSTMENT - recount / correction</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="adjust-note">Note / Shift Details</label>
+                  <input type="text" id="adjust-note" class="form-input" maxlength="300" placeholder="e.g. Morning delivery from commissary">
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary" id="btn-submit-adjust">
+                <i class="fas fa-save"></i> Apply Adjustment
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <!-- Production & Loss Audit History Section -->
+        <section class="admin-card" id="section-stock-history" style="margin-top: 1.5rem;">
+          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+            <div class="card-title-group">
+              <h3><i class="fas fa-clipboard-list text-primary"></i> Production &amp; Loss Audit History</h3>
+              <p>Recent morning batches, damage logs, and manual stock movements</p>
+            </div>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <label for="filter-history-product" style="font-size:0.8rem; color:var(--text-muted); margin:0;">Filter:</label>
+              <select id="filter-history-product" class="form-select" style="min-width: 170px;">
+                <option value="">All Products</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="dash-table catalog-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Entry Type</th>
+                  <th>Product</th>
+                  <th>Quantity</th>
+                  <th>Notes / Reason</th>
+                </tr>
+              </thead>
+              <tbody id="inventory-history-tbody">
+                <tr><td colspan="5" class="muted">Loading audit history…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <p class="catalog-note" style="margin-top: 1.5rem;">
           <i class="fas fa-info-circle text-primary"></i> Archiving hides a product from the shop and Walk-In register while preserving all order history.
-          Stock is adjusted on the <a href="inventory.html">Daily Inventory</a> page.
+          Stock adjustments can be made directly above in the Manual Stock Adjustment section.
         </p>
       </main>
     </div>

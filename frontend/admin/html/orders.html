@@ -48,7 +48,7 @@
         </a>
 
         <div class="nav-section-title">Bakery Management</div>
-        <a href="inventory.html" class="nav-item-link">
+        <a href="products.html#section-stock-adjustment" class="nav-item-link">
           <i class="fas fa-boxes-stacked"></i>
           <span>Daily Inventory</span>
         </a>
@@ -156,7 +156,7 @@
                   <th>Customer Details</th>
                   <th>Channel</th>
                   <th>Items Ordered</th>
-                  <th>Total / Downpayment</th>
+                  <th>Payment &amp; Balance</th>
                   <th>Payment Method</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -273,7 +273,7 @@
     <div class="modal-dialog">
       <div class="modal-header">
         <h3 class="modal-title">
-          <i class="fas fa-hand-holding-usd"></i> Collect Remaining 50% Balance
+          <i class="fas fa-hand-holding-usd"></i> Collect Remaining Balance
         </h3>
         <button type="button" class="modal-close-btn" id="btn-close-balance">&times;</button>
       </div>
@@ -281,7 +281,13 @@
         <div class="balance-collect-card">
           <div class="text-muted">Order ID: <strong id="balance-order-id"></strong> — <span id="balance-cust-name"></span></div>
           <div class="balance-amount-display" id="balance-due-amount">&#8369;0.00</div>
-          <p class="form-hint">Record customer's remaining 50% balance collection upon order handover</p>
+          <p class="form-hint">Record customer's remaining balance collection upon order handover</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label form-label-required">Amount to Collect (₱)</label>
+          <input type="number" step="0.01" min="1" class="form-input" id="balance-collect-input" placeholder="Enter amount to collect">
+          <small class="form-hint" id="balance-collect-hint" style="color:var(--gray); margin-top:4px; display:block;">Enter full or partial collection amount.</small>
         </div>
 
         <div class="form-group">

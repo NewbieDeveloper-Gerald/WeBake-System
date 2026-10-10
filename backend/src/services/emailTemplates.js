@@ -143,9 +143,9 @@ function downpaymentApproved({ order, trackUrl }) {
     + `<div style="background:${BRAND.goldLight};border-left:4px solid ${BRAND.gold};padding:14px 16px;border-radius:0 8px 8px 0;margin:18px 0;">`
     + `<div style="font-size:13px;color:${BRAND.cocoa};"><strong>Cash on Delivery Reminder:</strong> Please prepare <strong>${formatPesos(order.balance_due_centavos)}</strong> in cash upon delivery.</div>`
     + `</div>`
-    + btn(trackUrl, 'Track Order Status'));
+    + btn(trackUrl, 'Check Order Status'));
   const text = `DOWNPAYMENT VERIFIED\nOrder ${order.order_code} is now Confirmed.\n`
-    + `Downpayment: ${formatPesos(order.downpayment_centavos)}\nBalance (cash): ${formatPesos(order.balance_due_centavos)}\nTrack: ${trackUrl}`;
+    + `Downpayment: ${formatPesos(order.downpayment_centavos)}\nBalance (cash): ${formatPesos(order.balance_due_centavos)}\nOrder Status: ${trackUrl}`;
   return { subject, html, text };
 }
 

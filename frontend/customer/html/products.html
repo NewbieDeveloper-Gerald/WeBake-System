@@ -22,7 +22,7 @@
         <div class="nav-links" id="nav-links">
           <a href="home.html">Home</a>
           <a href="products.html" class="active">Products</a>
-          <a href="#" data-track-order-open>Track Order</a>
+          <a href="#" data-track-order-open>Order Status</a>
           <a href="home.html#about">About Us</a>
         </div>
         <button class="cart-icon" id="cart-icon" aria-label="View Cart">
@@ -70,6 +70,7 @@
       <button class="btn btn-accent" id="add-to-cart-btn"><i class="fas fa-cart-plus"></i> Add to Cart</button>
       <button class="btn btn-primary" id="buy-now-btn"><i class="fas fa-bolt"></i> Checkout Now</button>
     </div>
+    <div class="product-modal-review-bar" id="product-modal-review-bar" style="margin-top:1rem; padding-top:0.75rem; border-top:1px solid #EAE3D9; text-align:center;"></div>
   </div>
 
   <!-- CART SIDEBAR -->
@@ -269,7 +270,7 @@
           <a href="home.html">Home</a>
           <a href="products.html">Products</a>
           <a href="home.html#about">About Us</a>
-          <a href="#" data-track-order-open>Track Order</a>
+          <a href="#" data-track-order-open>Order Status</a>
         </nav>
         <div class="footer-social">
           <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
@@ -282,6 +283,61 @@
       </div>
     </div>
   </footer>
+
+  <!-- REVIEW MODAL -->
+  <div class="overlay" id="review-overlay"></div>
+  <div class="modal" id="review-modal" role="dialog" aria-labelledby="review-modal-title" style="max-width:480px;">
+    <button class="modal-close" id="review-close" type="button" aria-label="Close dialog">&times;</button>
+    <h3 id="review-modal-title" style="margin-bottom:0.4rem; color:var(--primary); text-align:center;">
+      <i class="fas fa-star" style="color:#F59E0B;"></i> Leave a Customer Review
+    </h3>
+    <p id="review-modal-subtitle" style="font-size:0.85rem; color:var(--gray); margin-bottom:1.25rem; text-align:center;">
+      Share your experience for this completed order.
+    </p>
+    <form id="review-form">
+      <input type="hidden" id="rev-order-id">
+      <input type="hidden" id="rev-product-id">
+      <div class="form-group" id="rev-product-select-group" style="display:none;">
+        <label>Select Item to Review *</label>
+        <select class="form-select" id="rev-product-select"></select>
+      </div>
+      <div class="form-group" id="rev-product-name-group">
+        <label>Product</label>
+        <input class="form-input" id="rev-product-name" type="text" readonly style="background:#F7F4EE;">
+      </div>
+      <div class="form-group" id="rev-order-code-group">
+        <label>Completed Order</label>
+        <input class="form-input" id="rev-order-code" type="text" readonly style="background:#F7F4EE;">
+      </div>
+      <div class="form-group">
+        <label>Your Name</label>
+        <input class="form-input" id="rev-name" type="text" placeholder="e.g. Maria Santos" maxlength="80">
+      </div>
+      <div class="form-group">
+        <label>Location / Area (optional)</label>
+        <input class="form-input" id="rev-location" type="text" placeholder="e.g. Marilao, Bulacan" maxlength="80">
+      </div>
+      <div class="form-group">
+        <label>Rating *</label>
+        <div class="review-star-rating" id="review-star-rating" style="display:flex; gap:0.5rem; font-size:1.5rem; color:#F59E0B; cursor:pointer; margin-top:0.25rem;">
+          <i class="fas fa-star" data-star="1"></i>
+          <i class="fas fa-star" data-star="2"></i>
+          <i class="fas fa-star" data-star="3"></i>
+          <i class="fas fa-star" data-star="4"></i>
+          <i class="fas fa-star" data-star="5"></i>
+        </div>
+        <input type="hidden" id="rev-rating" value="5">
+      </div>
+      <div class="form-group">
+        <label>Your Review *</label>
+        <textarea class="form-textarea" id="rev-text" rows="3" placeholder="Tell us about the bread freshness, taste, and delivery..." required minlength="5" maxlength="500"></textarea>
+      </div>
+      <div style="display:flex; gap:0.75rem; margin-top:1.25rem;">
+        <button type="button" class="btn btn-outline" id="review-cancel" style="flex:1;">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="review-submit-btn" style="flex:1;">Submit Review</button>
+      </div>
+    </form>
+  </div>
 
   <div class="toast" id="toast"></div>
   <script src="../js/config.js?v=2.3"></script>

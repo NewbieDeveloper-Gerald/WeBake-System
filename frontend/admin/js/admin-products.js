@@ -54,6 +54,9 @@
         cachedProducts = products || [];
         updateKpiCards(cachedProducts);
         renderTable();
+        populateProductDropdowns(cachedProducts);
+        const filterVal = document.getElementById('filter-history-product') ? document.getElementById('filter-history-product').value : null;
+        await loadHistory(filterVal);
       } catch (err) {
         tbody.innerHTML = '<tr><td colspan="7" class="error-text">' + ui.esc(err.message) + '</td></tr>';
         if (countLabel) countLabel.textContent = 'Could not load products';
@@ -110,6 +113,7 @@
           '<td>' + statusPill + '</td>' +
           '<td class="actions-cell">' +
           '<button type="button" class="btn btn-outline btn-sm" data-edit="' + p.id + '"><i class="fas fa-pen"></i> Edit</button> ' +
+          (!p.is_archived ? '<button type="button" class="btn btn-outline btn-sm" data-adjust="' + p.id + '" title="Adjust Stock"><i class="fas fa-sliders-h"></i> Adjust</button> ' : '') +
           (p.is_archived
             ? '<button type="button" class="btn btn-success btn-sm" data-restore="' + p.id + '"><i class="fas fa-rotate-left"></i> Restore</button>'
             : '<button type="button" class="btn btn-danger-outline btn-sm" data-archive="' + p.id + '"><i class="fas fa-box-archive"></i> Archive</button>') +
@@ -225,8 +229,16 @@
       const edit = e.target.closest('[data-edit]');
       const arch = e.target.closest('[data-archive]');
       const rest = e.target.closest('[data-restore]');
+      const adj = e.target.closest('[data-adjust]');
       try {
         if (edit) { await openForEdit(edit.dataset.edit); return; }
+        if (adj) {
+          const prodSelect = document.getElementById('adjust-product');
+          if (prodSelect) prodSelect.value = adj.dataset.adjust;
+          const section = document.getElementById('section-stock-adjustment');
+          if (section) section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
         if (arch && ui.confirmAsk('Archive this product? It will be hidden from the customer storefront and Walk-In register, but past order history remains preserved.')) {
           await api.productArchive(arch.dataset.archive);
           ui.toast('Product archived.', 'info');
@@ -278,6 +290,105 @@
         btn.disabled = false;
       }
     });
+
+    function populateProductDropdowns(products) {
+      const active = (products || []).filter((p) => !p.is_archived);
+      const adjSelect = document.getElementById('adjust-product');
+      const histSelect = document.getElementById('filter-history-product');
+
+      if (adjSelect) {
+        const currentVal = adjSelect.value;
+        adjSelect.innerHTML = active.map((p) =>
+          '<option value="' + p.id + '">' + ui.esc(p.name) + ' (' + p.stock_pieces + ' pcs / ' + Number(p.bundles_available || 0) + ' bdls)</option>'
+        ).join('');
+        if (currentVal && active.some((p) => String(p.id) === String(currentVal))) {
+          adjSelect.value = currentVal;
+        }
+      }
+
+      if (histSelect) {
+        const currentHist = histSelect.value;
+        histSelect.innerHTML = '<option value="">All Products</option>' +
+          (products || []).map((p) =>
+            '<option value="' + p.id + '">' + ui.esc(p.name) + '</option>'
+          ).join('');
+        if (currentHist) histSelect.value = currentHist;
+      }
+    }
+
+    async function loadHistory(productId) {
+      const tbody = document.getElementById('inventory-history-tbody');
+      if (!tbody) return;
+      try {
+        const { movements } = await api.movements(productId || null, 100);
+        if (!movements || !movements.length) {
+          tbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center;padding:1.5rem;">No stock movements recorded yet.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = movements.map((m) => {
+          const changeStr = (m.change_pieces > 0 ? '+' : '') + m.change_pieces + ' pcs';
+          const changeBadge = m.change_pieces > 0
+            ? '<strong style="color:var(--success, #2e7d32);">' + changeStr + '</strong>'
+            : '<strong style="color:var(--danger, #c62828);">' + changeStr + '</strong>';
+          return '<tr>' +
+            '<td>' + ui.fmtDate(m.created_at) + '</td>' +
+            '<td><span class="catalog-pcs-pill">' + ui.esc(m.reason || '-') + '</span></td>' +
+            '<td><strong>' + ui.esc(m.product_name || ('#' + m.product_id)) + '</strong></td>' +
+            '<td>' + changeBadge + '</td>' +
+            '<td>' + ui.esc(m.note || '-') + '</td>' +
+            '</tr>';
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="5" class="error-text" style="text-align:center;padding:1.5rem;">Failed to load audit history: ' + ui.esc(err.message) + '</td></tr>';
+      }
+    }
+
+    const histFilterEl = document.getElementById('filter-history-product');
+    if (histFilterEl) {
+      histFilterEl.addEventListener('change', () => {
+        loadHistory(histFilterEl.value || null);
+      });
+    }
+
+    const adjustForm = document.getElementById('form-adjust-stock');
+    if (adjustForm) {
+      adjustForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('adjust-product').value;
+        const unit = document.getElementById('adjust-unit').value;
+        const mode = document.getElementById('adjust-mode').value;
+        let qty = Number(document.getElementById('adjust-qty').value);
+        const product = cachedProducts.find((p) => String(p.id) === String(id));
+        const ppb = (product && product.pieces_per_bundle) || 25;
+        if (unit === 'bundles') {
+          qty = Math.round(qty * ppb);
+        }
+        const payload = {
+          reason: document.getElementById('adjust-reason').value,
+          note: document.getElementById('adjust-note').value.trim(),
+        };
+        if (mode === 'set') {
+          payload.set_pieces = qty;
+        } else {
+          payload.change_pieces = qty;
+        }
+
+        const submitBtn = document.getElementById('btn-submit-adjust');
+        if (submitBtn) submitBtn.disabled = true;
+
+        try {
+          await api.adjustStock(id, payload);
+          ui.toast('Stock updated and logged.', 'success');
+          document.getElementById('adjust-qty').value = 0;
+          document.getElementById('adjust-note').value = '';
+          await load();
+        } catch (err) {
+          ui.alert(err.message, 'Adjustment Failed');
+        } finally {
+          if (submitBtn) submitBtn.disabled = false;
+        }
+      });
+    }
 
     load();
   });

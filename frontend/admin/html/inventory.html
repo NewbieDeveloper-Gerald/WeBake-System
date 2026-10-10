@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WeBake Admin — Daily Inventory &amp; Production Batches</title>
+  <title>WeBake Admin — Daily Inventory</title>
+  <meta http-equiv="refresh" content="0; url=products.html#section-stock-adjustment">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../css/admin-globals.css">
 </head>
@@ -47,7 +48,7 @@
         </a>
 
         <div class="nav-section-title">Bakery Management</div>
-        <a href="inventory.html" class="nav-item-link active">
+        <a href="products.html#section-stock-adjustment" class="nav-item-link active">
           <i class="fas fa-boxes-stacked"></i>
           <span>Daily Inventory</span>
         </a>
@@ -86,159 +87,25 @@
             <i class="fas fa-bars"></i>
           </button>
           <div class="page-headline">
-            <h1>Inventory &amp; Baking Batches</h1>
-            <p>Morning production yield, real-time stock deduction, and loss logging</p>
-          </div>
-        </div>
-
-        <div class="topbar-right">
-          <div class="live-sync-pill">
-            <span class="pulse-dot"></span>
-            <span>Live Sync Active</span>
+            <h1>Daily Inventory</h1>
+            <p>Stock management and movements consolidated into Product Catalog</p>
           </div>
         </div>
       </header>
 
       <!-- Content Area -->
       <main class="content-area">
-        <!-- Live Stock Monitoring Table Card -->
-        <div class="admin-card">
-          <div class="card-header">
-            <div class="card-title-group">
-              <h3>Live Stock Monitoring</h3>
-              <p>Remaining Stock = (Morning Batches + Carried Over) - (Walk-In + Online Dispatched) - Spoilage</p>
-            </div>
+        <div class="admin-card" style="text-align: center; padding: 3.5rem 1.5rem; max-width: 620px; margin: 2rem auto;">
+          <div style="width: 64px; height: 64px; border-radius: 50%; background: #fdf3ed; color: #6b352a; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; margin: 0 auto 1.25rem;">
+            <i class="fas fa-boxes-stacked"></i>
           </div>
-          <div class="table-responsive">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Morning Production</th>
-                  <th>Carried Over</th>
-                  <th>Sold Today</th>
-                  <th>Spoilage / Loss</th>
-                  <th>Available Stock</th>
-                  <th>Health Status</th>
-                </tr>
-              </thead>
-              <tbody id="inventory-table-body"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Logging Forms Row -->
-        <div class="form-row-2">
-          <!-- Morning Batch Logger Form -->
-          <div class="admin-card">
-            <div class="card-header">
-              <div class="card-title-group">
-                <h3><i class="fas fa-sun text-warning"></i> Log Morning Baking Batch</h3>
-                <p>Record morning production output per product</p>
-              </div>
-            </div>
-            <div class="card-body">
-              <form id="form-log-batch">
-                <div class="form-group">
-                  <label class="form-label form-label-required">Select Product</label>
-                  <select id="batch-product-select" class="form-select">
-                    <option value="1">Mamon (25 pcs/bundle)</option>
-                    <option value="2">Otap (25 pcs/bundle)</option>
-                    <option value="3">Eggnog (25 pcs/bundle)</option>
-                    <option value="4">Buttertoast (25 pcs/bundle)</option>
-                    <option value="7">Broas (25 pcs/bundle)</option>
-                    <option value="8">Butter Cookies (25 pcs/bundle)</option>
-                    <option value="9">Cracklets (25 pcs/bundle)</option>
-                    <option value="10">Jacobina (25 pcs/bundle)</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label form-label-required">Bundles Baked Today</label>
-                  <input type="number" id="batch-qty-input" class="form-input" min="1" placeholder="e.g. 50">
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">Shift Notes</label>
-                  <input type="text" id="batch-notes-input" class="form-input" placeholder="e.g. Morning Oven 1 batch, master baker Juan">
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-block">
-                  <i class="fas fa-plus-circle"></i> Log Morning Production Batch
-                </button>
-              </form>
-            </div>
-          </div>
-
-          <!-- Spoilage / Leftover Logger Form -->
-          <div class="admin-card">
-            <div class="card-header">
-              <div class="card-title-group">
-                <h3><i class="fas fa-trash-alt text-danger"></i> Log Spoilage / Damaged Bread</h3>
-                <p>Track end-of-day losses and auditing yield</p>
-              </div>
-            </div>
-            <div class="card-body">
-              <form id="form-log-spoilage">
-                <div class="form-group">
-                  <label class="form-label form-label-required">Select Product</label>
-                  <select id="spoilage-product-select" class="form-select">
-                    <option value="1">Mamon (25 pcs/bundle)</option>
-                    <option value="2">Otap (25 pcs/bundle)</option>
-                    <option value="3">Eggnog (25 pcs/bundle)</option>
-                    <option value="4">Buttertoast (25 pcs/bundle)</option>
-                    <option value="7">Broas (25 pcs/bundle)</option>
-                    <option value="8">Butter Cookies (25 pcs/bundle)</option>
-                    <option value="9">Cracklets (25 pcs/bundle)</option>
-                    <option value="10">Jacobina (25 pcs/bundle)</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label form-label-required">Damaged / Unsold Bundles</label>
-                  <input type="number" id="spoilage-qty-input" class="form-input" min="1" placeholder="e.g. 2">
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label form-label-required">Reason for Loss</label>
-                  <select id="spoilage-reason-select" class="form-select">
-                    <option value="Burnt during oven bake">Burnt during oven bake</option>
-                    <option value="Packaging torn or broken">Packaging torn or broken</option>
-                    <option value="End-of-day unsold leftover">End-of-day unsold leftover</option>
-                    <option value="Quality testing / Sample">Quality testing / Sample</option>
-                  </select>
-                </div>
-
-                <button type="submit" class="btn btn-outline btn-block text-danger">
-                  <i class="fas fa-exclamation-triangle"></i> Log Spoilage &amp; Deduct Stock
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-
-        <!-- History Log Table -->
-        <div class="admin-card">
-          <div class="card-header">
-            <div class="card-title-group">
-              <h3>Production &amp; Loss Audit History</h3>
-              <p>Recent morning batches and damage logs</p>
-            </div>
-          </div>
-          <div class="table-responsive">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>Timestamp</th>
-                  <th>Entry Type</th>
-                  <th>Product</th>
-                  <th>Quantity</th>
-                  <th>Notes / Reason</th>
-                </tr>
-              </thead>
-              <tbody id="inventory-history-tbody"></tbody>
-            </table>
-          </div>
+          <h2 style="color: #542d24; margin-bottom: 0.5rem;">Daily Inventory Moved to Product Catalog</h2>
+          <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem;">
+            Stock monitoring, manual stock adjustments, and the production &amp; loss audit history have been consolidated directly into the <strong>Product Catalog</strong>.
+          </p>
+          <a href="products.html#section-stock-adjustment" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem;">
+            <i class="fas fa-tags"></i> Open Product Catalog &amp; Stock Adjustment
+          </a>
         </div>
       </main>
     </div>

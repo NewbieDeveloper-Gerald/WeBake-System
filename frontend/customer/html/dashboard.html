@@ -202,6 +202,49 @@
     </form>
   </div>
 
+  <!-- DASHBOARD REVIEW MODAL -->
+  <div class="overlay" id="dash-review-overlay"></div>
+  <div class="modal" id="dash-review-modal" role="dialog" aria-labelledby="dash-review-title" style="max-width:480px;">
+    <button class="modal-close" id="dash-review-close" type="button" aria-label="Close dialog">&times;</button>
+    <h3 id="dash-review-title" style="margin-bottom:0.4rem; color:var(--primary); text-align:center;">
+      <i class="fas fa-star" style="color:#F59E0B;"></i> Review Product
+    </h3>
+    <p id="dash-review-subtitle" style="font-size:0.85rem; color:var(--gray); margin-bottom:1.25rem; text-align:center;">
+      Share your experience for this completed order.
+    </p>
+    <form id="dash-review-form">
+      <input type="hidden" id="dash-review-order-id">
+      <input type="hidden" id="dash-review-product-id">
+      <div class="form-group">
+        <label>Product</label>
+        <input class="form-input" id="dash-review-product-name" type="text" readonly style="background:#F7F4EE;">
+      </div>
+      <div class="form-group">
+        <label>Completed Order</label>
+        <input class="form-input" id="dash-review-order-code" type="text" readonly style="background:#F7F4EE;">
+      </div>
+      <div class="form-group">
+        <label>Rating *</label>
+        <div class="review-star-rating" id="dash-review-stars" style="display:flex; gap:0.5rem; font-size:1.5rem; color:#F59E0B; cursor:pointer; margin-top:0.25rem;">
+          <i class="fas fa-star" data-star="1"></i>
+          <i class="fas fa-star" data-star="2"></i>
+          <i class="fas fa-star" data-star="3"></i>
+          <i class="fas fa-star" data-star="4"></i>
+          <i class="fas fa-star" data-star="5"></i>
+        </div>
+        <input type="hidden" id="dash-review-rating-val" value="5">
+      </div>
+      <div class="form-group">
+        <label>Your Review *</label>
+        <textarea class="form-textarea" id="dash-review-text" rows="3" placeholder="Tell us about the bread freshness, taste, and delivery..." required minlength="5" maxlength="500"></textarea>
+      </div>
+      <div style="display:flex; gap:0.75rem; margin-top:1.25rem;">
+        <button type="button" class="btn btn-outline" id="dash-review-cancel-btn" style="flex:1;">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="dash-review-submit-btn" style="flex:1;">Submit Review</button>
+      </div>
+    </form>
+  </div>
+
   <!-- Toast Notification -->
   <div class="toast" id="toast">Notification Message</div>
 

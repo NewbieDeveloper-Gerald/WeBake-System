@@ -291,7 +291,16 @@ async function orderView(code) {
   const [items, refund, history, payments] = await Promise.all([
     itemsFor(order.id), refundFor(order.id), historyFor(order.id), paymentsFor(order.id),
   ]);
-  return { ...order, items, refund, history, payments };
+  const isDownpaymentPaid = order.downpayment_paid_centavos > 0;
+  const amountPaid = isDownpaymentPaid ? (order.total_centavos - order.balance_due_centavos) : 0;
+  const paymentStatus = order.status === 'CANCELLED'
+    ? 'Cancelled'
+    : order.balance_due_centavos === 0 && isDownpaymentPaid
+      ? 'Fully Paid'
+      : isDownpaymentPaid
+        ? 'Partially Paid'
+        : 'Pending Payment';
+  return { ...order, amount_paid_centavos: amountPaid, payment_status: paymentStatus, items, refund, history, payments };
 }
 
 async function trackOrder(code, email) {
@@ -299,7 +308,16 @@ async function trackOrder(code, email) {
   const [items, refund, history, payments] = await Promise.all([
     itemsFor(order.id), refundFor(order.id), historyFor(order.id), paymentsFor(order.id),
   ]);
-  return { ...order, items, refund, history, payments };
+  const isDownpaymentPaid = order.downpayment_paid_centavos > 0;
+  const amountPaid = isDownpaymentPaid ? (order.total_centavos - order.balance_due_centavos) : 0;
+  const paymentStatus = order.status === 'CANCELLED'
+    ? 'Cancelled'
+    : order.balance_due_centavos === 0 && isDownpaymentPaid
+      ? 'Fully Paid'
+      : isDownpaymentPaid
+        ? 'Partially Paid'
+        : 'Pending Payment';
+  return { ...order, amount_paid_centavos: amountPaid, payment_status: paymentStatus, items, refund, history, payments };
 }
 
 async function memberOrders(memberId, memberEmail) {
@@ -334,7 +352,22 @@ async function adminList(status) {
        LIMIT 500;`,
     params
   );
-  return rows;
+  return rows.map((o) => {
+    const isDownpaymentPaid = o.downpayment_paid_centavos > 0;
+    const amountPaid = isDownpaymentPaid ? (o.total_centavos - o.balance_due_centavos) : 0;
+    const paymentStatus = o.status === 'CANCELLED'
+      ? 'Cancelled'
+      : o.balance_due_centavos === 0 && isDownpaymentPaid
+        ? 'Fully Paid'
+        : isDownpaymentPaid
+          ? 'Partially Paid'
+          : 'Pending Payment';
+    return {
+      ...o,
+      amount_paid_centavos: amountPaid,
+      payment_status: paymentStatus,
+    };
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -385,7 +418,7 @@ async function transition(code, to, actor, note) {
 // ---------------------------------------------------------------------------
 // BALANCE: record the 50% cash payment collected face to face
 // ---------------------------------------------------------------------------
-async function recordBalance(code, actor, note) {
+async function recordBalance(code, actor, note, amountCentavos) {
   const client = await getClient();
   try {
     await client.query('BEGIN');
@@ -398,11 +431,10 @@ async function recordBalance(code, actor, note) {
     }
     const order = rows[0];
 
-    const collectible = [ORDER.CONFIRMED, ORDER.IN_PRODUCTION, ORDER.OUT_FOR_DELIVERY];
-    if (!collectible.includes(order.status)) {
+    if (order.status !== ORDER.OUT_FOR_DELIVERY) {
       throw conflict(
         'BALANCE_NOT_DUE',
-        `Balance cannot be collected while the order is ${order.status}.`
+        `Balance collection is only available when the order is Out for Delivery (current status: ${order.status}).`
       );
     }
     if (order.balance_due_centavos <= 0) {
@@ -412,7 +444,18 @@ async function recordBalance(code, actor, note) {
       );
     }
 
-    const amount = order.balance_due_centavos;
+    const requestedAmount = amountCentavos != null ? Number(amountCentavos) : order.balance_due_centavos;
+    if (requestedAmount <= 0) {
+      throw conflict('INVALID_AMOUNT', 'Collection amount must be greater than zero.');
+    }
+    if (requestedAmount > order.balance_due_centavos) {
+      throw conflict(
+        'OVERPAYMENT_NOT_ALLOWED',
+        `Cannot collect more than the remaining balance (₱${(order.balance_due_centavos / 100).toFixed(2)}).`
+      );
+    }
+
+    const amount = requestedAmount;
     await client.query(
       `INSERT INTO payments
          (order_id, stage, channel, amount_centavos, reference_number,
@@ -420,13 +463,29 @@ async function recordBalance(code, actor, note) {
        VALUES ($1, $2, $3, $4, 'CASH_COLLECTED', 'VERIFIED', NOW());`,
       [order.id, PAYMENT_STAGE.BALANCE, PAYMENT_CHANNEL.CASH, amount]
     );
+
+    const newBalance = order.balance_due_centavos - amount;
     await client.query(
-      'UPDATE orders SET balance_due_centavos = 0 WHERE id = $1;',
-      [order.id]
+      'UPDATE orders SET balance_due_centavos = $1, updated_at = NOW() WHERE id = $2;',
+      [newBalance, order.id]
+    );
+
+    const amountPaid = order.total_centavos - newBalance;
+    const paymentStatus = newBalance === 0 ? 'Fully Paid' : 'Partially Paid';
+
+    await insertHistory(
+      client, order.id, order.status, order.status, 'ADMIN',
+      `Collected ₱${(amount / 100).toFixed(2)} by ${actor || 'admin'}. Remaining balance: ₱${(newBalance / 100).toFixed(2)} (${paymentStatus}).`
     );
 
     await client.query('COMMIT');
-    return { order_code: order.order_code, collected_centavos: amount, balance_due_centavos: 0 };
+    return {
+      order_code: order.order_code,
+      collected_centavos: amount,
+      balance_due_centavos: newBalance,
+      amount_paid_centavos: amountPaid,
+      payment_status: paymentStatus,
+    };
   } catch (err) {
     await client.query('ROLLBACK');
     throw err;

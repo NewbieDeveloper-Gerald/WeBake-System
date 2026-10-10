@@ -104,8 +104,13 @@ async function transition(req, res) {
 }
 
 async function recordBalance(req, res) {
+  const amountCentavos = req.body.amount_centavos != null
+    ? Number(req.body.amount_centavos)
+    : req.body.amount != null
+      ? Math.round(Number(req.body.amount) * 100)
+      : undefined;
   const receipt = await orderService.recordBalance(
-    req.params.code, req.admin.email, req.body.note
+    req.params.code, req.admin.email, req.body.note, amountCentavos
   );
   return res.json({ success: true, ...receipt });
 }

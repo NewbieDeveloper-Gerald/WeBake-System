@@ -68,7 +68,8 @@
     // --- catalog + public settings + reviews ---
     products: () => get('/products'),
     settingsPublic: () => get('/settings/public?_t=' + Date.now()),
-    reviews: () => get('/reviews'),
+    reviews: (productId) => get('/reviews' + (productId ? '?product_id=' + encodeURIComponent(productId) : '')),
+    reviewEligibility: (productId) => get('/reviews/eligibility' + (productId ? '?product_id=' + encodeURIComponent(productId) : '')),
     reviewSubmit: (body) => post('/reviews', body),
 
     // --- OTP (send, then verify, THEN the gated action) ---

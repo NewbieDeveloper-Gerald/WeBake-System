@@ -119,7 +119,10 @@
       'PATCH', '/api/admin/orders/' + encodeURIComponent(code) + '/status',
       { body: { status, note: note || '' } }
     ),
-    recordBalance: (code, note) => post('/api/admin/orders/' + encodeURIComponent(code) + '/record-balance', { note: note || '' }),
+    recordBalance: (code, note, amount_centavos) => post('/api/admin/orders/' + encodeURIComponent(code) + '/record-balance', {
+      note: note || '',
+      ...(amount_centavos != null ? { amount_centavos: Number(amount_centavos) } : {}),
+    }),
     cancelOrder: (code, reason) => post('/api/admin/orders/' + encodeURIComponent(code) + '/cancel', { reason }),
 
     // --- refunds (no detail endpoint: the queue row carries everything) ---

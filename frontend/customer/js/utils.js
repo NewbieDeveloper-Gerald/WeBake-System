@@ -56,7 +56,7 @@
     // nav + shell
     'nav.home': 'Home',
     'nav.products': 'Products',
-    'nav.track': 'Track Order',
+    'nav.track': 'Order Status',
     'nav.about': 'About Us',
     'nav.signin': 'Sign In',
     'nav.register': 'Register',
@@ -89,7 +89,7 @@
     'co.verify_email': 'Verify Email',
     'co.otp_prompt': 'Enter the 6-digit code sent to',
     // track
-    'tr.lookup': 'Track your order',
+    'tr.lookup': 'Check your order status',
     'tr.not_found': 'No matching order found for this tracking ID.',
     'tr.cancel_ok': 'Order cancelled. Your refund request is now pending.',
     'tr.details_ok': 'Wallet details submitted.',

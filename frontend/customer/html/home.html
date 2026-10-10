@@ -22,10 +22,10 @@
         <div class="nav-links" id="nav-links">
           <a href="home.html" class="active">Home</a>
           <a href="products.html">Products</a>
-          <a href="#" data-track-order-open>Track Order</a>
+          <a href="#" data-track-order-open>Order Status</a>
           <a href="#about">About Us</a>
         </div>
-        <button class="cart-btn" id="cart-btn" aria-label="Open Shopping Cart">
+        <button class="cart-icon" id="cart-icon" aria-label="View Cart">
           <i class="fas fa-shopping-cart"></i>
           <span class="cart-badge" id="cart-count">0</span>
         </button>
@@ -58,7 +58,7 @@
             <i class="fas fa-bread-slice"></i> Order Now
           </a>
           <a href="#" data-track-order-open class="btn btn-outline">
-            <i class="fas fa-truck-fast"></i> Track Order
+            <i class="fas fa-truck-fast"></i> Order Status
           </a>
         </div>
       </div>
@@ -289,7 +289,7 @@
           <a href="home.html">Home</a>
           <a href="products.html">Products</a>
           <a href="#about">About Us</a>
-          <a href="#" data-track-order-open>Track Order</a>
+          <a href="#" data-track-order-open>Order Status</a>
         </nav>
         <div class="footer-social">
           <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
@@ -330,9 +330,23 @@
       Share your experience with our bakery treats and delivery!
     </p>
     <form id="review-form">
+      <input type="hidden" id="rev-order-id">
+      <input type="hidden" id="rev-product-id">
+      <div class="form-group" id="rev-product-select-group" style="display:none;">
+        <label>Select Item to Review *</label>
+        <select class="form-select" id="rev-product-select"></select>
+      </div>
+      <div class="form-group" id="rev-product-name-group" style="display:none;">
+        <label>Product</label>
+        <input class="form-input" id="rev-product-name" type="text" readonly style="background:#F7F4EE;">
+      </div>
+      <div class="form-group" id="rev-order-code-group" style="display:none;">
+        <label>Completed Order</label>
+        <input class="form-input" id="rev-order-code" type="text" readonly style="background:#F7F4EE;">
+      </div>
       <div class="form-group">
-        <label>Your Name *</label>
-        <input class="form-input" id="rev-name" type="text" placeholder="e.g. Maria Santos" required minlength="2" maxlength="80">
+        <label>Your Name</label>
+        <input class="form-input" id="rev-name" type="text" placeholder="e.g. Maria Santos" maxlength="80">
       </div>
       <div class="form-group">
         <label>Location / Area (optional)</label>

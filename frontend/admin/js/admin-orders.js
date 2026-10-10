@@ -153,9 +153,24 @@
         btns.push('<button type="button" class="btn btn-outline btn-sm" data-details="' +
           ui.esc(o.order_code) + '">Details</button>');
       }
-      if (COLLECTIBLE.includes(o.status) && o.balance_due_centavos > 0) {
-        btns.push('<button type="button" class="btn btn-success btn-sm" data-balance="' +
-          ui.esc(o.order_code) + '">Collect</button>');
+      if (o.status === 'OUT_FOR_DELIVERY' && o.balance_due_centavos > 0) {
+        const maxPesos = (o.balance_due_centavos / 100).toFixed(2);
+        btns.push(
+          '<div class="collect-inline-box" style="display:inline-flex; align-items:center; gap:4px; margin-top:4px;">' +
+            '<div style="position:relative; display:inline-block;">' +
+              '<span style="position:absolute; left:6px; top:50%; transform:translateY(-50%); font-size:0.75rem; color:#888;">₱</span>' +
+              '<input type="number" step="0.01" min="0.01" max="' + maxPesos + '" value="' + maxPesos + '" ' +
+                     'class="form-input collect-input" id="col-input-' + ui.esc(o.order_code) + '" ' +
+                     'data-max-cents="' + o.balance_due_centavos + '" ' +
+                     'style="width:85px; padding:2px 4px 2px 18px; font-size:0.78rem; height:28px; border:1px solid #d0c5bc; border-radius:6px;" ' +
+                     'placeholder="Amount" title="Remaining: ₱' + maxPesos + '">' +
+            '</div>' +
+            '<button type="button" class="btn btn-success btn-sm" style="padding:2px 8px; font-size:0.78rem; height:28px;" ' +
+                    'data-collect-confirm="' + ui.esc(o.order_code) + '">' +
+              '<i class="fas fa-check"></i> Collect' +
+            '</button>' +
+          '</div>'
+        );
       }
       if (CANCELLABLE.includes(o.status)) {
         btns.push('<button type="button" class="btn btn-danger-outline btn-sm" data-cancel="' +
@@ -166,18 +181,46 @@
 
     function render() {
       const rows = filtered();
-      document.getElementById('orders-table-body').innerHTML = rows.length ? rows.map((o) =>
-        '<tr><td><strong>' + ui.esc(o.order_code) + '</strong><br><small class="muted">' +
-        ui.fmtDate(o.created_at) + '</small></td><td>' + ui.esc(o.customer_name) +
-        '<br><small class="muted">' + ui.esc(o.customer_contact) + '</small></td>' +
-        '<td>' + (o.is_walkin ? '<span class="channel-pill" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;"><i class="fas fa-store"></i> Walk-In</span>' : '<span class="channel-pill">Online</span>') + '</td>' +
-        '<td>' + (o.is_walkin ? 'Counter Piece/Bdl' : (o.total_bundles || 0) + ' bundles') + '</td>' +
-        '<td><strong>' + ui.pesos(o.total_centavos) + '</strong><br><small class="muted">DP ' +
-        ui.pesos(o.downpayment_paid_centavos) + '</small></td>' +
-        '<td>' + ui.esc(o.payment_method || '-') + '</td>' +
-        '<td>' + ui.pill(o.status) + '</td>' +
-        '<td class="actions-cell">' + actionsFor(o) + '</td></tr>'
-      ).join('') : '<tr><td colspan="8" class="muted">No orders match.</td></tr>';
+      document.getElementById('orders-table-body').innerHTML = rows.length ? rows.map((o) => {
+        const isPaid = (o.downpayment_paid_centavos || 0) > 0;
+        const amountPaid = o.amount_paid_centavos != null
+          ? o.amount_paid_centavos
+          : (isPaid ? (o.total_centavos - (o.balance_due_centavos || 0)) : 0);
+        const remBalance = o.balance_due_centavos != null ? o.balance_due_centavos : 0;
+        let payStatus = o.payment_status;
+        if (!payStatus) {
+          if (o.status === 'CANCELLED') payStatus = 'Cancelled';
+          else if (remBalance === 0 && (isPaid || o.is_walkin)) payStatus = 'Fully Paid';
+          else if (isPaid) payStatus = 'Partially Paid';
+          else payStatus = 'Pending Verification';
+        }
+        const payPillStyle = payStatus === 'Fully Paid'
+          ? 'background:#dcfce7; color:#15803d; border:1px solid #86efac;'
+          : payStatus === 'Partially Paid'
+            ? 'background:#fef3c7; color:#b45309; border:1px solid #fde68a;'
+            : payStatus === 'Cancelled'
+              ? 'background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5;'
+              : 'background:#f3f4f6; color:#4b5563; border:1px solid #e5e7eb;';
+
+        return '<tr><td><strong>' + ui.esc(o.order_code) + '</strong><br><small class="muted">' +
+          ui.fmtDate(o.created_at) + '</small></td><td>' + ui.esc(o.customer_name) +
+          '<br><small class="muted">' + ui.esc(o.customer_contact) + '</small></td>' +
+          '<td>' + (o.is_walkin ? '<span class="channel-pill" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;"><i class="fas fa-store"></i> Walk-In</span>' : '<span class="channel-pill">Online</span>') + '</td>' +
+          '<td>' + (o.is_walkin ? 'Counter Piece/Bdl' : (o.total_bundles || 0) + ' bundles') + '</td>' +
+          '<td>' +
+            '<div style="line-height:1.35;">' +
+              '<div><strong>Total: </strong>' + ui.pesos(o.total_centavos) + '</div>' +
+              '<div><small style="color:#15803d; font-weight:600;">Paid: ' + ui.pesos(amountPaid) + '</small></div>' +
+              '<div><small style="color:' + (remBalance > 0 ? '#b45309' : '#6b7280') + '; font-weight:600;">Balance: ' + ui.pesos(remBalance) + '</small></div>' +
+              '<div style="margin-top:3px;"><span style="display:inline-block; font-size:0.7rem; font-weight:700; padding:1px 6px; border-radius:4px; ' + payPillStyle + '">' +
+                ui.esc(payStatus) +
+              '</span></div>' +
+            '</div>' +
+          '</td>' +
+          '<td>' + ui.esc(o.payment_method || '-') + '</td>' +
+          '<td>' + ui.pill(o.status) + '</td>' +
+          '<td class="actions-cell">' + actionsFor(o) + '</td></tr>';
+      }).join('') : '<tr><td colspan="8" class="muted">No orders match.</td></tr>';
     }
 
     // --- table actions (delegated) ---
@@ -186,7 +229,33 @@
       const d = e.target.closest('[data-details]');
       const b = e.target.closest('[data-balance]');
       const c = e.target.closest('[data-cancel]');
+      const colBtn = e.target.closest('[data-collect-confirm]');
       try {
+        if (colBtn) {
+          const code = colBtn.dataset.collectConfirm;
+          const input = document.getElementById('col-input-' + code);
+          const maxCents = input ? Number(input.dataset.maxCents || 0) : 0;
+          const enteredVal = input ? parseFloat(input.value) : 0;
+          if (!enteredVal || isNaN(enteredVal) || enteredVal <= 0) {
+            window.alert('Please enter a valid amount to collect.');
+            return;
+          }
+          const enteredCents = Math.round(enteredVal * 100);
+          if (enteredCents > maxCents) {
+            window.alert('Cannot collect more than the remaining balance of ' + ui.pesos(maxCents) + '.');
+            return;
+          }
+          if (!ui.confirmAsk('Confirm collection of ' + ui.pesos(enteredCents) + ' for order ' + code + '?')) return;
+          colBtn.disabled = true;
+          try {
+            const res = await api.recordBalance(code, 'Collected on delivery', enteredCents);
+            window.alert('Collection successful! Amount paid: ' + ui.pesos(res.amount_paid_centavos) + '. Remaining balance: ' + ui.pesos(res.balance_due_centavos) + ' (' + res.payment_status + ').');
+            await load();
+          } finally {
+            colBtn.disabled = false;
+          }
+          return;
+        }
         if (v) { openVerify(v.dataset.verify); return; }
         if (d) { await openDetails(d.dataset.details); return; }
         if (b) { openBalance(b.dataset.balance); return; }
@@ -348,18 +417,27 @@
       }
     });
 
-    // --- balance modal (cash only) ---
+    // --- balance modal ---
     function openBalance(code) {
       const o = orders.find((x) => x.order_code === code);
       if (!o) return;
+      if (o.status !== 'OUT_FOR_DELIVERY') {
+        window.alert('Balance collection is only available when order is Out for Delivery.');
+        return;
+      }
       currentCode = code;
+      const maxPesos = (o.balance_due_centavos / 100).toFixed(2);
       set('balance-order-id', o.order_code);
       set('balance-cust-name', o.customer_name);
       set('balance-due-amount', ui.pesos(o.balance_due_centavos));
-      // The API records money only; completion is a separate board move (the
-      // transition rejects COMPLETED while a balance is outstanding).
+      const input = document.getElementById('balance-collect-input');
+      if (input) {
+        input.value = maxPesos;
+        input.max = maxPesos;
+        input.dataset.maxCents = o.balance_due_centavos;
+      }
       document.getElementById('btn-confirm-balance').innerHTML =
-        '<i class="fas fa-check-double"></i> Confirm Cash Collected';
+        '<i class="fas fa-check-double"></i> Confirm Balance Collected';
       document.getElementById('modal-collect-balance').classList.add('active');
     }
 
@@ -367,13 +445,26 @@
       document.getElementById('modal-collect-balance').classList.remove('active');
     });
     document.getElementById('btn-confirm-balance').addEventListener('click', async (e) => {
-      if (!ui.confirmAsk('Record cash collection for ' + currentCode + '? Move it to Completed on the board afterwards.')) return;
+      const o = orders.find((x) => x.order_code === currentCode);
+      const input = document.getElementById('balance-collect-input');
+      const maxCents = (o && o.balance_due_centavos) || (input ? Number(input.dataset.maxCents || 0) : 0);
+      const enteredVal = input ? parseFloat(input.value) : (maxCents / 100);
+      if (!enteredVal || isNaN(enteredVal) || enteredVal <= 0) {
+        window.alert('Please enter a valid amount to collect.');
+        return;
+      }
+      const enteredCents = Math.round(enteredVal * 100);
+      if (enteredCents > maxCents) {
+        window.alert('Cannot collect more than the remaining balance of ' + ui.pesos(maxCents) + '.');
+        return;
+      }
+      if (!ui.confirmAsk('Record collection of ' + ui.pesos(enteredCents) + ' for ' + currentCode + '?')) return;
       const btn = e.currentTarget;
       btn.disabled = true;
       try {
-        await api.recordBalance(currentCode, 'Cash collected on handover');
+        const res = await api.recordBalance(currentCode, 'Cash collected on handover', enteredCents);
         document.getElementById('modal-collect-balance').classList.remove('active');
-        window.alert('Balance recorded. You can now move the order to Completed.');
+        window.alert('Collection successful! Amount paid: ' + ui.pesos(res.amount_paid_centavos) + '. Remaining balance: ' + ui.pesos(res.balance_due_centavos) + ' (' + res.payment_status + ').');
         await load();
       } catch (err) {
         window.alert(err.message);

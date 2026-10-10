@@ -70,11 +70,13 @@ async function getSales(period, anchorStr) {
              FROM walkin_sales
             WHERE (created_at AT TIME ZONE 'Asia/Manila')::date >= $1::date
               AND (created_at AT TIME ZONE 'Asia/Manila')::date < $2::date;`, [from, to]),
-    query(`SELECT COALESCE(SUM(amount_centavos), 0)::int AS collected
-             FROM payments
-            WHERE stage = 'BALANCE' AND verification_status = 'VERIFIED'
-              AND (created_at AT TIME ZONE 'Asia/Manila')::date >= $1::date
-              AND (created_at AT TIME ZONE 'Asia/Manila')::date < $2::date;`, [from, to]),
+    query(`SELECT COALESCE(SUM(p.amount_centavos), 0)::int AS collected
+             FROM payments p
+             JOIN orders o ON o.id = p.order_id
+            WHERE p.stage = 'BALANCE' AND p.verification_status = 'VERIFIED'
+              AND (COALESCE(p.verified_at, p.created_at) AT TIME ZONE 'Asia/Manila')::date >= $1::date
+              AND (COALESCE(p.verified_at, p.created_at) AT TIME ZONE 'Asia/Manila')::date < $2::date
+              AND o.status != 'CANCELLED';`, [from, to]),
     query(`SELECT oi.product_id, oi.product_name,
                   COALESCE(SUM(oi.bundles), 0)::int AS bundles,
                   COALESCE(SUM(oi.line_total_centavos), 0)::int AS revenue
@@ -127,8 +129,11 @@ async function getSales(period, anchorStr) {
 
   const o = online.rows[0];
   const w = walkin.rows[0];
-  const collected = o.down_collected + balances.rows[0].collected;
+  const onlineCollected = o.down_collected + balances.rows[0].collected;
+  const walkinCollected = w.gross;
+  const totalCollected = onlineCollected + walkinCollected;
   const refunded = refunds.rows[0];
+  const netCollected = Math.max(0, totalCollected - refunded.total);
 
   return {
     period, from, to, label,
@@ -138,12 +143,27 @@ async function getSales(period, anchorStr) {
       downpayments_collected_centavos: o.down_collected,
       balances_collected_centavos: balances.rows[0].collected,
       outstanding_centavos: o.outstanding,
+      collected_centavos: onlineCollected,
     },
-    walkin: { sales: w.n, gross_centavos: w.gross },
+    walkin: {
+      sales: w.n,
+      gross_centavos: w.gross,
+      collected_centavos: walkinCollected,
+    },
     combined_gross_centavos: o.gross + w.gross,
-    collected_centavos: collected,
+    collected_centavos: totalCollected,
     refunded: { total_centavos: refunded.total, count: refunded.n },
-    net_collected_centavos: collected - refunded.total,
+    net_collected_centavos: netCollected,
+    summary: {
+      total_orders: o.n + w.n,
+      online_orders: o.n,
+      walkin_sales: w.n,
+      online_collected_centavos: onlineCollected,
+      walkin_collected_centavos: walkinCollected,
+      collected_centavos: totalCollected,
+      net_collected_centavos: netCollected,
+      refunded_centavos: refunded.total,
+    },
     per_product: perProduct,
   };
 }

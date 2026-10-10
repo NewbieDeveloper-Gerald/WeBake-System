@@ -207,6 +207,8 @@
       CANCELLED: 'Cancelled',
     };
 
+    let reviewedSet = new Set();
+
     function renderOrders(orders, member) {
       const container = document.getElementById('dash-orders-container');
       if (!orders.length) {
@@ -220,14 +222,23 @@
         const statusText = STAGE_LABEL[o.status] || String(o.status).replace(/_/g, ' ');
         const statusClass = 'status-' + String(o.status).toLowerCase();
 
-        // Items summary
+        // Items summary with review unlock ONLY if order is COMPLETED
         const itemsHtml = (o.items && o.items.length)
-          ? '<div class="order-items-list">' + o.items.map((it) =>
-              '<div class="order-item-line"><span><strong>' + U.escapeHtml(it.product_name) + '</strong> × ' +
-              Number(it.bundles).toLocaleString() + ' bundles <small>(' +
-              (Number(it.bundles) * Number(it.pieces_per_bundle || 25)).toLocaleString() + ' pcs)</small></span>' +
-              '<strong>' + U.pesos(it.line_total_centavos) + '</strong></div>'
-            ).join('') + '</div>'
+          ? '<div class="order-items-list">' + o.items.map((it) => {
+              let revHtml = '';
+              if (o.status === 'COMPLETED') {
+                const key = o.id + '_' + it.product_id;
+                if (reviewedSet.has(key)) {
+                  revHtml = '<span style="display:inline-flex; align-items:center; gap:0.25rem; font-size:0.75rem; color:#10B981; font-weight:600; margin-left:0.5rem;"><i class="fas fa-check-circle"></i> Reviewed</span>';
+                } else {
+                  revHtml = '<button type="button" class="btn btn-outline btn-xs btn-review-item" data-rev-oid="' + o.id + '" data-rev-ocode="' + U.escapeHtml(o.order_code) + '" data-rev-pid="' + it.product_id + '" data-rev-pname="' + U.escapeHtml(it.product_name) + '" style="margin-left:0.5rem; padding:0.15rem 0.5rem; font-size:0.75rem; color:#B58A44; border-color:#B58A44;"><i class="fas fa-star" style="color:#F59E0B"></i> Leave a Review</button>';
+                }
+              }
+              return '<div class="order-item-line"><span><strong>' + U.escapeHtml(it.product_name) + '</strong> × ' +
+                Number(it.bundles).toLocaleString() + ' bundles <small>(' +
+                (Number(it.bundles) * Number(it.pieces_per_bundle || 25)).toLocaleString() + ' pcs)</small>' + revHtml + '</span>' +
+                '<strong>' + U.pesos(it.line_total_centavos) + '</strong></div>';
+            }).join('') + '</div>'
           : '';
 
         // Refund status tag if exists
@@ -258,7 +269,7 @@
           '</div>' +
           '<div class="order-block-actions">' +
             '<a href="track.html?code=' + encodeURIComponent(o.order_code) + '&email=' + encodeURIComponent(member.email) + '" class="btn btn-outline btn-sm">' +
-              '<i class="fas fa-location-arrow"></i> Track Order' +
+              '<i class="fas fa-location-arrow"></i> Order Status' +
             '</a>' +
             '<button type="button" class="btn btn-outline-danger btn-sm" data-dash-cancel="' + U.escapeHtml(o.order_code) + '"' +
               (canCancel ? '' : ' disabled title="Cancellation is only permitted while payment is under verification. Once confirmed, orders cannot be cancelled."') + '>' +
@@ -448,10 +459,92 @@
       }
     });
 
+    /* ---------------- Review Modal ---------------- */
+    const reviewModal = document.getElementById('dash-review-modal');
+    const reviewOverlay = document.getElementById('dash-review-overlay');
+
+    function closeReviewModal() {
+      if (reviewModal) reviewModal.classList.remove('active');
+      if (reviewOverlay) reviewOverlay.classList.remove('active');
+    }
+
+    if (reviewOverlay) reviewOverlay.addEventListener('click', closeReviewModal);
+    document.getElementById('dash-review-close')?.addEventListener('click', closeReviewModal);
+    document.getElementById('dash-review-cancel-btn')?.addEventListener('click', closeReviewModal);
+
+    const starBox = document.getElementById('dash-review-stars');
+    if (starBox) {
+      const starIcons = starBox.querySelectorAll('[data-star]');
+      const ratingInput = document.getElementById('dash-review-rating-val');
+      const setStars = (val) => {
+        if (ratingInput) ratingInput.value = String(val);
+        starIcons.forEach((s) => {
+          const num = Number(s.dataset.star);
+          s.className = num <= val ? 'fas fa-star' : 'far fa-star';
+        });
+      };
+      starIcons.forEach((s) => {
+        s.addEventListener('click', () => setStars(Number(s.dataset.star)));
+      });
+    }
+
+    document.getElementById('dash-orders-container').addEventListener('click', (e) => {
+      const btn = e.target.closest('.btn-review-item');
+      if (!btn) return;
+      document.getElementById('dash-review-order-id').value = btn.dataset.revOid;
+      document.getElementById('dash-review-order-code').value = btn.dataset.revOcode;
+      document.getElementById('dash-review-product-id').value = btn.dataset.revPid;
+      document.getElementById('dash-review-product-name').value = btn.dataset.revPname;
+      document.getElementById('dash-review-text').value = '';
+      if (starBox) {
+        starBox.querySelectorAll('[data-star]').forEach((s) => { s.className = 'fas fa-star'; });
+      }
+      if (document.getElementById('dash-review-rating-val')) {
+        document.getElementById('dash-review-rating-val').value = '5';
+      }
+      if (reviewOverlay) reviewOverlay.classList.add('active');
+      if (reviewModal) reviewModal.classList.add('active');
+    });
+
+    const dashRevForm = document.getElementById('dash-review-form');
+    if (dashRevForm) {
+      dashRevForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const orderId = document.getElementById('dash-review-order-id').value;
+        const orderCode = document.getElementById('dash-review-order-code').value;
+        const productId = document.getElementById('dash-review-product-id').value;
+        const rating = Number(document.getElementById('dash-review-rating-val').value) || 5;
+        const text = document.getElementById('dash-review-text').value.trim();
+        const submitBtn = document.getElementById('dash-review-submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+        try {
+          await api.reviewSubmit({
+            order_id: Number(orderId),
+            order_code: orderCode,
+            product_id: Number(productId),
+            rating,
+            text,
+            name: (currentMember && (currentMember.name || currentMember.full_name)) || '',
+          });
+          U.toast('Review submitted! Thank you for your feedback.');
+          closeReviewModal();
+          await load();
+        } catch (err) {
+          U.toast(err.message || 'Could not submit review.');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Submit Review';
+        }
+      });
+    }
+
     async function load() {
-      const [{ member }, cartRes, ordersRes, prodRes] = await Promise.all([
+      const [{ member }, cartRes, ordersRes, prodRes, reviewEligRes] = await Promise.all([
         api.profile(), api.cartGet(), api.mine(), api.products(),
+        api.reviewEligibility().catch(() => ({ reviewed_keys: [] })),
       ]);
+      reviewedSet = new Set((reviewEligRes && reviewEligRes.reviewed_keys) || []);
       currentMember = member;
       const memberName = member.name || member.full_name || localStorage.getItem('webake_member_name') || '';
       document.getElementById('dash-name').value = memberName;

@@ -1,7 +1,7 @@
 /**
  * Customer modals: track-order lookup dialog (modals.js).
  *
- * WHAT: Every "Track Order" link (data-track-order-open) opens one modal:
+ * WHAT: Every "Order Status" link (data-track-order-open) opens one modal:
  * Order ID + Gmail -> track.html. Self-contained markup + styles so no shell
  * edits are needed on any of the six customer pages.
  */
@@ -24,13 +24,13 @@
     wrap.id = 'track-modal';
     wrap.innerHTML =
       '<div class="tm-backdrop" data-tm-close></div>' +
-      '<div class="tm-card" role="dialog" aria-label="Track order">' +
-      '<h3 data-i18n="nav.track">Track Order</h3>' +
+      '<div class="tm-card" role="dialog" aria-label="Order status">' +
+      '<h3 data-i18n="nav.track">Order Status</h3>' +
       '<p>WB-XXXXX + Gmail</p>' +
       '<form id="track-modal-form">' +
       '<div class="form-group"><input class="form-input" id="tm-code" placeholder="WB-XXXXX" required autocomplete="off"></div>' +
       '<div class="form-group"><input class="form-input" id="tm-email" type="email" placeholder="you@gmail.com" required></div>' +
-      '<button type="submit" class="btn btn-primary btn-block">Track</button> ' +
+      '<button type="submit" class="btn btn-primary btn-block">Check Status</button> ' +
       '<button type="button" class="btn btn-outline btn-block" data-tm-close style="margin-top:.5rem">Close</button>' +
       '</form></div>';
     document.body.appendChild(wrap);
