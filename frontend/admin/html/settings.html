@@ -72,6 +72,7 @@
           <a href="../../customer/html/home.html" target="_blank" class="btn-sidebar" title="Open Customer Storefront">
             <i class="fas fa-external-link-alt"></i> Store
           </a>
+          <button type="button" class="btn-sidebar" id="btn-logout" title="Sign out"><i class="fas fa-sign-out-alt"></i> Out</button>
         </div>
       </div>
     </aside>
@@ -116,12 +117,12 @@
                   <input type="text" id="set-acc-name" class="form-input" placeholder="Gerald V." required>
                 </div>
                 <div class="form-group">
-                  <label class="form-label form-label-required">GCash Receiving Number</label>
-                  <input type="text" id="set-gcash-num" class="form-input" placeholder="0917-123-4567" required>
+                  <label class="form-label form-label-required">GCash Receiving Number (11 digits)</label>
+                  <input type="text" id="set-gcash-num" class="form-input" placeholder="09171234567" maxlength="11" inputmode="numeric" required>
                 </div>
                 <div class="form-group">
-                  <label class="form-label form-label-required">PayMaya Receiving Number</label>
-                  <input type="text" id="set-maya-num" class="form-input" placeholder="0918-987-6543" required>
+                  <label class="form-label form-label-required">PayMaya Receiving Number (11 digits)</label>
+                  <input type="text" id="set-maya-num" class="form-input" placeholder="09181234567" maxlength="11" inputmode="numeric" required>
                 </div>
               </div>
 
@@ -136,8 +137,8 @@
                       </div>
                       <div class="qr-upload-actions">
                         <div class="qr-drop-text">
-                          <strong>Drag &amp; drop GCash QR here</strong>
-                          <span>or choose an image file below</span>
+                          <strong>Select or Drag &amp; drop GCash QR</strong>
+                          <span>File image only (PNG, JPG, WebP)</span>
                         </div>
                         <div class="qr-btn-row">
                           <label class="btn btn-outline btn-sm" for="file-gcash-qr" style="cursor:pointer;">
@@ -148,7 +149,8 @@
                             <i class="fas fa-rotate-left"></i> Reset
                           </button>
                         </div>
-                        <input type="text" id="set-gcash-qr" class="form-input form-input-sm" placeholder="Image URL or data URL" style="font-size:0.75rem;">
+                        <input type="hidden" id="set-gcash-qr">
+                        <div id="status-gcash-qr" style="font-size:0.75rem; color:var(--text-muted);"><i class="fas fa-check-circle text-success"></i> Current QR active</div>
                       </div>
                     </div>
                   </div>
@@ -163,8 +165,8 @@
                       </div>
                       <div class="qr-upload-actions">
                         <div class="qr-drop-text">
-                          <strong>Drag &amp; drop Maya QR here</strong>
-                          <span>or choose an image file below</span>
+                          <strong>Select or Drag &amp; drop Maya QR</strong>
+                          <span>File image only (PNG, JPG, WebP)</span>
                         </div>
                         <div class="qr-btn-row">
                           <label class="btn btn-outline btn-sm" for="file-maya-qr" style="cursor:pointer;">
@@ -175,7 +177,8 @@
                             <i class="fas fa-rotate-left"></i> Reset
                           </button>
                         </div>
-                        <input type="text" id="set-maya-qr" class="form-input form-input-sm" placeholder="Image URL or data URL" style="font-size:0.75rem;">
+                        <input type="hidden" id="set-maya-qr">
+                        <div id="status-maya-qr" style="font-size:0.75rem; color:var(--text-muted);"><i class="fas fa-check-circle text-success"></i> Current QR active</div>
                       </div>
                     </div>
                   </div>

@@ -1247,3 +1247,104 @@ body {
   padding: 0.7rem 1.75rem;
   border-radius: 8px;
 }
+
+/* ==========================================================================
+   Stat Grid & Modern Stat Cards (Shared across Dashboard, Sales, Catalog)
+   ========================================================================== */
+.stats-grid, .stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.15rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  min-width: 0;
+  padding: 1.35rem 1.35rem 1.25rem;
+  border: 1px solid rgba(107, 53, 42, 0.12);
+  border-radius: 16px;
+  background: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(62, 38, 28, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(62, 38, 28, 0.09);
+  border-color: rgba(107, 53, 42, 0.25);
+}
+
+.stat-card:hover::before {
+  background: var(--primary);
+}
+
+.stat-card.highlight {
+  background: linear-gradient(145deg, #6B352A, #4E261F);
+  border-color: #6B352A;
+  color: #FFFFFF;
+}
+
+.stat-card.highlight::before {
+  background: #FFF1A6;
+}
+
+.stat-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.4rem;
+}
+
+.stat-label i {
+  font-size: 0.95rem;
+}
+
+.stat-card.highlight .stat-label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.stat-value {
+  margin: 0.35rem 0 0.3rem;
+  color: #4F2A22;
+  font-size: clamp(1.4rem, 2.2vw, 1.85rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+}
+
+.stat-card.highlight .stat-value {
+  color: #FFF1A6;
+}
+
+.stat-sub {
+  margin-top: auto;
+  color: #8A7B73;
+  font-size: 0.76rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.stat-card.highlight .stat-sub {
+  color: rgba(255, 255, 255, 0.75);
+}
+

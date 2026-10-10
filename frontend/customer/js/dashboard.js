@@ -215,7 +215,8 @@
       }
 
       container.innerHTML = orders.map((o) => {
-        const canCancel = ['PAYMENT_UNDER_VERIFICATION', 'CONFIRMED'].includes(o.status);
+        const canCancel = (o.status === 'PAYMENT_UNDER_VERIFICATION');
+        const canRefund = !!o.refund || (o.status === 'CANCELLED');
         const statusText = STAGE_LABEL[o.status] || String(o.status).replace(/_/g, ' ');
         const statusClass = 'status-' + String(o.status).toLowerCase();
 
@@ -260,10 +261,11 @@
               '<i class="fas fa-location-arrow"></i> Track Order' +
             '</a>' +
             '<button type="button" class="btn btn-outline-danger btn-sm" data-dash-cancel="' + U.escapeHtml(o.order_code) + '"' +
-              (canCancel ? '' : ' disabled title="Cannot cancel after production starts or when cancelled"') + '>' +
+              (canCancel ? '' : ' disabled title="Cancellation is only permitted while payment is under verification. Once confirmed, orders cannot be cancelled."') + '>' +
               '<i class="fas fa-ban"></i> Cancel' +
             '</button>' +
-            '<button type="button" class="btn btn-outline-warning btn-sm" data-dash-refund="' + U.escapeHtml(o.order_code) + '">' +
+            '<button type="button" class="btn btn-outline-warning btn-sm" data-dash-refund="' + U.escapeHtml(o.order_code) + '"' +
+              (canRefund ? '' : ' disabled title="Refunds are not permitted once an order is confirmed."') + '>' +
               '<i class="fas fa-undo-alt"></i> Refund' +
             '</button>' +
           '</div>' +
@@ -314,10 +316,32 @@
         cancelModal.classList.add('active');
         return;
       }
+      if (cancelBtn) {
+        const code = cancelBtn.dataset.dashCancel;
+        const o = allOrders.find((ord) => ord.order_code === code);
+        if (!o) return;
+        if (o.status !== 'PAYMENT_UNDER_VERIFICATION') {
+          U.toast('This order is already confirmed. Confirmed orders cannot be cancelled or refunded.');
+          return;
+        }
+        activeCancelOrder = o;
+        document.getElementById('cancel-order-code-display').textContent = o.order_code;
+        document.getElementById('dash-cancel-reason').value = '';
+        document.getElementById('dash-cancel-name').value = (currentMember && (currentMember.name || currentMember.full_name)) || '';
+        document.getElementById('dash-cancel-num').value = (currentMember && currentMember.contact) || '';
+        document.getElementById('dash-cancel-num2').value = (currentMember && currentMember.contact) || '';
+        cancelOverlay.classList.add('active');
+        cancelModal.classList.add('active');
+        return;
+      }
       if (refundBtn) {
         const code = refundBtn.dataset.dashRefund;
         const o = allOrders.find((ord) => ord.order_code === code);
         if (!o) return;
+        if (o.status === 'CONFIRMED' && !o.refund) {
+          U.toast('This order is already confirmed. Confirmed orders cannot be cancelled or refunded.');
+          return;
+        }
         activeRefundOrder = o;
         document.getElementById('refund-order-code-display').textContent = o.order_code;
         const statusCard = document.getElementById('dash-refund-status-card');
@@ -332,14 +356,14 @@
           document.getElementById('dash-refund-num').value = o.refund.account_number || '';
           document.getElementById('dash-refund-num2').value = o.refund.account_number || '';
         } else {
-          const canCancel = ['PAYMENT_UNDER_VERIFICATION', 'CONFIRMED'].includes(o.status);
+          const canCancel = (o.status === 'PAYMENT_UNDER_VERIFICATION');
           statusCard.innerHTML =
             '<div style="background:#F0F7FF; border:1px solid #D0E3F7; border-radius:10px; padding:0.75rem; font-size:0.83rem;">' +
             '<div><strong>Order Status:</strong> ' + U.escapeHtml(STAGE_LABEL[o.status] || o.status) + '</div>' +
             '<p style="margin:0.25rem 0 0; color:#555;">' +
             (canCancel
-              ? 'This order is active. Cancelling it will initiate a refund for your 50% downpayment (' + U.pesos(o.downpayment_paid_centavos || o.downpayment_centavos) + ').'
-              : 'Refund requests are processed upon order cancellation or return. You can update your refund wallet details below.') +
+              ? 'This order is under verification. Cancelling it will initiate a refund for your 50% downpayment (' + U.pesos(o.downpayment_paid_centavos || o.downpayment_centavos) + ').'
+              : 'Refund requests are processed upon order cancellation. You can update your refund wallet details below.') +
             '</p></div>';
           document.getElementById('dash-refund-name').value = (currentMember && (currentMember.name || currentMember.full_name)) || '';
           document.getElementById('dash-refund-num').value = (currentMember && currentMember.contact) || '';
@@ -347,6 +371,17 @@
         }
         refundOverlay.classList.add('active');
         refundModal.classList.add('active');
+      }
+    });
+
+    // Enforce 11 max digits on all phone and wallet inputs
+    ['dash-contact', 'dash-cancel-num', 'dash-cancel-num2', 'dash-refund-num', 'dash-refund-num2'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.maxLength = 11;
+        el.addEventListener('input', () => {
+          el.value = el.value.replace(/\D/g, '').slice(0, 11);
+        });
       }
     });
 

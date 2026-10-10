@@ -20,7 +20,7 @@ const createProductSchema = z.object({
   pieces_per_bundle: z.coerce.number().int().min(1).max(1000).default(25),
   piece_price_centavos: centavosField,
   low_stock_threshold_pieces: z.coerce.number().int().min(0).default(500),
-  image_url: z.string().trim().max(500).default(''),
+  image_url: z.string().trim().max(5_000_000).default(''),
   initial_stock_pieces: z.coerce.number().int().min(0).max(10000000).default(0),
 }).strict();
 
@@ -31,7 +31,7 @@ const updateProductSchema = z.object({
   pieces_per_bundle: z.coerce.number().int().min(1).max(1000).optional(),
   piece_price_centavos: centavosField.optional(),
   low_stock_threshold_pieces: z.coerce.number().int().min(0).optional(),
-  image_url: z.string().trim().max(500).optional(),
+  image_url: z.string().trim().max(5_000_000).optional(),
 }).strict();
 
 /**

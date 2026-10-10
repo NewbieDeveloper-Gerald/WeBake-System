@@ -11,35 +11,6 @@
   'use strict';
 
   document.addEventListener('DOMContentLoaded', () => {
-    // Dynamic reviews loader for pages with #reviews-container (e.g. home.html)
-    const revContainer = document.getElementById('reviews-container');
-    if (revContainer && window.ShopAPI) {
-      window.ShopAPI.reviews().then(({ reviews: list }) => {
-        if (!list || !list.length) return;
-        const esc = (window.WeBakeUtils && window.WeBakeUtils.escapeHtml) || ((s) => String(s || ''));
-        revContainer.innerHTML = list.map((r) => {
-          const stars = Array.from({ length: 5 }, (_, i) =>
-            '<i class="' + (i < (r.rating || 5) ? 'fas' : 'far') + ' fa-star"></i>'
-          ).join('');
-          const nameParts = String(r.display_name || 'Customer').replace(/^Sample Review\s*-\s*/i, '').split(',');
-          const name = nameParts[0].trim();
-          const loc = nameParts[1] ? nameParts[1].trim() : 'Bulacan';
-          const initials = name.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase() || 'CR';
-          const text = r.text_en || r.text_fil || '';
-          return '<div class="review-card">' +
-            '<div class="review-stars">' + stars + '</div>' +
-            '<p class="review-quote">"' + esc(text) + '"</p>' +
-            '<div class="review-author">' +
-            '<div class="review-avatar">' + esc(initials) + '</div>' +
-            '<div class="review-author-info">' +
-            '<h4>' + esc(name) + '</h4>' +
-            '<small>' + esc(loc) + '</small>' +
-            '</div></div></div>';
-        }).join('');
-      }).catch(() => {});
-    }
-
-    if (!document.getElementById('product-grid')) return; // products page only
 
     const U = window.WeBakeUtils;
     const t = (k, v) => window.WB_I18N.t(k, v);
@@ -73,6 +44,7 @@
       settings = Object.assign(settings, setRes.settings || {});
       minBundles = Math.max(1, parseInt(settings.min_order_bundles, 10) || 300);
       showMinNote();
+      if (document.getElementById('payment-method')) setMethod('GCASH');
       loadReviews().catch(() => {});
 
       if (auth.token()) {
@@ -155,7 +127,9 @@
     }
 
     function renderGrid() {
-      document.getElementById('product-grid').innerHTML = catalog.map((p) =>
+      const grid = document.getElementById('product-grid');
+      if (!grid) return;
+      grid.innerHTML = catalog.map((p) =>
         '<div class="product-card" data-open="' + p.id + '">' +
         '<div class="product-img">' +
         (p.image_url ? '<img src="' + U.escapeHtml(p.image_url) + '" alt="' + U.escapeHtml(p.name) + '">' : '<i class="fas fa-bread-slice"></i>') +
@@ -168,56 +142,83 @@
 
     let modalProduct = null;
 
-    document.getElementById('product-grid').addEventListener('click', (e) => {
-      const card = e.target.closest('[data-open]');
-      if (card) openModal(card.dataset.open);
-    });
+    const prodGrid = document.getElementById('product-grid');
+    if (prodGrid) {
+      prodGrid.addEventListener('click', (e) => {
+        const card = e.target.closest('[data-open]');
+        if (card) openModal(card.dataset.open);
+      });
+    }
 
     function openModal(id) {
       const p = byId(id);
       if (!p) return;
       modalProduct = p;
-      document.getElementById('modal-name').textContent = p.name;
-      document.getElementById('modal-desc').textContent = p.description || '';
-      document.getElementById('modal-price').textContent =
+      const mName = document.getElementById('modal-name');
+      if (mName) mName.textContent = p.name;
+      const mDesc = document.getElementById('modal-desc');
+      if (mDesc) mDesc.textContent = p.description || '';
+      const mPrice = document.getElementById('modal-price');
+      if (mPrice) mPrice.textContent =
         U.pesos(p.price_bundle_centavos) + t('shop.per_bundle') +
         ' (' + p.pieces_per_bundle + ' pcs each)';
       const imgBox = document.querySelector('.modal-product-img');
-      imgBox.innerHTML = p.image_url
-        ? '<img src="' + U.escapeHtml(p.image_url) + '" alt="' + U.escapeHtml(p.name) + '">'
-        : '<i class="fas fa-image"></i><span>No image added</span>';
+      if (imgBox) {
+        imgBox.innerHTML = p.image_url
+          ? '<img src="' + U.escapeHtml(p.image_url) + '" alt="' + U.escapeHtml(p.name) + '">'
+          : '<i class="fas fa-image"></i><span>No image added</span>';
+      }
       modalQuantity = null;
-      renderQuantityOptions(document.getElementById('quantity-options'), p, null, 'product');
-      document.getElementById('quantity-stock').textContent = 'Available stock: ' +
+      const qOptions = document.getElementById('quantity-options');
+      if (qOptions) renderQuantityOptions(qOptions, p, null, 'product');
+      const qStock = document.getElementById('quantity-stock');
+      if (qStock) qStock.textContent = 'Available stock: ' +
         Number(p.bundles_available || 0).toLocaleString() + ' bundles';
-      document.getElementById('quantity-total').textContent = 'Select a quantity to see the total.';
-      document.getElementById('quantity-error').hidden = true;
-      document.getElementById('add-to-cart-btn').disabled = quantityOptions.length === 0;
-      document.getElementById('buy-now-btn').disabled = quantityOptions.length === 0;
-      document.getElementById('modal-overlay').classList.add('active');
-      document.getElementById('product-modal').classList.add('active');
+      const qTotal = document.getElementById('quantity-total');
+      if (qTotal) qTotal.textContent = 'Select a quantity to see the total.';
+      const qErr = document.getElementById('quantity-error');
+      if (qErr) qErr.hidden = true;
+      const addBtn = document.getElementById('add-to-cart-btn');
+      if (addBtn) addBtn.disabled = quantityOptions.length === 0;
+      const buyBtn = document.getElementById('buy-now-btn');
+      if (buyBtn) buyBtn.disabled = quantityOptions.length === 0;
+      const mo = document.getElementById('modal-overlay');
+      if (mo) mo.classList.add('active');
+      const pm = document.getElementById('product-modal');
+      if (pm) pm.classList.add('active');
     }
 
     function closeModal() {
-      document.getElementById('modal-overlay').classList.remove('active');
-      document.getElementById('product-modal').classList.remove('active');
+      const mo = document.getElementById('modal-overlay');
+      if (mo) mo.classList.remove('active');
+      const pm = document.getElementById('product-modal');
+      if (pm) pm.classList.remove('active');
     }
 
-    document.getElementById('modal-close').addEventListener('click', closeModal);
-    document.getElementById('modal-overlay').addEventListener('click', closeModal);
-    document.getElementById('quantity-options').addEventListener('change', (e) => {
-      if (!e.target.matches('[data-product-quantity]')) return;
-      modalQuantity = Number(e.target.value);
-      document.getElementById('quantity-error').hidden = true;
-      document.getElementById('quantity-total').textContent = 'Total: ' +
-        U.pesos(modalQuantity * modalProduct.price_bundle_centavos);
-    });
-    document.getElementById('quantity-options').addEventListener('keydown', (e) => {
-      if (e.key !== 'Enter' || !e.target.matches('input[type="radio"]')) return;
-      e.preventDefault();
-      e.target.checked = true;
-      e.target.dispatchEvent(new Event('change', { bubbles: true }));
-    });
+    const modalClose = document.getElementById('modal-close');
+    if (modalClose) modalClose.addEventListener('click', closeModal);
+    const modalOverlay = document.getElementById('modal-overlay');
+    if (modalOverlay) modalOverlay.addEventListener('click', closeModal);
+
+    const qOptions = document.getElementById('quantity-options');
+    if (qOptions) {
+      qOptions.addEventListener('change', (e) => {
+        if (!e.target.matches('[data-product-quantity]')) return;
+        modalQuantity = Number(e.target.value);
+        const qErr = document.getElementById('quantity-error');
+        if (qErr) qErr.hidden = true;
+        const qTot = document.getElementById('quantity-total');
+        if (qTot && modalProduct) {
+          qTot.textContent = 'Total: ' + U.pesos(modalQuantity * modalProduct.price_bundle_centavos);
+        }
+      });
+      qOptions.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' || !e.target.matches('input[type="radio"]')) return;
+        e.preventDefault();
+        e.target.checked = true;
+        e.target.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
 
     function renderQuantityOptions(container, product, selected, scope) {
       if (!quantityOptions.length) {
@@ -238,29 +239,36 @@
     function selectedModalQuantity() {
       if (!modalProduct || !modalQuantity || !quantityOptions.includes(modalQuantity) ||
           modalQuantity > Number(modalProduct.bundles_available || 0)) {
-        document.getElementById('quantity-error').hidden = false;
+        const qErr = document.getElementById('quantity-error');
+        if (qErr) qErr.hidden = false;
         return null;
       }
       return modalQuantity;
     }
 
-    document.getElementById('add-to-cart-btn').addEventListener('click', () => {
-      const qty = selectedModalQuantity();
-      if (!qty) return;
-      addLine(modalProduct.id, qty);
-      closeModal();
-      U.toast('Added to cart.');
-    });
-    document.getElementById('buy-now-btn').addEventListener('click', () => {
-      const qty = selectedModalQuantity();
-      if (!qty) return;
-      isDirectSingleCheckout = true;
-      addLine(modalProduct.id, qty);
-      selectedProductIds = new Set([Number(modalProduct.id)]);
-      renderCart();
-      closeModal();
-      startCheckout();
-    });
+    const addBtn = document.getElementById('add-to-cart-btn');
+    if (addBtn) {
+      addBtn.addEventListener('click', () => {
+        const qty = selectedModalQuantity();
+        if (!qty) return;
+        addLine(modalProduct.id, qty);
+        closeModal();
+        U.toast('Added to cart.');
+      });
+    }
+    const buyBtn = document.getElementById('buy-now-btn');
+    if (buyBtn) {
+      buyBtn.addEventListener('click', () => {
+        const qty = selectedModalQuantity();
+        if (!qty) return;
+        isDirectSingleCheckout = true;
+        addLine(modalProduct.id, qty);
+        selectedProductIds = new Set([Number(modalProduct.id)]);
+        renderCart();
+        closeModal();
+        startCheckout();
+      });
+    }
 
     function addLine(productId, bundles) {
       const found = cart.find((l) => l.product_id === Number(productId));
@@ -292,21 +300,38 @@
     }
 
     function openCart() {
-      document.getElementById('cart-overlay').classList.add('active');
-      document.getElementById('cart-sidebar').classList.add('active');
+      const co = document.getElementById('cart-overlay');
+      const cs = document.getElementById('cart-sidebar');
+      if (co) co.classList.add('active');
+      if (cs) cs.classList.add('active');
     }
     function closeCart() {
-      document.getElementById('cart-overlay').classList.remove('active');
-      document.getElementById('cart-sidebar').classList.remove('active');
+      const co = document.getElementById('cart-overlay');
+      const cs = document.getElementById('cart-sidebar');
+      if (co) co.classList.remove('active');
+      if (cs) cs.classList.remove('active');
     }
 
-    document.getElementById('cart-icon').addEventListener('click', openCart);
-    document.getElementById('cart-close').addEventListener('click', closeCart);
-    document.getElementById('cart-overlay').addEventListener('click', closeCart);
-    document.getElementById('continue-browsing').addEventListener('click', closeCart);
+    document.querySelectorAll('#cart-icon, #cart-btn').forEach((btn) => {
+      btn.addEventListener('click', openCart);
+    });
+    const cartCloseBtn = document.getElementById('cart-close');
+    if (cartCloseBtn) cartCloseBtn.addEventListener('click', closeCart);
+    const cartOverlayEl = document.getElementById('cart-overlay');
+    if (cartOverlayEl) cartOverlayEl.addEventListener('click', closeCart);
+    const continueBtn = document.getElementById('continue-browsing');
+    if (continueBtn) {
+      continueBtn.addEventListener('click', () => {
+        closeCart();
+        if (!document.getElementById('product-grid')) {
+          window.location.href = 'products.html';
+        }
+      });
+    }
 
     function renderCart() {
       const box = document.getElementById('cart-items');
+      if (!box) return;
       box.innerHTML = cart.length ? cart.map((l, i) => {
         const p = byId(l.product_id);
         const name = p ? p.name : '#' + l.product_id;
@@ -329,16 +354,22 @@
       }).join('') : '<p class="empty-state">' + t('cart.empty') + '</p>';
       const selected = selectedLines();
       const { bundles, total } = totals(selected);
-      const badge = document.getElementById('cart-count');
-      badge.textContent = cart.length;
-      badge.hidden = !cart.length;
-      badge.setAttribute('aria-label', cart.length + ' product' + (cart.length === 1 ? '' : 's') + ' in cart');
-      document.getElementById('cart-total').textContent = U.pesos(total);
-      document.getElementById('cart-selected-label').textContent =
-        selected.length + ' product' + (selected.length === 1 ? '' : 's') + ' selected · ' + bundles.toLocaleString() + ' bundles';
+      document.querySelectorAll('#cart-count, .cart-badge').forEach((badge) => {
+        badge.textContent = cart.length;
+        badge.hidden = !cart.length;
+        badge.setAttribute('aria-label', cart.length + ' product' + (cart.length === 1 ? '' : 's') + ' in cart');
+      });
+      const cTot = document.getElementById('cart-total');
+      if (cTot) cTot.textContent = U.pesos(total);
+      const cSel = document.getElementById('cart-selected-label');
+      if (cSel) {
+        cSel.textContent = selected.length + ' product' + (selected.length === 1 ? '' : 's') + ' selected · ' + bundles.toLocaleString() + ' bundles';
+      }
       const checkout = document.getElementById('proceed-checkout');
-      checkout.disabled = selected.length === 0;
-      checkout.innerHTML = '<i class="fas fa-credit-card"></i> Checkout selected (' + selected.length + ')';
+      if (checkout) {
+        checkout.disabled = selected.length === 0;
+        checkout.innerHTML = '<i class="fas fa-credit-card"></i> Checkout selected (' + selected.length + ')';
+      }
     }
 
     async function refreshCartCatalog() {
@@ -355,37 +386,40 @@
 
     function selectedLines() { return cart.filter((line) => selectedProductIds.has(line.product_id)); }
 
-    document.getElementById('cart-items').addEventListener('click', (e) => {
-      const del = e.target.closest('[data-cdel]');
-      const select = e.target.closest('[data-cselect]');
-      let removedProductId = null;
-      if (select) {
-        const id = Number(select.dataset.cselect);
-        if (select.checked) selectedProductIds.add(id);
-        else selectedProductIds.delete(id);
+    const cartItemsEl = document.getElementById('cart-items');
+    if (cartItemsEl) {
+      cartItemsEl.addEventListener('click', (e) => {
+        const del = e.target.closest('[data-cdel]');
+        const select = e.target.closest('[data-cselect]');
+        let removedProductId = null;
+        if (select) {
+          const id = Number(select.dataset.cselect);
+          if (select.checked) selectedProductIds.add(id);
+          else selectedProductIds.delete(id);
+          renderCart();
+          return;
+        }
+        if (del) {
+          removedProductId = cart[del.dataset.cdel].product_id;
+          cart.splice(del.dataset.cdel, 1);
+        }
+        if (removedProductId !== null) selectedProductIds.delete(removedProductId);
+        if (del) { persist(); renderCart(); }
+      });
+      cartItemsEl.addEventListener('change', (e) => {
+        const quantity = e.target.closest('[data-cart-quantity]');
+        if (!quantity) return;
+        cart[Number(quantity.dataset.cartQuantity)].bundles = Number(quantity.value);
+        persist();
         renderCart();
-        return;
-      }
-      if (del) {
-        removedProductId = cart[del.dataset.cdel].product_id;
-        cart.splice(del.dataset.cdel, 1);
-      }
-      if (removedProductId !== null) selectedProductIds.delete(removedProductId);
-      if (del) { persist(); renderCart(); }
-    });
-    document.getElementById('cart-items').addEventListener('change', (e) => {
-      const quantity = e.target.closest('[data-cart-quantity]');
-      if (!quantity) return;
-      cart[Number(quantity.dataset.cartQuantity)].bundles = Number(quantity.value);
-      persist();
-      renderCart();
-    });
-    document.getElementById('cart-items').addEventListener('keydown', (e) => {
-      if (e.key !== 'Enter' || !e.target.matches('[data-cart-quantity]')) return;
-      e.preventDefault();
-      e.target.checked = true;
-      e.target.dispatchEvent(new Event('change', { bubbles: true }));
-    });
+      });
+      cartItemsEl.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' || !e.target.matches('[data-cart-quantity]')) return;
+        e.preventDefault();
+        e.target.checked = true;
+        e.target.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
 
     function showMinNote() {
       const sub = document.querySelector('.products-page .section-subtitle');
@@ -402,26 +436,44 @@
 
     function gotoStep(id) {
       document.querySelectorAll('.checkout-step').forEach((s) => s.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
+      const stepEl = document.getElementById(id);
+      if (stepEl) stepEl.classList.add('active');
     }
     function openCheckout() {
-      document.getElementById('checkout-overlay').classList.add('active');
+      const coOverlay = document.getElementById('checkout-overlay');
+      if (coOverlay) coOverlay.classList.add('active');
+      api.settingsPublic().then((res) => {
+        if (res && res.settings) {
+          Object.assign(settings, res.settings);
+          minBundles = Math.max(1, parseInt(settings.min_order_bundles, 10) || 300);
+          setMethod(co.method || 'GCASH');
+        }
+      }).catch(() => {});
     }
     function closeCheckout() {
-      document.getElementById('checkout-overlay').classList.remove('active');
+      const coOverlay = document.getElementById('checkout-overlay');
+      if (coOverlay) coOverlay.classList.remove('active');
     }
 
-    document.getElementById('proceed-checkout').addEventListener('click', () => {
-      if (!selectedLines().length) { U.toast('Select at least one product to check out.'); return; }
-      const { bundles } = totals(selectedLines());
-      if (bundles < minBundles) {
-        U.toast(t('co.below_min', { n: minBundles, have: bundles }));
-        return;
-      }
-      isDirectSingleCheckout = false;
-      closeCart();
-      startCheckout();
-    });
+    const proceedCheckoutBtn = document.getElementById('proceed-checkout');
+    if (proceedCheckoutBtn) {
+      proceedCheckoutBtn.addEventListener('click', () => {
+        if (!selectedLines().length) { U.toast('Select at least one product to check out.'); return; }
+        const { bundles } = totals(selectedLines());
+        if (bundles < minBundles) {
+          U.toast(t('co.below_min', { n: minBundles, have: bundles }));
+          return;
+        }
+        isDirectSingleCheckout = false;
+        closeCart();
+        if (!document.getElementById('checkout-overlay')) {
+          const ids = [...selectedProductIds].join(',');
+          window.location.href = 'products.html?checkout=1' + (ids ? '&selected=' + ids : '');
+          return;
+        }
+        startCheckout();
+      });
+    }
 
     function startCheckout() {
       co.items = selectedLines().map((line) => ({ ...line }));
@@ -480,12 +532,15 @@
       if (el && v) el.value = v;
     }
 
-    document.getElementById('info-back-btn').addEventListener('click', () => {
-      closeCheckout();
-      if (!isDirectSingleCheckout) {
-        openCart();
-      }
-    });
+    const infoBackBtn = document.getElementById('info-back-btn');
+    if (infoBackBtn) {
+      infoBackBtn.addEventListener('click', () => {
+        closeCheckout();
+        if (!isDirectSingleCheckout) {
+          openCart();
+        }
+      });
+    }
 
     // OTP widget for the checkout step.
     let otpWidget = null;
@@ -502,36 +557,52 @@
       return otpWidget;
     }
 
-    document.getElementById('info-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      co.name = document.getElementById('cust-name').value.trim();
-      co.contact = document.getElementById('cust-contact').value.trim();
-      co.email = document.getElementById('cust-email').value.trim().toLowerCase();
-      co.address = document.getElementById('cust-address').value.trim();
+    const custContact = document.getElementById('cust-contact');
+    if (custContact) {
+      custContact.maxLength = 11;
+      custContact.addEventListener('input', () => {
+        custContact.value = custContact.value.replace(/\D/g, '').slice(0, 11);
+      });
+    }
 
-      const proceedBtn = document.getElementById('info-proceed-btn');
-      if (proceedBtn) {
-        proceedBtn.disabled = true;
-        proceedBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending code...';
-      }
+    const infoForm = document.getElementById('info-form');
+    if (infoForm) {
+      infoForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        co.name = document.getElementById('cust-name').value.trim();
+        co.contact = document.getElementById('cust-contact').value.replace(/\D/g, '').slice(0, 11).trim();
+        co.email = document.getElementById('cust-email').value.trim().toLowerCase();
+        co.address = document.getElementById('cust-address').value.trim();
 
-      try {
-        ensureOtp().clear();
-        document.getElementById('checkout-otp-email-display').textContent = co.email;
-        gotoStep('step-otp');
-        await sendCheckoutOtp(false);
-      } finally {
+        const proceedBtn = document.getElementById('info-proceed-btn');
         if (proceedBtn) {
-          proceedBtn.disabled = false;
-          proceedBtn.innerHTML = '<i class="fas fa-arrow-right"></i> Proceed to Payment';
+          proceedBtn.disabled = true;
+          proceedBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending code...';
         }
-      }
-    });
 
-    document.getElementById('otp-back-btn').addEventListener('click', () => gotoStep('step-info'));
-    document.getElementById('otp-verify-btn').addEventListener('click', () => {
-      verifyCheckoutOtp(ensureOtp().code());
-    });
+        try {
+          ensureOtp().clear();
+          const emailDisp = document.getElementById('checkout-otp-email-display');
+          if (emailDisp) emailDisp.textContent = co.email;
+          gotoStep('step-otp');
+          await sendCheckoutOtp(false);
+        } finally {
+          if (proceedBtn) {
+            proceedBtn.disabled = false;
+            proceedBtn.innerHTML = '<i class="fas fa-arrow-right"></i> Proceed to Payment';
+          }
+        }
+      });
+    }
+
+    const otpBackBtn = document.getElementById('otp-back-btn');
+    if (otpBackBtn) otpBackBtn.addEventListener('click', () => gotoStep('step-info'));
+    const otpVerifyBtn = document.getElementById('otp-verify-btn');
+    if (otpVerifyBtn) {
+      otpVerifyBtn.addEventListener('click', () => {
+        verifyCheckoutOtp(ensureOtp().code());
+      });
+    }
 
     async function sendCheckoutOtp(isResend) {
       try {
@@ -647,80 +718,102 @@
     function setMethod(method) {
       co.method = method;
       const isGcash = method === 'GCASH';
-      document.getElementById('payment-method').value = isGcash ? 'GCash' : 'PayMaya';
-      document.getElementById('btn-method-gcash').classList.toggle('active-gcash', isGcash);
-      document.getElementById('btn-method-maya').classList.toggle('active-maya', !isGcash);
-      document.getElementById('qr-brand-label').textContent = isGcash ? 'GCash' : 'Maya';
-      document.getElementById('ref-field-label').textContent = isGcash ? 'GCash' : 'Maya';
-      document.getElementById('qr-num-display').textContent =
-        isGcash ? (settings.gcash_number || '-') : (settings.paymaya_number || '-');
-      document.getElementById('qr-name-display').textContent = settings.account_name || '-';
+      const methInput = document.getElementById('payment-method');
+      if (methInput) methInput.value = isGcash ? 'GCash' : 'PayMaya';
+      const btnG = document.getElementById('btn-method-gcash');
+      if (btnG) btnG.classList.toggle('active-gcash', isGcash);
+      const btnM = document.getElementById('btn-method-maya');
+      if (btnM) btnM.classList.toggle('active-maya', !isGcash);
+      const brandLbl = document.getElementById('qr-brand-label');
+      if (brandLbl) brandLbl.textContent = isGcash ? 'GCash' : 'Maya';
+      const refLbl = document.getElementById('ref-field-label');
+      if (refLbl) refLbl.textContent = isGcash ? 'GCash' : 'Maya';
+      const qrNum = document.getElementById('qr-num-display');
+      if (qrNum) qrNum.textContent = isGcash ? (settings.gcash_number || '-') : (settings.paymaya_number || '-');
+      const qrName = document.getElementById('qr-name-display');
+      if (qrName) qrName.textContent = settings.account_name || '-';
       const img = document.getElementById('payment-qr-img');
-      const src = qrSrc(method) || ('../../assets/qr-' + (isGcash ? 'gcash' : 'paymaya') + '-placeholder.png');
-      img.style.display = '';
-      img.src = src;
+      if (img) {
+        const src = qrSrc(method) || ('../../assets/qr-' + (isGcash ? 'gcash' : 'paymaya') + '-placeholder.png');
+        img.style.display = '';
+        img.src = src;
+        img.onerror = function () {
+          this.onerror = null;
+          this.src = '../../assets/qr-' + (isGcash ? 'gcash' : 'paymaya') + '-placeholder.png';
+        };
+      }
       const ref = document.getElementById('gcash-ref');
-      ref.value = '';
-      ref.maxLength = isGcash ? 13 : 16;
-      ref.placeholder = isGcash ? 'e.g. 1000123456789 (13 digits)' : 'e.g. 1000123456789012 (16 digits)';
+      if (ref) {
+        ref.value = '';
+        ref.maxLength = isGcash ? 13 : 16;
+        ref.placeholder = isGcash ? 'e.g. 1000123456789 (13 digits)' : 'e.g. 1000123456789012 (16 digits)';
+      }
     }
 
-    document.getElementById('btn-method-gcash').addEventListener('click', () => setMethod('GCASH'));
-    document.getElementById('btn-method-maya').addEventListener('click', () => setMethod('MAYA'));
-    document.getElementById('copy-acc-btn').addEventListener('click', async () => {
-      const num = document.getElementById('qr-num-display').textContent.replace(/\s/g, '');
-      try {
-        await navigator.clipboard.writeText(num);
-        document.getElementById('copy-btn-text').textContent = 'Copied';
-        window.setTimeout(() => { document.getElementById('copy-btn-text').textContent = 'Copy'; }, 1500);
-      } catch { /* clipboard unavailable; number is visible anyway */ }
-    });
-    document.getElementById('payment-back-btn').addEventListener('click', () => gotoStep('step-info'));
+    const btnGcash = document.getElementById('btn-method-gcash');
+    if (btnGcash) btnGcash.addEventListener('click', () => setMethod('GCASH'));
+    const btnMaya = document.getElementById('btn-method-maya');
+    if (btnMaya) btnMaya.addEventListener('click', () => setMethod('MAYA'));
+    const copyAccBtn = document.getElementById('copy-acc-btn');
+    if (copyAccBtn) {
+      copyAccBtn.addEventListener('click', async () => {
+        const num = (document.getElementById('qr-num-display')?.textContent || '').replace(/\s/g, '');
+        try {
+          await navigator.clipboard.writeText(num);
+          const copyTxt = document.getElementById('copy-btn-text');
+          if (copyTxt) copyTxt.textContent = 'Copied';
+          window.setTimeout(() => { if (copyTxt) copyTxt.textContent = 'Copy'; }, 1500);
+        } catch { /* clipboard unavailable */ }
+      });
+    }
+    const payBackBtn = document.getElementById('payment-back-btn');
+    if (payBackBtn) payBackBtn.addEventListener('click', () => gotoStep('step-info'));
 
     function payError(msg) {
       const el = document.getElementById('payment-error-msg');
+      if (!el) return;
       if (!msg) { el.style.display = 'none'; return; }
       el.textContent = msg;
       el.style.display = 'block';
     }
 
-    document.getElementById('pay-btn').addEventListener('click', async (e) => {
-      payError(null);
-      const ref = document.getElementById('gcash-ref').value.trim();
-      const expected = co.method === 'GCASH' ? 13 : 16;
-      if (!/^\d+$/.test(ref) || ref.length !== expected) {
-        payError(co.method === 'GCASH'
-          ? 'Please enter a valid 13-digit GCash reference number (numbers only).'
-          : 'Please enter a valid 16-digit Maya reference number (numbers only).');
-        return;
-      }
-      const file = document.getElementById('gcash-proof').files[0];
-      if (!file) { payError('Please upload your payment screenshot.'); return; }
-      if (file.size > 5 * 1024 * 1024) { payError('Screenshot must be 5MB or smaller.'); return; }
-
-      const btn = e.currentTarget;
-      btn.disabled = true;
-      try {
-        // The method may have changed after order creation: recreate is
-        // unnecessary (method is informational until payment) - but if the
-        // order was never created (member skip path failed), create it now.
-        if (!co.order) {
-          await createOrderThenPayment();
-          if (!co.order) return;
+    const payBtn = document.getElementById('pay-btn');
+    if (payBtn) {
+      payBtn.addEventListener('click', async (e) => {
+        payError(null);
+        const ref = document.getElementById('gcash-ref').value.trim();
+        const expected = co.method === 'GCASH' ? 13 : 16;
+        if (!/^\d+$/.test(ref) || ref.length !== expected) {
+          payError(co.method === 'GCASH'
+            ? 'Please enter a valid 13-digit GCash reference number (numbers only).'
+            : 'Please enter a valid 16-digit Maya reference number (numbers only).');
+          return;
         }
-        const form = new FormData();
-        form.append('channel', co.method);
-        form.append('reference_number', ref);
-        form.append('email', co.email);
-        form.append('proof', file);
-        await api.submitPayment(co.order.order_code, form, auth.token() || undefined);
-        showSuccess();
-      } catch (err) {
-        payError(err.message);
-      } finally {
-        btn.disabled = false;
-      }
-    });
+        const file = document.getElementById('gcash-proof').files[0];
+        if (!file) { payError('Please upload your payment screenshot.'); return; }
+        if (file.size > 5 * 1024 * 1024) { payError('Screenshot must be 5MB or smaller.'); return; }
+
+        const btn = e.currentTarget;
+        btn.disabled = true;
+        try {
+          if (!co.order) {
+            await createOrderThenPayment();
+            if (!co.order) return;
+          }
+          const form = new FormData();
+          form.append('channel', co.method);
+          form.append('reference_number', ref);
+          form.append('email', co.email);
+          form.append('proof', file);
+          await api.submitPayment(co.order.order_code, form, auth.token() || undefined);
+          showSuccess();
+        } catch (err) {
+          payError(err.message);
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    }
 
     /* ---------------- success ---------------- */
 
@@ -749,14 +842,20 @@
       renderCart();
     }
 
-    document.getElementById('order-again-btn').addEventListener('click', () => {
-      document.getElementById('gcash-ref').value = '';
-      document.getElementById('gcash-proof').value = '';
-      co.order = null;
-      closeCheckout();
-      init().catch(() => {});
-    });
-    document.getElementById('success-nav-btn').addEventListener('click', closeCheckout);
+    const orderAgainBtn = document.getElementById('order-again-btn');
+    if (orderAgainBtn) {
+      orderAgainBtn.addEventListener('click', () => {
+        const ref = document.getElementById('gcash-ref');
+        if (ref) ref.value = '';
+        const proof = document.getElementById('gcash-proof');
+        if (proof) proof.value = '';
+        co.order = null;
+        closeCheckout();
+        init().catch(() => {});
+      });
+    }
+    const successNavBtn = document.getElementById('success-nav-btn');
+    if (successNavBtn) successNavBtn.addEventListener('click', closeCheckout);
 
     /* ---------------- customer reviews (dynamic from database) ---------------- */
 
@@ -788,6 +887,74 @@
       } catch { /* Preserve fallback static cards */ }
     }
 
+    // Review Modal Open / Close / Rating / Submission
+    const openRevBtn = document.getElementById('btn-open-review-modal');
+    const revModal = document.getElementById('review-modal');
+    const revOverlay = document.getElementById('review-overlay');
+    const revClose = document.getElementById('review-close');
+    const revCancel = document.getElementById('review-cancel');
+    const revForm = document.getElementById('review-form');
+
+    function openReviewModal() {
+      if (revOverlay && revModal) {
+        revOverlay.classList.add('active');
+        revModal.classList.add('active');
+      }
+    }
+    function closeReviewModal() {
+      if (revOverlay && revModal) {
+        revOverlay.classList.remove('active');
+        revModal.classList.remove('active');
+      }
+    }
+    if (openRevBtn) openRevBtn.addEventListener('click', openReviewModal);
+    if (revClose) revClose.addEventListener('click', closeReviewModal);
+    if (revCancel) revCancel.addEventListener('click', closeReviewModal);
+    if (revOverlay) revOverlay.addEventListener('click', closeReviewModal);
+
+    const starBox = document.getElementById('review-star-rating');
+    if (starBox) {
+      const starIcons = starBox.querySelectorAll('[data-star]');
+      const ratingInput = document.getElementById('rev-rating');
+      const setStars = (val) => {
+        if (ratingInput) ratingInput.value = String(val);
+        starIcons.forEach((s) => {
+          const num = Number(s.dataset.star);
+          s.className = num <= val ? 'fas fa-star' : 'far fa-star';
+        });
+      };
+      starIcons.forEach((s) => {
+        s.addEventListener('click', () => setStars(Number(s.dataset.star)));
+      });
+    }
+
+    if (revForm) {
+      revForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = (document.getElementById('rev-name')?.value || '').trim();
+        const location = (document.getElementById('rev-location')?.value || '').trim() || 'Bulacan';
+        const rating = Number(document.getElementById('rev-rating')?.value) || 5;
+        const text = (document.getElementById('rev-text')?.value || '').trim();
+        const submitBtn = document.getElementById('review-submit-btn');
+        if (submitBtn) submitBtn.disabled = true;
+        try {
+          await api.reviewSubmit({ name, location, rating, text });
+          U.toast('Review submitted! Thank you for your feedback.');
+          revForm.reset();
+          if (starBox) {
+            starBox.querySelectorAll('[data-star]').forEach((s) => { s.className = 'fas fa-star'; });
+          }
+          if (document.getElementById('rev-rating')) document.getElementById('rev-rating').value = '5';
+          closeReviewModal();
+          await loadReviews();
+        } catch (err) {
+          U.toast(err.message || 'Could not submit review.');
+        } finally {
+          if (submitBtn) submitBtn.disabled = false;
+        }
+      });
+    }
+
     /* ---------------- static English labels ---------------- */
 
     function relabelStatic() {
@@ -804,8 +971,8 @@
     }
 
     init().catch((err) => {
-      document.getElementById('product-grid').innerHTML =
-        '<p class="error-text">' + U.escapeHtml(err.message) + '</p>';
+      const grid = document.getElementById('product-grid');
+      if (grid) grid.innerHTML = '<p class="error-text">' + U.escapeHtml(err.message) + '</p>';
     });
   });
 })(window, document);

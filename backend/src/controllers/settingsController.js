@@ -22,6 +22,7 @@ async function update(req, res) {
 }
 
 async function getPublic(req, res) {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   const settings = await settingsService.getPublic();
   return res.json({ success: true, settings });
 }

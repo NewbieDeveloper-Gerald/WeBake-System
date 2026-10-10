@@ -58,8 +58,11 @@
         const { report: r } = await api.salesReport(period, anchor || undefined);
         const sum = r.summary || {};
 
+        const rangeFrom = r.from ? r.from.slice(0, 10) : '';
+        const rangeTo = r.to ? r.to.slice(0, 10) : '';
+        const dateRangeStr = (rangeFrom && rangeTo) ? ' (' + rangeFrom + ' to ' + rangeTo + ')' : '';
         document.getElementById('sales-period-label').textContent =
-          'Report for: ' + (r.range ? r.range.label : period) + ' (' + r.range.from + ' to ' + r.range.to + ')';
+          'Report for: ' + (r.label || period) + dateRangeStr;
 
         document.getElementById('stat-net-sales').textContent = ui.pesos(sum.net_collected_centavos || 0);
         document.getElementById('stat-refund-sub').textContent = ui.pesos(sum.refunded_centavos || 0) + ' refunded';

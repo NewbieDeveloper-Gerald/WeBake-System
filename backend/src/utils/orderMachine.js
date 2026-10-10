@@ -59,9 +59,9 @@ function canTransition(from, to) {
   return (TRANSITIONS[from] || []).includes(to);
 }
 
-/** Customer cancel window: before production starts. UI + API both enforce. */
+/** Customer cancel window: only while under verification. UI + API both enforce. */
 function cancellableByCustomer(status) {
-  return status === ORDER.PAYMENT_UNDER_VERIFICATION || status === ORDER.CONFIRMED;
+  return status === ORDER.PAYMENT_UNDER_VERIFICATION;
 }
 
 /** Stock was deducted at approval, so only Confirmed cancels return stock. */

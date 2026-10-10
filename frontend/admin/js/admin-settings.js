@@ -50,13 +50,25 @@
       }
     });
 
+    // Wire 11 max digits enforcement
+    ['set-gcash-num', 'set-maya-num'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.maxLength = 11;
+        el.addEventListener('input', () => {
+          el.value = el.value.replace(/\D/g, '').slice(0, 11);
+        });
+      }
+    });
+
     // Wire Drag & Drop and File Picker for QR images
-    function setupQrUploader(dropzoneId, fileInputId, textInputId, previewImgId, resetBtnId, defaultPath) {
+    function setupQrUploader(dropzoneId, fileInputId, textInputId, previewImgId, resetBtnId, statusId, defaultPath) {
       const dropzone = document.getElementById(dropzoneId);
       const fileInput = document.getElementById(fileInputId);
       const textInput = document.getElementById(textInputId);
       const previewImg = document.getElementById(previewImgId);
       const resetBtn = document.getElementById(resetBtnId);
+      const statusEl = document.getElementById(statusId);
 
       function handleFile(file) {
         if (!file || !file.type.startsWith('image/')) {
@@ -68,6 +80,7 @@
           const dataUrl = e.target.result;
           textInput.value = dataUrl;
           previewImg.src = dataUrl;
+          if (statusEl) statusEl.innerHTML = '<i class="fas fa-image text-primary"></i> Selected: ' + ui.esc(file.name);
           ui.toast('QR image loaded! Click "Save Bakery Settings" to apply.', 'success');
         };
         reader.readAsDataURL(file);
@@ -111,13 +124,14 @@
           textInput.value = defaultPath;
           previewImg.src = resolveQr(defaultPath, defaultPath);
           if (fileInput) fileInput.value = '';
+          if (statusEl) statusEl.innerHTML = '<i class="fas fa-rotate-left text-muted"></i> Reset to default template';
           ui.toast('QR reset to default template.', 'info');
         });
       }
     }
 
-    setupQrUploader('dropzone-gcash', 'file-gcash-qr', 'set-gcash-qr', 'preview-gcash-qr', 'btn-reset-gcash-qr', 'assets/qr-gcash-placeholder.png');
-    setupQrUploader('dropzone-maya', 'file-maya-qr', 'set-maya-qr', 'preview-maya-qr', 'btn-reset-maya-qr', 'assets/qr-paymaya-placeholder.png');
+    setupQrUploader('dropzone-gcash', 'file-gcash-qr', 'set-gcash-qr', 'preview-gcash-qr', 'btn-reset-gcash-qr', 'status-gcash-qr', 'assets/qr-gcash-placeholder.png');
+    setupQrUploader('dropzone-maya', 'file-maya-qr', 'set-maya-qr', 'preview-maya-qr', 'btn-reset-maya-qr', 'status-maya-qr', 'assets/qr-paymaya-placeholder.png');
 
     async function load() {
       const { settings: s } = await api.settingsGet();
@@ -140,13 +154,23 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const gcashNum = document.getElementById('set-gcash-num').value.replace(/\D/g, '').trim();
+      const mayaNum = document.getElementById('set-maya-num').value.replace(/\D/g, '').trim();
+      if (!/^09\d{9}$/.test(gcashNum)) {
+        ui.alert('GCash receiving number must be 11 digits starting with 09 (e.g. 09171234567).', 'Invalid GCash Number');
+        return;
+      }
+      if (!/^09\d{9}$/.test(mayaNum)) {
+        ui.alert('PayMaya receiving number must be 11 digits starting with 09 (e.g. 09181234567).', 'Invalid PayMaya Number');
+        return;
+      }
       const btn = form.querySelector('button[type="submit"]');
       if (btn) btn.disabled = true;
       try {
         await api.settingsUpdate({
           account_name: document.getElementById('set-acc-name').value.trim(),
-          gcash_number: document.getElementById('set-gcash-num').value.replace(/[\s-]/g, '').trim(),
-          paymaya_number: document.getElementById('set-maya-num').value.replace(/[\s-]/g, '').trim(),
+          gcash_number: gcashNum,
+          paymaya_number: mayaNum,
           gcash_qr: document.getElementById('set-gcash-qr').value.trim(),
           paymaya_qr: document.getElementById('set-maya-qr').value.trim(),
           store_hours: document.getElementById('set-store-hours').value.trim(),

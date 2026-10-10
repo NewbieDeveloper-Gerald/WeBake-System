@@ -25,6 +25,10 @@
           <a href="#" data-track-order-open>Track Order</a>
           <a href="#about">About Us</a>
         </div>
+        <button class="cart-btn" id="cart-btn" aria-label="Open Shopping Cart">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-badge" id="cart-count">0</span>
+        </button>
         <div class="auth-buttons">
           <button type="button" data-auth-open="login" class="btn btn-outline btn-sm">Sign In</button>
           <button type="button" data-auth-open="register" class="btn btn-primary btn-sm">Register</button>
@@ -206,6 +210,12 @@
         <h2 class="section-title"><i class="fas fa-star" style="color:#F59E0B;"></i> What Our Customers Say</h2>
         <p class="section-subtitle">Real experiences and feedback from our beloved local community</p>
 
+        <div style="margin: 1.25rem 0 1.75rem;">
+          <button type="button" class="btn btn-primary btn-sm" id="btn-open-review-modal" style="padding:0.6rem 1.4rem;">
+            <i class="fas fa-pen"></i> Leave a Review
+          </button>
+        </div>
+
         <div class="reviews-grid" id="reviews-container">
           <div class="review-card">
             <div class="review-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
@@ -292,6 +302,63 @@
       </div>
     </div>
   </footer>
+
+  <!-- CART SIDEBAR -->
+  <div class="overlay" id="cart-overlay"></div>
+  <div class="cart-sidebar" id="cart-sidebar">
+    <div class="cart-header">
+      <h3><i class="fas fa-shopping-cart"></i> Your Cart</h3>
+      <button id="cart-close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="cart-body" id="cart-items"></div>
+    <div class="cart-footer">
+      <div class="cart-total"><span id="cart-selected-label">0 products selected</span><span id="cart-total">₱0</span></div>
+      <p class="cart-selection-hint">Only selected products will be checked out.</p>
+      <button class="btn btn-accent btn-block" id="continue-browsing"><i class="fas fa-arrow-left"></i> Continue Browsing</button>
+      <button class="btn btn-primary btn-block" id="proceed-checkout"><i class="fas fa-credit-card"></i> Proceed to Checkout</button>
+    </div>
+  </div>
+
+  <!-- REVIEW MODAL -->
+  <div class="overlay" id="review-overlay"></div>
+  <div class="modal" id="review-modal" role="dialog" aria-labelledby="review-modal-title" style="max-width:480px;">
+    <button class="modal-close" id="review-close" type="button" aria-label="Close dialog">&times;</button>
+    <h3 id="review-modal-title" style="margin-bottom:0.4rem; color:var(--primary); text-align:center;">
+      <i class="fas fa-star" style="color:#F59E0B;"></i> Leave a Customer Review
+    </h3>
+    <p style="font-size:0.85rem; color:var(--gray); margin-bottom:1.25rem; text-align:center;">
+      Share your experience with our bakery treats and delivery!
+    </p>
+    <form id="review-form">
+      <div class="form-group">
+        <label>Your Name *</label>
+        <input class="form-input" id="rev-name" type="text" placeholder="e.g. Maria Santos" required minlength="2" maxlength="80">
+      </div>
+      <div class="form-group">
+        <label>Location / Area (optional)</label>
+        <input class="form-input" id="rev-location" type="text" placeholder="e.g. Marilao, Bulacan" maxlength="80">
+      </div>
+      <div class="form-group">
+        <label>Rating *</label>
+        <div class="review-star-rating" id="review-star-rating" style="display:flex; gap:0.5rem; font-size:1.5rem; color:#F59E0B; cursor:pointer; margin-top:0.25rem;">
+          <i class="fas fa-star" data-star="1"></i>
+          <i class="fas fa-star" data-star="2"></i>
+          <i class="fas fa-star" data-star="3"></i>
+          <i class="fas fa-star" data-star="4"></i>
+          <i class="fas fa-star" data-star="5"></i>
+        </div>
+        <input type="hidden" id="rev-rating" value="5">
+      </div>
+      <div class="form-group">
+        <label>Your Review *</label>
+        <textarea class="form-textarea" id="rev-text" rows="3" placeholder="Tell us about the bread freshness, taste, and service..." required minlength="5" maxlength="500"></textarea>
+      </div>
+      <div style="display:flex; gap:0.75rem; margin-top:1.25rem;">
+        <button type="button" class="btn btn-outline" id="review-cancel" style="flex:1;">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="review-submit-btn" style="flex:1;">Submit Review</button>
+      </div>
+    </form>
+  </div>
 
   <div class="toast" id="toast"></div>
   <script src="../js/config.js?v=2.3"></script>

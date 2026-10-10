@@ -16,6 +16,17 @@
     const api = window.AdminAPI;
     let rows = [];
     let currentId = null;
+    let activeTab = 'pending';
+
+    // Wire refund status tabs
+    document.querySelectorAll('.orders-status-tabs .order-tab-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.orders-status-tabs .order-tab-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeTab = btn.dataset.tab || 'pending';
+        render();
+      });
+    });
 
     async function load() {
       const data = await api.refundsQueue();
@@ -46,13 +57,25 @@
     }
 
     function render() {
-      document.getElementById('refunds-table-body').innerHTML = rows.length ? rows.map((r) =>
+      const filtered = rows.filter((r) => {
+        if (activeTab === 'approved') return r.status === 'REFUNDED';
+        if (activeTab === 'declined') return r.status === 'CLOSED_NO_PAYMENT';
+        return r.status === 'PENDING' || r.status === 'AWAITING_DETAILS';
+      });
+
+      const emptyMsg = activeTab === 'approved'
+        ? 'No approved and refunded requests.'
+        : activeTab === 'declined'
+          ? 'No declined requests.'
+          : 'No pending refund requests.';
+
+      document.getElementById('refunds-table-body').innerHTML = filtered.length ? filtered.map((r) =>
         '<tr><td><strong>' + ui.esc(r.order_code) + '</strong><br><small class="muted">' +
         ui.fmtDate(r.requested_at) + '</small></td><td>' + ui.esc(r.customer_name) + '</td><td>' +
         ui.pesos(r.refund_amount_centavos) + '</td><td>' + ui.esc(r.reason || '-') + '</td><td>' +
         walletText(r) + '</td><td>' + ui.pill(r.status) + '</td>' +
         '<td class="actions-cell">' + actionsFor(r) + '</td></tr>'
-      ).join('') : '<tr><td colspan="7" class="muted">No refund requests.</td></tr>';
+      ).join('') : '<tr><td colspan="7" class="muted text-center" style="padding:2rem;">' + emptyMsg + '</td></tr>';
     }
 
     document.getElementById('refunds-table-body').addEventListener('click', (e) => {

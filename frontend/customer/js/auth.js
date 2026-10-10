@@ -419,6 +419,13 @@
         onResend: () => sendRegisterOtp(true),
       });
 
+      document.querySelectorAll('#reg-contact').forEach((input) => {
+        input.maxLength = 11;
+        input.addEventListener('input', () => {
+          input.value = input.value.replace(/\D/g, '').slice(0, 11);
+        });
+      });
+
       document.getElementById('reg-send-otp').addEventListener('click', () => sendRegisterOtp(false));
 
       async function sendRegisterOtp(isResend) {

@@ -450,7 +450,7 @@ async function cancelOrder(code, identity, input, changedBy = 'CUSTOMER') {
     if (!cancellableByCustomer(order.status)) {
       throw conflict(
         'ORDER_NOT_CANCELLABLE',
-        'Production has started. This order can no longer be cancelled.'
+        'This order is already confirmed. Confirmed orders cannot be cancelled or refunded.'
       );
     }
 

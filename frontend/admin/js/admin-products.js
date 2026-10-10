@@ -135,19 +135,45 @@
 
     if (search) search.addEventListener('input', renderTable);
 
-    // Live preview for image input in modal
+    // Image file selection & preview in modal
     const prodImgInput = document.getElementById('prod-image');
+    const prodImgFile = document.getElementById('prod-image-file');
     const prodImgPreview = document.getElementById('prod-image-preview');
     const prodImgWrap = document.getElementById('prod-image-preview-wrap');
-    if (prodImgInput) {
-      prodImgInput.addEventListener('input', () => {
-        const val = prodImgInput.value.trim();
-        if (val) {
-          prodImgPreview.src = val;
-          prodImgWrap.style.display = 'flex';
-        } else {
-          prodImgWrap.style.display = 'none';
+    const prodImgClear = document.getElementById('btn-clear-prod-image');
+    const prodImgFilename = document.getElementById('prod-image-filename');
+
+    if (prodImgFile) {
+      prodImgFile.addEventListener('change', () => {
+        const file = prodImgFile.files && prodImgFile.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+          ui.alert('Please select an image file (PNG, JPG, WebP, etc.).', 'Invalid File');
+          return;
         }
+        if (file.size > 4 * 1024 * 1024) {
+          ui.alert('Image must be under 4MB in size.', 'File Too Large');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          if (prodImgInput) prodImgInput.value = ev.target.result;
+          if (prodImgPreview) prodImgPreview.src = ev.target.result;
+          if (prodImgWrap) prodImgWrap.style.display = 'flex';
+          if (prodImgClear) prodImgClear.style.display = 'inline-block';
+          if (prodImgFilename) prodImgFilename.textContent = file.name;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    if (prodImgClear) {
+      prodImgClear.addEventListener('click', () => {
+        if (prodImgInput) prodImgInput.value = '';
+        if (prodImgFile) prodImgFile.value = '';
+        if (prodImgPreview) prodImgPreview.src = '';
+        if (prodImgWrap) prodImgWrap.style.display = 'none';
+        prodImgClear.style.display = 'none';
       });
     }
 
@@ -158,7 +184,11 @@
       document.getElementById('prod-pieces').value = 25;
       document.getElementById('prod-threshold').value = 500;
       document.getElementById('prod-stock-wrap').style.display = '';
+      if (prodImgInput) prodImgInput.value = '';
+      if (prodImgFile) prodImgFile.value = '';
+      if (prodImgPreview) prodImgPreview.src = '';
       if (prodImgWrap) prodImgWrap.style.display = 'none';
+      if (prodImgClear) prodImgClear.style.display = 'none';
       open();
     }
 
@@ -173,13 +203,17 @@
       document.getElementById('prod-pieces').value = p.pieces_per_bundle;
       document.getElementById('prod-piece-price').value = (p.piece_price_centavos / 100).toFixed(2);
       document.getElementById('prod-threshold').value = p.low_stock_threshold_pieces;
-      document.getElementById('prod-image').value = p.image_url || '';
+      if (prodImgInput) prodImgInput.value = p.image_url || '';
+      if (prodImgFile) prodImgFile.value = '';
 
       if (p.image_url && prodImgPreview) {
         prodImgPreview.src = p.image_url;
-        prodImgWrap.style.display = 'flex';
-      } else if (prodImgWrap) {
-        prodImgWrap.style.display = 'none';
+        if (prodImgWrap) prodImgWrap.style.display = 'flex';
+        if (prodImgClear) prodImgClear.style.display = 'inline-block';
+        if (prodImgFilename) prodImgFilename.textContent = 'Current image';
+      } else {
+        if (prodImgWrap) prodImgWrap.style.display = 'none';
+        if (prodImgClear) prodImgClear.style.display = 'none';
       }
 
       // Stock adjusts on the Inventory page, never by editing the product.

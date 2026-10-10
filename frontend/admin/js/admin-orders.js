@@ -62,11 +62,13 @@
         activeTab = btn.dataset.status;
         render();
       });
-      // Channel: online only here; POS has its own page.
+      // Channel filter: active and working
       const channel = document.getElementById('orders-channel-filter');
-      [...channel.options].forEach((o) => { if (o.value === 'walkin') o.remove(); });
-      channel.value = 'online';
-      channel.disabled = true;
+      if (channel) {
+        channel.value = 'all';
+        channel.disabled = false;
+        channel.addEventListener('change', render);
+      }
       // Edit modal: customer fields read-only; items read-only; save = move status.
       ['edit-cust-name', 'edit-cust-phone', 'edit-cust-email', 'edit-cust-address']
         .forEach((id) => { document.getElementById(id).readOnly = true; });
@@ -81,23 +83,54 @@
 
     document.getElementById('orders-search').addEventListener('input', render);
 
+    let walkinSales = [];
+
     async function load() {
-      const [list, queue] = await Promise.all([api.adminOrders(), api.verificationQueue()]);
+      const [list, queue, posRes] = await Promise.all([
+        api.adminOrders(),
+        api.verificationQueue(),
+        api.posRecent(100).catch(() => ({ sales: [] })),
+      ]);
       orders = list.orders || [];
+      const rawWalkins = posRes.sales || posRes.recent || [];
+      walkinSales = rawWalkins.map((w) => Object.assign({}, w, {
+        is_walkin: true,
+        order_code: w.receipt_number,
+        customer_name: w.customer_name || 'Walk-In Customer',
+        customer_contact: '-',
+        customer_email: '',
+        total_bundles: 0,
+        downpayment_paid_centavos: w.total_centavos,
+        balance_due_centavos: 0,
+        status: 'COMPLETED',
+      }));
       queueByCode = {};
       (queue.queue || []).forEach((row) => { queueByCode[row.order.order_code] = row; });
       // Tab counts.
       document.querySelectorAll('.order-tab-btn').forEach((btn) => {
         const st = btn.dataset.status;
-        const n = st === 'all' ? orders.length : orders.filter((o) => o.status === st).length;
-        btn.querySelector('.order-tab-count').textContent = n;
+        const onlineCount = st === 'all' ? orders.length : orders.filter((o) => o.status === st).length;
+        const walkinCount = (st === 'all' || st === 'COMPLETED') ? walkinSales.length : 0;
+        btn.querySelector('.order-tab-count').textContent = onlineCount + walkinCount;
       });
       render();
     }
 
     function filtered() {
       const q = document.getElementById('orders-search').value.trim().toLowerCase();
-      return orders.filter((o) => {
+      const channelEl = document.getElementById('orders-channel-filter');
+      const channelMode = channelEl ? channelEl.value : 'all';
+
+      let combined = [];
+      if (channelMode === 'online') {
+        combined = orders;
+      } else if (channelMode === 'walkin') {
+        combined = walkinSales;
+      } else {
+        combined = [...orders, ...walkinSales].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      }
+
+      return combined.filter((o) => {
         if (activeTab !== 'all' && o.status !== activeTab) return false;
         if (!q) return true;
         return [o.order_code, o.customer_name, o.customer_contact, o.customer_email]
@@ -106,6 +139,9 @@
     }
 
     function actionsFor(o) {
+      if (o.is_walkin) {
+        return '<a href="walkin-pos.html" class="btn btn-outline btn-sm"><i class="fas fa-receipt"></i> POS Counter</a>';
+      }
       const btns = [];
       if (o.status === 'PAYMENT_UNDER_VERIFICATION') {
         const hasProof = !!queueByCode[o.order_code];
@@ -134,8 +170,8 @@
         '<tr><td><strong>' + ui.esc(o.order_code) + '</strong><br><small class="muted">' +
         ui.fmtDate(o.created_at) + '</small></td><td>' + ui.esc(o.customer_name) +
         '<br><small class="muted">' + ui.esc(o.customer_contact) + '</small></td>' +
-        '<td><span class="channel-pill">Online</span></td>' +
-        '<td>' + (o.total_bundles || 0) + ' bundles</td>' +
+        '<td>' + (o.is_walkin ? '<span class="channel-pill" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;"><i class="fas fa-store"></i> Walk-In</span>' : '<span class="channel-pill">Online</span>') + '</td>' +
+        '<td>' + (o.is_walkin ? 'Counter Piece/Bdl' : (o.total_bundles || 0) + ' bundles') + '</td>' +
         '<td><strong>' + ui.pesos(o.total_centavos) + '</strong><br><small class="muted">DP ' +
         ui.pesos(o.downpayment_paid_centavos) + '</small></td>' +
         '<td>' + ui.esc(o.payment_method || '-') + '</td>' +
