@@ -240,6 +240,12 @@
       selectedProductIds.add(Number(productId));
       persist();
       renderCart();
+      const badge = document.getElementById('cart-count');
+      if (badge) {
+        badge.classList.remove('pop');
+        void badge.offsetWidth;
+        badge.classList.add('pop');
+      }
     }
 
     /* ---------------- cart sidebar ---------------- */

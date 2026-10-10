@@ -44,6 +44,18 @@ async function requestCode(email, purpose) {
   await prune();
   const clean = email.toLowerCase();
 
+  // Registration rule: reject immediately if email is already registered.
+  if (purpose === 'REGISTER') {
+    const { rows: existing } = await query(
+      'SELECT id FROM members WHERE email = $1 LIMIT 1;',
+      [clean]
+    );
+    if (existing.length > 0) {
+      throw conflict('EMAIL_EXISTS',
+        'An account with this email already exists. Please sign in instead.');
+    }
+  }
+
   // Resend cooldown: one code per minute per email+purpose.
   const { rows: recent } = await query(
     `SELECT created_at FROM otp_codes

@@ -119,6 +119,88 @@
     </div>
   </footer>
 
+  <!-- CANCEL ORDER MODAL -->
+  <div class="overlay" id="dash-cancel-overlay"></div>
+  <div class="modal" id="dash-cancel-modal" role="dialog" aria-labelledby="cancel-modal-title">
+    <button class="modal-close" id="dash-cancel-close" type="button" aria-label="Close dialog">&times;</button>
+    <h3 id="cancel-modal-title" style="margin-bottom:0.4rem; color:var(--primary);"><i class="fas fa-ban"></i> Cancel Order</h3>
+    <p style="font-size:0.85rem; color:var(--gray); margin-bottom:1rem;">
+      Cancelling <strong id="cancel-order-code-display" style="color:var(--dark);"></strong> will halt processing and open a refund for your 50% downpayment.
+    </p>
+    <form id="dash-cancel-form">
+      <div class="form-group">
+        <label class="dash-label">Reason for cancellation (min 10 chars) *</label>
+        <textarea class="form-textarea" id="dash-cancel-reason" placeholder="Please state why you want to cancel..." required minlength="10" rows="3"></textarea>
+      </div>
+      <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+        <div class="form-group">
+          <label class="dash-label">Refund Wallet *</label>
+          <select class="form-select" id="dash-cancel-type" required>
+            <option value="GCASH">GCash</option>
+            <option value="PAYMAYA">Maya (PayMaya)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="dash-label">Account Name *</label>
+          <input class="form-input" id="dash-cancel-name" type="text" placeholder="e.g. Maria Santos" required minlength="2">
+        </div>
+      </div>
+      <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+        <div class="form-group">
+          <label class="dash-label">Account Number *</label>
+          <input class="form-input" id="dash-cancel-num" type="tel" placeholder="09XXXXXXXXX" maxlength="11" pattern="09[0-9]{9}" inputmode="numeric" required>
+        </div>
+        <div class="form-group">
+          <label class="dash-label">Retype Account Number *</label>
+          <input class="form-input" id="dash-cancel-num2" type="tel" placeholder="09XXXXXXXXX" maxlength="11" pattern="09[0-9]{9}" inputmode="numeric" required>
+        </div>
+      </div>
+      <div style="display:flex; gap:0.75rem; margin-top:1.25rem;">
+        <button type="button" class="btn btn-outline" id="dash-cancel-back" style="flex:1;">Keep Order</button>
+        <button type="submit" class="btn btn-primary" id="dash-cancel-submit-btn" style="flex:1; background:#dc2626; border-color:#dc2626;">Confirm Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- REFUND DETAILS MODAL -->
+  <div class="overlay" id="dash-refund-overlay"></div>
+  <div class="modal" id="dash-refund-modal" role="dialog" aria-labelledby="refund-modal-title">
+    <button class="modal-close" id="dash-refund-close" type="button" aria-label="Close dialog">&times;</button>
+    <h3 id="refund-modal-title" style="margin-bottom:0.4rem; color:var(--primary);"><i class="fas fa-undo-alt"></i> Refund Information</h3>
+    <p style="font-size:0.85rem; color:var(--gray); margin-bottom:1rem;">
+      Order: <strong id="refund-order-code-display" style="color:var(--dark);"></strong>
+    </p>
+    <div id="dash-refund-status-card" style="margin-bottom:1rem;"></div>
+    <form id="dash-refund-form">
+      <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+        <div class="form-group">
+          <label class="dash-label">Wallet Type *</label>
+          <select class="form-select" id="dash-refund-type" required>
+            <option value="GCASH">GCash</option>
+            <option value="PAYMAYA">Maya (PayMaya)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="dash-label">Account Name *</label>
+          <input class="form-input" id="dash-refund-name" type="text" placeholder="e.g. Maria Santos" required minlength="2">
+        </div>
+      </div>
+      <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+        <div class="form-group">
+          <label class="dash-label">Account Number *</label>
+          <input class="form-input" id="dash-refund-num" type="tel" placeholder="09XXXXXXXXX" maxlength="11" pattern="09[0-9]{9}" inputmode="numeric" required>
+        </div>
+        <div class="form-group">
+          <label class="dash-label">Retype Account Number *</label>
+          <input class="form-input" id="dash-refund-num2" type="tel" placeholder="09XXXXXXXXX" maxlength="11" pattern="09[0-9]{9}" inputmode="numeric" required>
+        </div>
+      </div>
+      <div style="display:flex; gap:0.75rem; margin-top:1.25rem;">
+        <button type="button" class="btn btn-outline" id="dash-refund-back" style="flex:1;">Close</button>
+        <button type="submit" class="btn btn-primary" id="dash-refund-submit-btn" style="flex:1;"><i class="fas fa-save"></i> Save Details</button>
+      </div>
+    </form>
+  </div>
 
   <!-- Toast Notification -->
   <div class="toast" id="toast">Notification Message</div>

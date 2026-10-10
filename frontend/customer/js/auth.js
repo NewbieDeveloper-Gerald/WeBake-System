@@ -246,11 +246,17 @@
     renderAuthButtons();
 
     function renderAuthButtons() {
+      const signoutHtml =
+        '<button type="button" class="btn btn-signout btn-sm" data-signout>' +
+        '<span class="signout-default">' + t('nav.signout') + '</span>' +
+        '<span class="signout-hover">' + t('nav.signin') + '</span>' +
+        '</button>';
+
       document.querySelectorAll('.auth-buttons').forEach((box) => {
         if (token()) {
           box.innerHTML =
             '<a href="dashboard.html" class="btn btn-outline btn-sm">' + t('nav.dashboard') + '</a> ' +
-            '<button type="button" class="btn btn-primary btn-sm" data-signout>' + t('nav.signout') + '</button>';
+            signoutHtml;
         } else {
           box.innerHTML =
             '<button type="button" data-auth-open="login" class="btn btn-outline btn-sm">' + t('nav.signin') + '</button> ' +
@@ -266,7 +272,7 @@
         }
         mobileAuth.innerHTML = token()
           ? '<a href="dashboard.html" class="btn btn-outline btn-sm">' + t('nav.dashboard') + '</a>' +
-            '<button type="button" class="btn btn-primary btn-sm" data-signout>' + t('nav.signout') + '</button>'
+            signoutHtml
           : '<a href="#" data-auth-open="login" class="btn btn-outline btn-sm">' + t('nav.signin') + '</a>' +
             '<a href="#" data-auth-open="register" class="btn btn-primary btn-sm">' + t('nav.register') + '</a>';
       });
@@ -383,7 +389,28 @@
       if (prefill) document.getElementById('reg-email').value = prefill;
 
       const errBox = document.getElementById('reg-error');
-      const showErr = (m) => { errBox.textContent = m; errBox.style.display = 'block'; };
+      const showErr = (m, isHtml) => {
+        if (isHtml) errBox.innerHTML = m;
+        else errBox.textContent = m;
+        errBox.style.display = 'block';
+      };
+
+      const showNoticeEmailExists = () => {
+        showErr(
+          '<div class="auth-notice-card">' +
+          '<i class="fas fa-info-circle"></i>' +
+          '<div>' +
+          '<strong>Account already registered</strong>' +
+          '<p>This email already has an account in our database. Please sign in instead of registering.</p>' +
+          '<button type="button" class="btn btn-primary btn-sm" data-auth-open="login" style="margin-top:0.4rem;">' +
+          '<i class="fas fa-sign-in-alt"></i> Go to Sign In</button>' +
+          '</div></div>',
+          true
+        );
+        const otpSec = document.getElementById('reg-otp-section');
+        if (otpSec) otpSec.style.display = 'none';
+      };
+
       const widget = window.OtpWidget.attach({
         root: '#reg-otp-section',
         timerWrap: '#reg-timer-wrap',
@@ -400,13 +427,28 @@
         const password = document.getElementById('reg-password').value;
         if (password.length < 6) { showErr('Password must be at least 6 characters.'); return; }
         if (password !== document.getElementById('reg-confirm').value) { showErr('Passwords do not match.'); return; }
+        
+        const sendBtn = document.getElementById('reg-send-otp');
+        if (sendBtn) {
+          sendBtn.disabled = true;
+          sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking & sending code...';
+        }
         try {
           await api.otpSend(email, 'REGISTER');
           widget.cooldown(60);
           document.getElementById('reg-otp-section').style.display = 'block';
           errBox.style.display = 'none';
         } catch (err) {
-          showErr(err.message);
+          if (err.code === 'EMAIL_EXISTS' || (err.message && err.message.toLowerCase().includes('already exists'))) {
+            showNoticeEmailExists();
+          } else {
+            showErr(err.message);
+          }
+        } finally {
+          if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = 'Send verification code';
+          }
         }
       }
 
@@ -437,7 +479,11 @@
           U.toast(t('au.registered'));
           window.location.href = 'dashboard.html';
         } catch (err) {
-          showErr(err.message);
+          if (err.code === 'EMAIL_EXISTS' || (err.message && err.message.toLowerCase().includes('already exists'))) {
+            showNoticeEmailExists();
+          } else {
+            showErr(err.message);
+          }
         } finally {
           btn.disabled = false;
         }

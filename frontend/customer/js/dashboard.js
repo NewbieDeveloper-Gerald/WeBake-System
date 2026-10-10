@@ -148,13 +148,18 @@
       }
     }
 
+    let allOrders = [];
+    let currentMember = null;
+    let activeCancelOrder = null;
+    let activeRefundOrder = null;
+
     function renderSavedCart() {
       const lines = savedCartLines;
       const container = document.getElementById('dash-cart-container');
       if (!lines.length) {
-        container.innerHTML = '<div class="saved-cart-empty"><span><i class="fas fa-basket-shopping"></i></span><strong>Your cart is empty</strong>' +
+        container.innerHTML = '<div class="saved-cart-empty"><span><i class="fas fa-shopping-basket"></i></span><strong>Your cart is empty</strong>' +
           '<p>Choose your bakery favorites and they’ll be saved here.</p>' +
-          '<a class="btn btn-outline btn-sm" href="products.html">Browse products</a></div>';
+          '<a class="btn btn-primary btn-sm" href="products.html"><i class="fas fa-store"></i> Browse Products</a></div>';
         return;
       }
       const selected = lines.filter((line) => selectedSavedIds.has(Number(line.product_id)));
@@ -186,14 +191,233 @@
       }).join('') + '</div><div class="saved-cart-summary"><span>' + selected.length + ' selected · ' +
         lines.length + (lines.length === 1 ? ' product saved' : ' products saved') + '</span><strong>' +
         U.pesos(cartTotal) + '</strong></div><p class="saved-cart-estimate">Estimated selected total</p>' +
+        '<div class="saved-cart-actions">' +
+        '<a class="btn btn-outline" href="products.html"><i class="fas fa-store"></i> Continue Browsing</a>' +
         '<button class="btn btn-primary saved-cart-cta" id="saved-cart-checkout" type="button"' + (!selected.length ? ' disabled' : '') +
-        '><i class="fas fa-credit-card"></i> Check out selected</button>';
+        '><i class="fas fa-credit-card"></i> Check out selected</button>' +
+        '</div>';
     }
+
+    const STAGE_LABEL = {
+      PAYMENT_UNDER_VERIFICATION: 'Under Verification',
+      CONFIRMED: 'Confirmed',
+      IN_PRODUCTION: 'In Production',
+      OUT_FOR_DELIVERY: 'Out for Delivery',
+      COMPLETED: 'Completed',
+      CANCELLED: 'Cancelled',
+    };
+
+    function renderOrders(orders, member) {
+      const container = document.getElementById('dash-orders-container');
+      if (!orders.length) {
+        container.innerHTML = '<p class="empty-state"><i class="fas fa-box-open" style="font-size:2rem; color:#B58A44; display:block; margin-bottom:0.5rem;"></i>You haven\'t placed any orders yet.</p>';
+        return;
+      }
+
+      container.innerHTML = orders.map((o) => {
+        const canCancel = ['PAYMENT_UNDER_VERIFICATION', 'CONFIRMED'].includes(o.status);
+        const statusText = STAGE_LABEL[o.status] || String(o.status).replace(/_/g, ' ');
+        const statusClass = 'status-' + String(o.status).toLowerCase();
+
+        // Items summary
+        const itemsHtml = (o.items && o.items.length)
+          ? '<div class="order-items-list">' + o.items.map((it) =>
+              '<div class="order-item-line"><span><strong>' + U.escapeHtml(it.product_name) + '</strong> × ' +
+              Number(it.bundles).toLocaleString() + ' bundles <small>(' +
+              (Number(it.bundles) * Number(it.pieces_per_bundle || 25)).toLocaleString() + ' pcs)</small></span>' +
+              '<strong>' + U.pesos(it.line_total_centavos) + '</strong></div>'
+            ).join('') + '</div>'
+          : '';
+
+        // Refund status tag if exists
+        let refundTag = '';
+        if (o.refund) {
+          refundTag = '<div class="order-refund-tag"><i class="fas fa-undo"></i> Refund: <strong>' +
+            U.escapeHtml(String(o.refund.status).replace(/_/g, ' ')) + '</strong> (' + U.pesos(o.refund.amount_centavos) + ')</div>';
+        }
+
+        return '<div class="order-block" data-order-code="' + U.escapeHtml(o.order_code) + '">' +
+          '<div class="order-block-header">' +
+            '<div class="order-block-id">' +
+              '<span class="order-icon"><i class="fas fa-receipt"></i></span>' +
+              '<div>' +
+                '<strong class="order-code-text">' + U.escapeHtml(o.order_code) + '</strong>' +
+                '<span class="order-date-text"><i class="far fa-calendar-alt"></i> ' + U.fmtDate(o.created_at) + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<span class="order-status-badge ' + statusClass + '">' +
+              '<i class="fas fa-circle" style="font-size:0.45rem"></i> ' + U.escapeHtml(statusText) +
+            '</span>' +
+          '</div>' +
+          itemsHtml +
+          '<div class="order-pricing-summary">' +
+            '<div><span>Total: </span><strong>' + U.pesos(o.total_centavos) + '</strong>' +
+            '<span style="margin-left:0.5rem; font-size:0.75rem; color:#8C7E75;">(Paid: ' + U.pesos(o.downpayment_paid_centavos || o.downpayment_centavos) + ')</span></div>' +
+            refundTag +
+          '</div>' +
+          '<div class="order-block-actions">' +
+            '<a href="track.html?code=' + encodeURIComponent(o.order_code) + '&email=' + encodeURIComponent(member.email) + '" class="btn btn-outline btn-sm">' +
+              '<i class="fas fa-location-arrow"></i> Track Order' +
+            '</a>' +
+            '<button type="button" class="btn btn-outline-danger btn-sm" data-dash-cancel="' + U.escapeHtml(o.order_code) + '"' +
+              (canCancel ? '' : ' disabled title="Cannot cancel after production starts or when cancelled"') + '>' +
+              '<i class="fas fa-ban"></i> Cancel' +
+            '</button>' +
+            '<button type="button" class="btn btn-outline-warning btn-sm" data-dash-refund="' + U.escapeHtml(o.order_code) + '">' +
+              '<i class="fas fa-undo-alt"></i> Refund' +
+            '</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    /* ---------------- Cancel & Refund Modals ---------------- */
+    const cancelModal = document.getElementById('dash-cancel-modal');
+    const cancelOverlay = document.getElementById('dash-cancel-overlay');
+    const refundModal = document.getElementById('dash-refund-modal');
+    const refundOverlay = document.getElementById('dash-refund-overlay');
+
+    function closeCancelModal() {
+      if (cancelModal) cancelModal.classList.remove('active');
+      if (cancelOverlay) cancelOverlay.classList.remove('active');
+      activeCancelOrder = null;
+    }
+    function closeRefundModal() {
+      if (refundModal) refundModal.classList.remove('active');
+      if (refundOverlay) refundOverlay.classList.remove('active');
+      activeRefundOrder = null;
+    }
+
+    if (cancelOverlay) cancelOverlay.addEventListener('click', closeCancelModal);
+    document.getElementById('dash-cancel-close')?.addEventListener('click', closeCancelModal);
+    document.getElementById('dash-cancel-back')?.addEventListener('click', closeCancelModal);
+
+    if (refundOverlay) refundOverlay.addEventListener('click', closeRefundModal);
+    document.getElementById('dash-refund-close')?.addEventListener('click', closeRefundModal);
+    document.getElementById('dash-refund-back')?.addEventListener('click', closeRefundModal);
+
+    // Order History container actions
+    document.getElementById('dash-orders-container').addEventListener('click', (e) => {
+      const cancelBtn = e.target.closest('[data-dash-cancel]');
+      const refundBtn = e.target.closest('[data-dash-refund]');
+      if (cancelBtn && !cancelBtn.disabled) {
+        const code = cancelBtn.dataset.dashCancel;
+        const o = allOrders.find((ord) => ord.order_code === code);
+        if (!o) return;
+        activeCancelOrder = o;
+        document.getElementById('cancel-order-code-display').textContent = o.order_code;
+        document.getElementById('dash-cancel-reason').value = '';
+        document.getElementById('dash-cancel-name').value = (currentMember && (currentMember.name || currentMember.full_name)) || '';
+        document.getElementById('dash-cancel-num').value = (currentMember && currentMember.contact) || '';
+        document.getElementById('dash-cancel-num2').value = (currentMember && currentMember.contact) || '';
+        cancelOverlay.classList.add('active');
+        cancelModal.classList.add('active');
+        return;
+      }
+      if (refundBtn) {
+        const code = refundBtn.dataset.dashRefund;
+        const o = allOrders.find((ord) => ord.order_code === code);
+        if (!o) return;
+        activeRefundOrder = o;
+        document.getElementById('refund-order-code-display').textContent = o.order_code;
+        const statusCard = document.getElementById('dash-refund-status-card');
+        if (o.refund) {
+          statusCard.innerHTML =
+            '<div style="background:#FFFBF0; border:1px solid #F5E5C9; border-radius:10px; padding:0.75rem; font-size:0.83rem;">' +
+            '<div><strong>Refund Status:</strong> ' + U.escapeHtml(String(o.refund.status).replace(/_/g, ' ')) + '</div>' +
+            '<div><strong>Amount:</strong> ' + U.pesos(o.refund.amount_centavos) + '</div>' +
+            (o.refund.wallet_type ? '<div><strong>Registered Wallet:</strong> ' + U.escapeHtml(o.refund.wallet_type) + ' (' + U.escapeHtml(o.refund.account_number) + ')</div>' : '') +
+            '</div>';
+          document.getElementById('dash-refund-name').value = o.refund.account_name || (currentMember && (currentMember.name || currentMember.full_name)) || '';
+          document.getElementById('dash-refund-num').value = o.refund.account_number || '';
+          document.getElementById('dash-refund-num2').value = o.refund.account_number || '';
+        } else {
+          const canCancel = ['PAYMENT_UNDER_VERIFICATION', 'CONFIRMED'].includes(o.status);
+          statusCard.innerHTML =
+            '<div style="background:#F0F7FF; border:1px solid #D0E3F7; border-radius:10px; padding:0.75rem; font-size:0.83rem;">' +
+            '<div><strong>Order Status:</strong> ' + U.escapeHtml(STAGE_LABEL[o.status] || o.status) + '</div>' +
+            '<p style="margin:0.25rem 0 0; color:#555;">' +
+            (canCancel
+              ? 'This order is active. Cancelling it will initiate a refund for your 50% downpayment (' + U.pesos(o.downpayment_paid_centavos || o.downpayment_centavos) + ').'
+              : 'Refund requests are processed upon order cancellation or return. You can update your refund wallet details below.') +
+            '</p></div>';
+          document.getElementById('dash-refund-name').value = (currentMember && (currentMember.name || currentMember.full_name)) || '';
+          document.getElementById('dash-refund-num').value = (currentMember && currentMember.contact) || '';
+          document.getElementById('dash-refund-num2').value = (currentMember && currentMember.contact) || '';
+        }
+        refundOverlay.classList.add('active');
+        refundModal.classList.add('active');
+      }
+    });
+
+    document.getElementById('dash-cancel-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!activeCancelOrder) return;
+      const num = document.getElementById('dash-cancel-num').value.trim();
+      const num2 = document.getElementById('dash-cancel-num2').value.trim();
+      if (num !== num2) {
+        U.toast('The two account numbers do not match.');
+        return;
+      }
+      const btn = document.getElementById('dash-cancel-submit-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelling...';
+      try {
+        const body = {
+          reason: document.getElementById('dash-cancel-reason').value.trim(),
+          wallet_type: document.getElementById('dash-cancel-type').value,
+          account_number: num,
+          account_number_confirm: num,
+          account_name: document.getElementById('dash-cancel-name').value.trim(),
+        };
+        await api.cancelOrder(activeCancelOrder.order_code, body);
+        U.toast('Order cancelled. Your refund request is now pending.');
+        closeCancelModal();
+        await load();
+      } catch (err) {
+        U.toast(err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Confirm Cancel';
+      }
+    });
+
+    document.getElementById('dash-refund-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!activeRefundOrder) return;
+      const num = document.getElementById('dash-refund-num').value.trim();
+      const num2 = document.getElementById('dash-refund-num2').value.trim();
+      if (num !== num2) {
+        U.toast('The two account numbers do not match.');
+        return;
+      }
+      const btn = document.getElementById('dash-refund-submit-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+      try {
+        const body = {
+          wallet_type: document.getElementById('dash-refund-type').value,
+          account_number: num,
+          account_number_confirm: num,
+          account_name: document.getElementById('dash-refund-name').value.trim(),
+        };
+        await api.refundDetails(activeRefundOrder.order_code, body);
+        U.toast('Refund wallet details saved successfully.');
+        closeRefundModal();
+        await load();
+      } catch (err) {
+        U.toast(err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Save Details';
+      }
+    });
 
     async function load() {
       const [{ member }, cartRes, ordersRes, prodRes] = await Promise.all([
         api.profile(), api.cartGet(), api.mine(), api.products(),
       ]);
+      currentMember = member;
       const memberName = member.name || member.full_name || localStorage.getItem('webake_member_name') || '';
       document.getElementById('dash-name').value = memberName;
       if (memberName) localStorage.setItem('webake_member_name', memberName);
@@ -235,18 +459,9 @@
       selectedSavedIds = new Set(savedCartLines.map((line) => line.product_id));
       renderSavedCart();
 
-      // Order history with track links.
-      const orders = ordersRes.orders || [];
-      document.getElementById('dash-orders-container').innerHTML = orders.length
-        ? orders.map((o) =>
-            '<div class="order-row"><div><strong>' + U.escapeHtml(o.order_code) + '</strong><br>' +
-            '<small>' + U.fmtDate(o.created_at) + ' - ' +
-            U.escapeHtml(String(o.status).replace(/_/g, ' ').toLowerCase()) + '</small></div>' +
-            '<div><strong>' + U.pesos(o.total_centavos) + '</strong><br>' +
-            '<a href="track.html?code=' + encodeURIComponent(o.order_code) +
-            '&email=' + encodeURIComponent(member.email) + '">Track</a></div></div>'
-          ).join('')
-        : '<p class="empty-state">You haven\'t placed any orders yet.</p>';
+      // Order history with 1-block component, cancel and refund buttons.
+      allOrders = ordersRes.orders || [];
+      renderOrders(allOrders, member);
     }
 
     load().catch((err) => {
