@@ -11,6 +11,34 @@
   'use strict';
 
   document.addEventListener('DOMContentLoaded', () => {
+    // Dynamic reviews loader for pages with #reviews-container (e.g. home.html)
+    const revContainer = document.getElementById('reviews-container');
+    if (revContainer && window.ShopAPI) {
+      window.ShopAPI.reviews().then(({ reviews: list }) => {
+        if (!list || !list.length) return;
+        const esc = (window.WeBakeUtils && window.WeBakeUtils.escapeHtml) || ((s) => String(s || ''));
+        revContainer.innerHTML = list.map((r) => {
+          const stars = Array.from({ length: 5 }, (_, i) =>
+            '<i class="' + (i < (r.rating || 5) ? 'fas' : 'far') + ' fa-star"></i>'
+          ).join('');
+          const nameParts = String(r.display_name || 'Customer').replace(/^Sample Review\s*-\s*/i, '').split(',');
+          const name = nameParts[0].trim();
+          const loc = nameParts[1] ? nameParts[1].trim() : 'Bulacan';
+          const initials = name.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase() || 'CR';
+          const text = r.text_en || r.text_fil || '';
+          return '<div class="review-card">' +
+            '<div class="review-stars">' + stars + '</div>' +
+            '<p class="review-quote">"' + esc(text) + '"</p>' +
+            '<div class="review-author">' +
+            '<div class="review-avatar">' + esc(initials) + '</div>' +
+            '<div class="review-author-info">' +
+            '<h4>' + esc(name) + '</h4>' +
+            '<small>' + esc(loc) + '</small>' +
+            '</div></div></div>';
+        }).join('');
+      }).catch(() => {});
+    }
+
     if (!document.getElementById('product-grid')) return; // products page only
 
     const U = window.WeBakeUtils;
