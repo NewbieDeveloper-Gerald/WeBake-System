@@ -16,8 +16,8 @@
     const exportBtn = document.getElementById('btn-export-sales-pdf');
     const quickExportBtn = document.getElementById('btn-quick-export');
 
-    // Default anchor date to today in local YYYY-MM-DD
-    const todayIso = new Date().toISOString().slice(0, 10);
+    // Default anchor date to today in Manila YYYY-MM-DD
+    const todayIso = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila' }).format(new Date());
     if (anchorInput && !anchorInput.value) {
       anchorInput.value = todayIso;
     }
@@ -35,13 +35,13 @@
         const mSum = (monthlyRes.report && monthlyRes.report.summary) || {};
 
         document.getElementById('stat-today-sales').textContent = ui.pesos(dSum.collected_centavos || 0);
-        document.getElementById('stat-today-sub').textContent = (dSum.total_orders || 0) + ' orders today';
+        document.getElementById('stat-today-sub').textContent = (dSum.total_orders || 0) + ' order(s) today';
 
         document.getElementById('stat-week-sales').textContent = ui.pesos(wSum.collected_centavos || 0);
-        document.getElementById('stat-week-sub').textContent = (wSum.total_orders || 0) + ' orders this week';
+        document.getElementById('stat-week-sub').textContent = (wSum.total_orders || 0) + ' order(s) this week';
 
         document.getElementById('stat-month-sales').textContent = ui.pesos(mSum.collected_centavos || 0);
-        document.getElementById('stat-month-sub').textContent = (mSum.total_orders || 0) + ' orders this month';
+        document.getElementById('stat-month-sub').textContent = (mSum.total_orders || 0) + ' order(s) this month';
       } catch (err) {
         console.error('Failed to load sales KPIs', err);
       }
@@ -72,20 +72,23 @@
         document.getElementById('sum-bundles-count').textContent = (sum.total_bundles || 0) + ' bdls';
         document.getElementById('sum-orders-count').textContent = String(sum.total_orders || 0);
 
-        const items = r.by_product || [];
+        const items = r.by_product || r.per_product || [];
         if (!items.length) {
           tbody.innerHTML = '<tr><td colspan="5" class="muted text-center" style="padding:2rem;">No products were sold during this period.</td></tr>';
           return;
         }
 
-        const totalCentavos = sum.collected_centavos || 1;
+        const totalCentavos = items.reduce((acc, p) => acc + (p.total_centavos || p.revenue_centavos || 0), 0) || (sum.collected_centavos || 1);
         tbody.innerHTML = items.map((p) => {
-          const sharePct = ((p.total_centavos / totalCentavos) * 100).toFixed(1);
+          const rev = p.total_centavos != null ? p.total_centavos : (p.revenue_centavos || 0);
+          const sharePct = ((rev / totalCentavos) * 100).toFixed(1);
+          const bdlCount = p.bundles_sold != null ? p.bundles_sold : ((p.online_bundles || 0) + (p.walkin_bundles || 0));
+          const pcsCount = p.pieces_sold != null ? p.pieces_sold : (p.walkin_pieces || 0);
           return '<tr>' +
             '<td><strong>' + ui.esc(p.product_name) + '</strong></td>' +
-            '<td>' + (p.bundles_sold || 0) + ' bdls</td>' +
-            '<td>' + (p.pieces_sold || 0) + ' pcs</td>' +
-            '<td><strong>' + ui.pesos(p.total_centavos) + '</strong></td>' +
+            '<td>' + bdlCount + ' bdls</td>' +
+            '<td>' + pcsCount + ' pcs</td>' +
+            '<td><strong>' + ui.pesos(rev) + '</strong></td>' +
             '<td style="text-align:right;"><span class="badge" style="background:#FBF3E8;color:#6B352A;padding:0.25rem 0.6rem;border-radius:6px;font-weight:600;">' + sharePct + '%</span></td>' +
             '</tr>';
         }).join('');

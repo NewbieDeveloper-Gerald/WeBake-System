@@ -135,6 +135,8 @@
       if (!r) return;
       currentId = id;
       set('decline-modal-order-id', r.order_code);
+      const decSel = document.getElementById('decline-reason-select');
+      if (decSel) decSel.value = '';
       document.getElementById('decline-reason-text').value = '';
       document.getElementById('modal-decline-refund').classList.add('active');
     }
@@ -143,12 +145,27 @@
       document.getElementById('modal-decline-refund').classList.remove('active');
     });
     document.getElementById('btn-confirm-decline').addEventListener('click', async (e) => {
+      const sel = document.getElementById('decline-reason-select');
+      const selected = sel ? sel.value : '';
       const note = document.getElementById('decline-reason-text').value.trim();
-      if (note.length < 5) { window.alert('A note is required (min 5 characters) - the customer reads it.'); return; }
+      if (!selected) {
+        window.alert('Please select a reason for declining.');
+        return;
+      }
+      let fullReason = selected;
+      if (selected === 'Other') {
+        if (!note || note.length < 5) {
+          window.alert('Please specify the reason for declining (minimum 5 characters).');
+          return;
+        }
+        fullReason = note;
+      } else if (note) {
+        fullReason = selected + ': ' + note;
+      }
       const btn = e.currentTarget;
       btn.disabled = true;
       try {
-        await api.refundClose(currentId, note);
+        await api.refundClose(currentId, fullReason);
         document.getElementById('modal-decline-refund').classList.remove('active');
         window.alert('Refund closed. The customer was emailed.');
         await load();

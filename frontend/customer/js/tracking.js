@@ -302,8 +302,18 @@
       box.innerHTML = '<h4>Cancel this order</h4>' +
         '<p class="muted">Cancellation opens a refund for your downpayment. Wallet details are required now (type the number twice).</p>' +
         '<form id="track-cancel-form">' +
-        '<div class="form-group"><label>Reason (min 10 characters)</label>' +
-        '<textarea class="form-textarea" id="tc-reason" required></textarea></div>' +
+        '<div class="form-group"><label>Reason for cancellation *</label>' +
+        '<select class="form-input" id="tc-reason-select" required style="margin-bottom:0.5rem;">' +
+        '<option value="" disabled selected>-- Select a reason --</option>' +
+        '<option value="Change of schedule or delivery date">Change of schedule or delivery date</option>' +
+        '<option value="Ordered wrong items or quantity by mistake">Ordered wrong items or quantity by mistake</option>' +
+        '<option value="Customer changed mind about the order">Customer changed mind about the order</option>' +
+        '<option value="Personal emergency or unexpected conflict">Personal emergency or unexpected conflict</option>' +
+        '<option value="Found alternative bakery or supplier">Found alternative bakery or supplier</option>' +
+        '<option value="Placed duplicate order by mistake">Placed duplicate order by mistake</option>' +
+        '<option value="Other">Other reason (please specify below)</option>' +
+        '</select>' +
+        '<textarea class="form-textarea" id="tc-reason-note" placeholder="Additional details or specific reason (required if Other)..." rows="2"></textarea></div>' +
         '<div class="form-row"><div class="form-group"><label>Wallet</label>' +
         '<select class="form-input" id="tc-type"><option value="GCASH">GCash</option>' +
         '<option value="PAYMAYA">PayMaya</option></select></div>' +
@@ -322,12 +332,28 @@
           U.toast('The two account numbers do not match.');
           return;
         }
+        const selReason = document.getElementById('tc-reason-select')?.value;
+        const reasonNote = (document.getElementById('tc-reason-note')?.value || '').trim();
+        if (!selReason) {
+          U.toast('Please select a cancellation reason.');
+          return;
+        }
+        let fullReason = selReason;
+        if (selReason === 'Other') {
+          if (!reasonNote || reasonNote.length < 10) {
+            U.toast('Please specify your cancellation reason (minimum 10 characters).');
+            return;
+          }
+          fullReason = reasonNote;
+        } else if (reasonNote) {
+          fullReason = selReason + ': ' + reasonNote;
+        }
         if (!window.confirm('Cancel ' + o.order_code + '? This cannot be undone.')) return;
         const btn = e.target.querySelector('button[type="submit"]');
         btn.disabled = true;
         try {
           const body = {
-            reason: document.getElementById('tc-reason').value.trim(),
+            reason: fullReason,
             wallet_type: document.getElementById('tc-type').value,
             account_number: num,
             account_number_confirm: num,

@@ -14,13 +14,22 @@ const inventoryService = require('./inventoryService');
 
 async function stats() {
   const [
-    todayOnlinePayments, todayRefunds, todayWalkin, pending, byStatus, recent, refunds, outstanding,
+    todayDownpayments, todayBalances, todayRefunds, todayWalkin, pending, byStatus, recent, refunds, outstanding,
   ] = await Promise.all([
     query(`SELECT COALESCE(SUM(p.amount_centavos), 0)::int AS collected,
                   COUNT(DISTINCT o.id)::int AS order_count
              FROM payments p
              JOIN orders o ON o.id = p.order_id
-            WHERE p.verification_status = 'VERIFIED'
+            WHERE p.stage = 'DOWNPAYMENT'
+              AND p.verification_status = 'VERIFIED'
+              AND (COALESCE(p.verified_at, p.created_at) AT TIME ZONE 'Asia/Manila')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Manila')::date
+              AND o.status != 'CANCELLED';`),
+    query(`SELECT COALESCE(SUM(p.amount_centavos), 0)::int AS collected,
+                  COUNT(*)::int AS payment_count
+             FROM payments p
+             JOIN orders o ON o.id = p.order_id
+            WHERE p.stage = 'BALANCE'
+              AND p.verification_status = 'VERIFIED'
               AND (COALESCE(p.verified_at, p.created_at) AT TIME ZONE 'Asia/Manila')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Manila')::date
               AND o.status != 'CANCELLED';`),
     query(`SELECT COALESCE(SUM(refund_amount_centavos), 0)::int AS refunded_today
@@ -44,19 +53,24 @@ async function stats() {
   const alertCount = (refundCounts.AWAITING_DETAILS || 0) + (refundCounts.PENDING || 0);
   const lowStock = await inventoryService.lowStock();
 
-  const onlineCollected = Math.max(0, todayOnlinePayments.rows[0].collected - todayRefunds.rows[0].refunded_today);
+  const onlineDownpayment = todayDownpayments.rows[0].collected;
+  const balanceCollected = todayBalances.rows[0].collected;
   const walkinGross = todayWalkin.rows[0].gross;
-  const combinedToday = onlineCollected + walkinGross;
+  const refundedToday = todayRefunds.rows[0].refunded_today;
+  const combinedToday = Math.max(0, onlineDownpayment + walkinGross + balanceCollected - refundedToday);
 
   return {
     sales_today: {
       combined_centavos: combinedToday,
-      online_collected_centavos: onlineCollected,
-      online_gross_centavos: onlineCollected,
-      online_count: todayOnlinePayments.rows[0].order_count,
+      online_downpayment_centavos: onlineDownpayment,
+      online_collected_centavos: onlineDownpayment,
+      online_gross_centavos: onlineDownpayment,
+      online_count: todayDownpayments.rows[0].order_count,
       walkin_gross_centavos: walkinGross,
       walkin_collected_centavos: walkinGross,
       walkin_count: todayWalkin.rows[0].n,
+      collected_balance_centavos: balanceCollected,
+      collected_balance_count: todayBalances.rows[0].payment_count,
     },
     pending_verification: pending.rows[0].n,
     orders_by_status: Object.fromEntries(byStatus.rows.map((r) => [r.status, r.n])),

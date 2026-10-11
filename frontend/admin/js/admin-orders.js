@@ -262,14 +262,42 @@
         if (d) { await openDetails(d.dataset.details); return; }
         if (b) { openBalance(b.dataset.balance); return; }
         if (c) {
-          const reason = window.prompt('Cancel ' + c.dataset.cancel + '? Type the reason (min 5 characters):');
-          if (!reason) return;
-          if (reason.trim().length < 5) {
-            window.alert('Cancellation reason must be at least 5 characters.');
+          const code = c.dataset.cancel;
+          const reasons = [
+            'Customer requested cancellation',
+            'Out of stock / ingredients unavailable',
+            'Delivery address unreachable or out of delivery zone',
+            'Payment verification failed / unpaid',
+            'Duplicate order entry by mistake',
+            'Other',
+          ];
+          const choice = window.prompt(
+            'Cancel order ' + code + '?\n\nSelect a reason by number:\n' +
+            reasons.map((r, i) => (i + 1) + '. ' + r).join('\n') +
+            '\n\nEnter number (1-' + reasons.length + ') or type specific reason:'
+          );
+          if (!choice) return;
+          let fullReason = '';
+          const idx = parseInt(choice.trim(), 10) - 1;
+          if (!isNaN(idx) && idx >= 0 && idx < reasons.length) {
+            if (reasons[idx] === 'Other') {
+              const spec = window.prompt('Please type the specific cancellation reason (min 5 characters):');
+              if (!spec || spec.trim().length < 5) {
+                window.alert('Cancellation reason must be at least 5 characters.');
+                return;
+              }
+              fullReason = spec.trim();
+            } else {
+              fullReason = reasons[idx];
+            }
+          } else if (choice.trim().length >= 5) {
+            fullReason = choice.trim();
+          } else {
+            window.alert('Please select a valid option or type a reason with at least 5 characters.');
             return;
           }
-          await api.cancelOrder(c.dataset.cancel, reason.trim());
-          window.alert('Order cancelled.');
+          await api.cancelOrder(code, fullReason);
+          window.alert('Order ' + code + ' cancelled.');
           await load();
         }
       } catch (err) {
@@ -310,6 +338,8 @@
         }
       }
       document.getElementById('verify-rejection-box').classList.remove('active');
+      const rejSelect = document.getElementById('verify-rejection-select');
+      if (rejSelect) rejSelect.value = '';
       document.getElementById('verify-rejection-reason').value = '';
       document.getElementById('modal-verify-payment').classList.add('active');
     }
@@ -337,12 +367,27 @@
     });
 
     document.getElementById('btn-confirm-reject').addEventListener('click', async (e) => {
-      const reason = document.getElementById('verify-rejection-reason').value.trim();
-      if (reason.length < 5) { window.alert('Please type a rejection reason (min 5 characters).'); return; }
+      const sel = document.getElementById('verify-rejection-select');
+      const selected = sel ? sel.value : '';
+      const note = document.getElementById('verify-rejection-reason').value.trim();
+      if (!selected) {
+        window.alert('Please select a rejection reason.');
+        return;
+      }
+      let fullReason = selected;
+      if (selected === 'Other') {
+        if (!note || note.length < 5) {
+          window.alert('Please specify the rejection reason (minimum 5 characters).');
+          return;
+        }
+        fullReason = note;
+      } else if (note) {
+        fullReason = selected + ': ' + note;
+      }
       const btn = e.currentTarget;
       btn.disabled = true;
       try {
-        const res = await api.rejectPayment(currentCode, reason);
+        const res = await api.rejectPayment(currentCode, fullReason);
         document.getElementById('modal-verify-payment').classList.remove('active');
         window.alert(res.resubmit_allowed
           ? 'Rejected. The customer may correct and resubmit once.'

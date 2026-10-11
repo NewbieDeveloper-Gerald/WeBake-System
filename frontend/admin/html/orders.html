@@ -222,8 +222,18 @@
             <!-- Rejection Form Box (Hidden unless toggled) -->
             <div class="rejection-form-box" id="verify-rejection-box">
               <label class="form-label form-label-required">Reason for Rejection</label>
-              <textarea id="verify-rejection-reason" class="form-textarea" rows="2" placeholder="e.g. Reference number not found in GCash/Maya portal, receipt blurry..."></textarea>
-              <div class="d-flex justify-between gap-1">
+              <select id="verify-rejection-select" class="form-select form-select-sm" style="margin-bottom:0.5rem;">
+                <option value="" disabled selected>-- Select rejection reason --</option>
+                <option value="Unreadable or blurry payment screenshot">Unreadable or blurry payment screenshot</option>
+                <option value="Reference number does not match receipt">Reference number does not match receipt</option>
+                <option value="Payment amount does not match downpayment">Payment amount does not match downpayment</option>
+                <option value="Duplicate or invalid payment receipt">Duplicate or invalid payment receipt</option>
+                <option value="Payment transferred to incorrect account">Payment transferred to incorrect account</option>
+                <option value="Customer requested cancellation">Customer requested cancellation</option>
+                <option value="Other">Other reason (please specify below)</option>
+              </select>
+              <textarea id="verify-rejection-reason" class="form-textarea" rows="2" placeholder="Additional details or specific reason (required if Other)..."></textarea>
+              <div class="d-flex justify-between gap-1" style="margin-top:0.5rem;">
                 <button type="button" class="btn btn-danger btn-sm" id="btn-confirm-reject">
                   Confirm Rejection &amp; Cancel Order
                 </button>

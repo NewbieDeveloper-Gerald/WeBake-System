@@ -31,9 +31,14 @@ function addDays(d, n) {
   return c;
 }
 
+function getManilaToday() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila' }).format(new Date());
+}
+
 /** Period -> half-open [from, to) day range + human label. */
 function rangeFor(period, anchorStr) {
-  const anchor = anchorStr ? new Date(`${anchorStr}T00:00:00`) : new Date();
+  const baseStr = anchorStr || getManilaToday();
+  const anchor = new Date(`${baseStr}T00:00:00`);
   if (Number.isNaN(anchor.getTime())) {
     throw Object.assign(new Error('Invalid anchor date.'), {
       status: 400, code: 'VALIDATION_ERROR',
@@ -57,15 +62,22 @@ function rangeFor(period, anchorStr) {
 async function getSales(period, anchorStr) {
   const { from, to, label } = rangeFor(period, anchorStr);
 
-  const [online, walkin, balances, perOnline, perWalkin, refunds] = await Promise.all([
+  const [online, onlineDownpayments, walkin, balances, perOnline, perWalkin, refunds] = await Promise.all([
     query(`SELECT COUNT(*)::int AS n,
                   COALESCE(SUM(total_centavos), 0)::int AS gross,
-                  COALESCE(SUM(downpayment_paid_centavos), 0)::int AS down_collected,
                   COALESCE(SUM(balance_due_centavos), 0)::int AS outstanding
              FROM orders
             WHERE (created_at AT TIME ZONE 'Asia/Manila')::date >= $1::date
               AND (created_at AT TIME ZONE 'Asia/Manila')::date < $2::date
               AND status IN ('CONFIRMED', 'IN_PRODUCTION', 'OUT_FOR_DELIVERY', 'COMPLETED');`, [from, to]),
+    query(`SELECT COALESCE(SUM(p.amount_centavos), 0)::int AS down_collected,
+                  COUNT(DISTINCT o.id)::int AS order_count
+             FROM payments p
+             JOIN orders o ON o.id = p.order_id
+            WHERE p.stage = 'DOWNPAYMENT' AND p.verification_status = 'VERIFIED'
+              AND (COALESCE(p.verified_at, p.created_at) AT TIME ZONE 'Asia/Manila')::date >= $1::date
+              AND (COALESCE(p.verified_at, p.created_at) AT TIME ZONE 'Asia/Manila')::date < $2::date
+              AND o.status != 'CANCELLED';`, [from, to]),
     query(`SELECT COUNT(*)::int AS n, COALESCE(SUM(total_centavos), 0)::int AS gross
              FROM walkin_sales
             WHERE (created_at AT TIME ZONE 'Asia/Manila')::date >= $1::date
@@ -125,11 +137,26 @@ async function getSales(period, anchorStr) {
     row.revenue_centavos += r.revenue;
     merged.set(key, row);
   }
-  const perProduct = [...merged.values()].sort((a, b) => b.revenue_centavos - a.revenue_centavos);
+
+  const perProduct = [...merged.values()].map((row) => ({
+    product_id: row.product_id,
+    product_name: row.product_name,
+    bundles_sold: row.online_bundles + row.walkin_bundles,
+    pieces_sold: row.walkin_pieces,
+    online_bundles: row.online_bundles,
+    walkin_bundles: row.walkin_bundles,
+    walkin_pieces: row.walkin_pieces,
+    total_centavos: row.revenue_centavos,
+    revenue_centavos: row.revenue_centavos,
+  })).sort((a, b) => b.revenue_centavos - a.revenue_centavos);
+
+  const totalBundles = perProduct.reduce((acc, p) => acc + (p.bundles_sold || 0), 0);
 
   const o = online.rows[0];
   const w = walkin.rows[0];
-  const onlineCollected = o.down_collected + balances.rows[0].collected;
+  const downCollected = onlineDownpayments.rows[0].down_collected;
+  const onlineOrderCount = Math.max(o.n, onlineDownpayments.rows[0].order_count);
+  const onlineCollected = downCollected + balances.rows[0].collected;
   const walkinCollected = w.gross;
   const totalCollected = onlineCollected + walkinCollected;
   const refunded = refunds.rows[0];
@@ -139,8 +166,8 @@ async function getSales(period, anchorStr) {
     period, from, to, label,
     generated_at: new Date().toISOString(),
     online: {
-      orders: o.n, gross_centavos: o.gross,
-      downpayments_collected_centavos: o.down_collected,
+      orders: onlineOrderCount, gross_centavos: o.gross,
+      downpayments_collected_centavos: downCollected,
       balances_collected_centavos: balances.rows[0].collected,
       outstanding_centavos: o.outstanding,
       collected_centavos: onlineCollected,
@@ -155,16 +182,19 @@ async function getSales(period, anchorStr) {
     refunded: { total_centavos: refunded.total, count: refunded.n },
     net_collected_centavos: netCollected,
     summary: {
-      total_orders: o.n + w.n,
-      online_orders: o.n,
+      total_orders: onlineOrderCount + w.n,
+      online_orders: onlineOrderCount,
       walkin_sales: w.n,
-      online_collected_centavos: onlineCollected,
+      online_collected_centavos: downCollected,
+      balances_collected_centavos: balances.rows[0].collected,
       walkin_collected_centavos: walkinCollected,
       collected_centavos: totalCollected,
       net_collected_centavos: netCollected,
       refunded_centavos: refunded.total,
+      total_bundles: totalBundles,
     },
     per_product: perProduct,
+    by_product: perProduct,
   };
 }
 

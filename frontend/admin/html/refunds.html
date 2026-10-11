@@ -227,7 +227,16 @@
         <p class="text-muted">Order ID: <strong id="decline-modal-order-id"></strong></p>
         <div class="form-group">
           <label class="form-label form-label-required">Reason for Declining</label>
-          <textarea id="decline-reason-text" class="form-textarea" rows="3" placeholder="e.g. Order is already baked and dispatched in delivery, downpayment non-refundable per bakery policy."></textarea>
+          <select id="decline-reason-select" class="form-select form-select-sm" style="margin-bottom:0.5rem;">
+            <option value="" disabled selected>-- Select reason for declining --</option>
+            <option value="Order already baked and prepared per custom order">Order already baked and prepared per custom order</option>
+            <option value="Order already dispatched for delivery">Order already dispatched for delivery</option>
+            <option value="Downpayment non-refundable per bakery cancellation policy">Downpayment non-refundable per bakery cancellation policy</option>
+            <option value="Duplicate refund request submitted">Duplicate refund request submitted</option>
+            <option value="Refund already processed via offline channel">Refund already processed via offline channel</option>
+            <option value="Other">Other reason (please specify below)</option>
+          </select>
+          <textarea id="decline-reason-text" class="form-textarea" rows="2" placeholder="Additional details or specific reason (required if Other)..."></textarea>
         </div>
       </div>
       <div class="modal-footer">

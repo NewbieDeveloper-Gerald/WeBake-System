@@ -320,7 +320,10 @@
         if (!o) return;
         activeCancelOrder = o;
         document.getElementById('cancel-order-code-display').textContent = o.order_code;
-        document.getElementById('dash-cancel-reason').value = '';
+        const sel1 = document.getElementById('dash-cancel-reason-select');
+        if (sel1) sel1.value = '';
+        const note1 = document.getElementById('dash-cancel-reason-note');
+        if (note1) note1.value = '';
         document.getElementById('dash-cancel-name').value = (currentMember && (currentMember.name || currentMember.full_name)) || '';
         document.getElementById('dash-cancel-num').value = (currentMember && currentMember.contact) || '';
         document.getElementById('dash-cancel-num2').value = (currentMember && currentMember.contact) || '';
@@ -338,7 +341,10 @@
         }
         activeCancelOrder = o;
         document.getElementById('cancel-order-code-display').textContent = o.order_code;
-        document.getElementById('dash-cancel-reason').value = '';
+        const sel2 = document.getElementById('dash-cancel-reason-select');
+        if (sel2) sel2.value = '';
+        const note2 = document.getElementById('dash-cancel-reason-note');
+        if (note2) note2.value = '';
         document.getElementById('dash-cancel-name').value = (currentMember && (currentMember.name || currentMember.full_name)) || '';
         document.getElementById('dash-cancel-num').value = (currentMember && currentMember.contact) || '';
         document.getElementById('dash-cancel-num2').value = (currentMember && currentMember.contact) || '';
@@ -414,12 +420,28 @@
         U.toast('The two account numbers do not match.');
         return;
       }
+      const selReason = document.getElementById('dash-cancel-reason-select')?.value;
+      const reasonNote = (document.getElementById('dash-cancel-reason-note')?.value || '').trim();
+      if (!selReason) {
+        U.toast('Please select a cancellation reason.');
+        return;
+      }
+      let fullReason = selReason;
+      if (selReason === 'Other') {
+        if (!reasonNote || reasonNote.length < 10) {
+          U.toast('Please specify your cancellation reason (minimum 10 characters).');
+          return;
+        }
+        fullReason = reasonNote;
+      } else if (reasonNote) {
+        fullReason = selReason + ': ' + reasonNote;
+      }
       const btn = document.getElementById('dash-cancel-submit-btn');
       btn.disabled = true;
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelling...';
       try {
         const body = {
-          reason: document.getElementById('dash-cancel-reason').value.trim(),
+          reason: fullReason,
           wallet_type: document.getElementById('dash-cancel-type').value,
           account_number: num,
           account_number_confirm: num,

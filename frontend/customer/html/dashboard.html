@@ -129,8 +129,18 @@
     </p>
     <form id="dash-cancel-form">
       <div class="form-group">
-        <label class="dash-label">Reason for cancellation (min 10 chars) *</label>
-        <textarea class="form-textarea" id="dash-cancel-reason" placeholder="Please state why you want to cancel..." required minlength="10" rows="3"></textarea>
+        <label class="dash-label">Reason for cancellation *</label>
+        <select class="form-select" id="dash-cancel-reason-select" required style="margin-bottom:0.5rem;">
+          <option value="" disabled selected>-- Select a reason --</option>
+          <option value="Change of schedule or delivery date">Change of schedule or delivery date</option>
+          <option value="Ordered wrong items or quantity by mistake">Ordered wrong items or quantity by mistake</option>
+          <option value="Customer changed mind about the order">Customer changed mind about the order</option>
+          <option value="Personal emergency or unexpected conflict">Personal emergency or unexpected conflict</option>
+          <option value="Found alternative bakery or supplier">Found alternative bakery or supplier</option>
+          <option value="Placed duplicate order by mistake">Placed duplicate order by mistake</option>
+          <option value="Other">Other reason (please specify below)</option>
+        </select>
+        <textarea class="form-textarea" id="dash-cancel-reason-note" placeholder="Additional details or specific reason (required if Other)..." rows="2"></textarea>
       </div>
       <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
         <div class="form-group">
