@@ -665,7 +665,13 @@
       }
       try {
         await api.otpVerify(co.email, 'CHECKOUT', code);
-        await createOrderThenPayment();
+        try {
+          const sRes = await api.settingsPublic();
+          if (sRes && sRes.settings) Object.assign(settings, sRes.settings);
+        } catch { /* use existing cached settings */ }
+        renderReview();
+        setMethod(co.method || 'GCASH');
+        gotoStep('step-payment');
       } catch (err) {
         ensureOtp().clear();
         showOtpError(err.message);
@@ -729,14 +735,18 @@
           ' × ' + l.bundles + ' Bundles</span><span>' +
           U.pesos(p ? l.bundles * p.price_bundle_centavos : 0) + '</span></div>';
       }).join('');
+      const est = estimate();
+      const totalCents = o ? o.total_centavos : est.total;
+      const downCents = o ? o.downpayment_centavos : est.down;
+      const balanceCents = o ? o.balance_due_centavos : est.balance;
       document.getElementById('review-details').innerHTML =
         lines +
-        '<div class="review-line"><span>Total</span><strong>' + U.pesos(o.total_centavos) + '</strong></div>' +
+        '<div class="review-line"><span>Total</span><strong>' + U.pesos(totalCents) + '</strong></div>' +
         '<div class="review-line highlight"><span>' + t('co.down_due') + '</span><strong>' +
-        U.pesos(o.downpayment_centavos) + '</strong></div>' +
+        U.pesos(downCents) + '</strong></div>' +
         '<div class="review-line"><span>' + t('co.balance_later') + '</span><span>' +
-        U.pesos(o.balance_due_centavos) + '</span></div>' +
-        '<div class="review-line"><span>Order</span><strong>' + U.escapeHtml(o.order_code) + '</strong></div>';
+        U.pesos(balanceCents) + '</span></div>' +
+        (o ? '<div class="review-line"><span>Order</span><strong>' + U.escapeHtml(o.order_code) + '</strong></div>' : '');
     }
 
     function qrSrc(which) {
@@ -874,11 +884,20 @@
         if (file.size > 5 * 1024 * 1024) { payError('Screenshot must be 5MB or smaller.'); return; }
 
         const btn = e.currentTarget;
+        if (btn.disabled) return;
         btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
         try {
           if (!co.order) {
-            await createOrderThenPayment();
-            if (!co.order) return;
+            const body = {
+              customer: { name: co.name, email: co.email, contact: co.contact, address: co.address },
+              items: co.items.map((l) => ({ product_id: Number(l.product_id), bundles: Number(l.bundles) })),
+              payment_method: co.method,
+              idempotency_key: co.key,
+            };
+            const token = auth.token() || undefined;
+            const { order } = await api.createOrder(body, token);
+            co.order = order;
           }
           const form = new FormData();
           form.append('channel', co.method);
@@ -888,9 +907,18 @@
           await api.submitPayment(co.order.order_code, form, auth.token() || undefined);
           showSuccess();
         } catch (err) {
+          if (err.code === 'PRODUCT_UNAVAILABLE') {
+            try {
+              await refreshCartCatalog();
+              closeCheckout();
+              openCart();
+              U.toast(err.message || 'A product in your cart is no longer available. Your cart has been updated.');
+              return;
+            } catch { /* Preserve the original checkout error if refresh fails. */ }
+          }
           payError(err.message);
-        } finally {
           btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm 50% Payment';
         }
       });
     }

@@ -326,10 +326,14 @@ async function memberOrders(memberId, memberEmail) {
       ORDER BY created_at DESC;`,
     [memberId, memberEmail.toLowerCase()]
   );
-  // Attach items per order (N+1 is fine here: one customer's history is small).
   const orders = [];
   for (const order of rows) {
-    orders.push({ ...order, items: await itemsFor(order.id), refund: await refundFor(order.id) });
+    orders.push({
+      ...order,
+      items: await itemsFor(order.id),
+      refund: await refundFor(order.id),
+      payments: await paymentsFor(order.id),
+    });
   }
   return orders;
 }
@@ -505,7 +509,7 @@ async function cancelOrder(code, identity, input, changedBy = 'CUSTOMER') {
 
     const order = await findOwnedOrder(client, code, identity);
 
-    if (!cancellableByCustomer(order.status)) {
+    if (order.status === ORDER.CONFIRMED || !cancellableByCustomer(order.status)) {
       throw conflict(
         'ORDER_NOT_CANCELLABLE',
         'This order is already confirmed. Confirmed orders cannot be cancelled or refunded.'

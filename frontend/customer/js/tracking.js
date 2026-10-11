@@ -213,8 +213,30 @@
       const box = document.getElementById('track-refund');
       const r = o.refund;
       if (!r) { box.innerHTML = ''; return; }
-      let html = '<h4>Refund: ' + U.pesos(r.refund_amount_centavos) + ' (' +
-        U.escapeHtml(r.status.replace(/_/g, ' ').toLowerCase()) + ')</h4>';
+
+      const dpPayment = (o.payments || []).find((p) => p.stage === 'DOWNPAYMENT') || (o.payments || [])[0];
+      const downpaymentPaid = dpPayment && dpPayment.amount_centavos != null
+        ? dpPayment.amount_centavos
+        : (o.downpayment_paid_centavos || o.downpayment_centavos || 0);
+      const payMethod = (dpPayment && dpPayment.channel) || o.payment_method || '-';
+      const payRef = (dpPayment && dpPayment.reference_number) || '-';
+      const payDate = dpPayment && dpPayment.created_at ? U.fmtDate(dpPayment.created_at) : U.fmtDate(o.created_at);
+
+      let html = '<h4>Refund Information</h4>' +
+        '<div style="background:#FFFBF0; border:1px solid #F5E5C9; border-radius:10px; padding:1rem; margin-bottom:1rem; font-size:0.9rem;">' +
+        '<div class="review-line"><span>Order Total</span><strong>' + U.pesos(o.total_centavos) + '</strong></div>' +
+        '<div class="review-line"><span>Downpayment Paid (50%)</span><strong>' + U.pesos(downpaymentPaid) + '</strong></div>' +
+        '<div class="review-line"><span>Remaining Balance</span><span>' + U.pesos(o.balance_due_centavos || 0) + '</span></div>' +
+        '<div class="review-line"><span>Deductions / Fees</span><span>' + U.pesos(0) + '</span></div>' +
+        '<div class="review-line highlight"><span>Refund Amount</span><strong style="color:var(--danger,#c0392b);">' + U.pesos(r.refund_amount_centavos) + '</strong></div>' +
+        '<div style="margin-top:0.75rem; padding-top:0.5rem; border-top:1px dashed #e0d0c5; font-size:0.82rem; color:#666;">' +
+        '<div><strong>Payment Method:</strong> ' + U.escapeHtml(payMethod) + '</div>' +
+        '<div><strong>Reference No.:</strong> ' + U.escapeHtml(payRef) + '</div>' +
+        '<div><strong>Payment Date:</strong> ' + U.escapeHtml(payDate) + '</div>' +
+        '<div><strong>Refund Status:</strong> ' + U.escapeHtml(r.status.replace(/_/g, ' ').toLowerCase()) + '</div>' +
+        '</div>' +
+        '</div>';
+
       if (r.status === 'AWAITING_DETAILS') {
         html += '<p>Submit your wallet details so the bakery can send your refund. Type the number twice - it cannot be edited after.</p>' +
           '<form id="track-wallet-form">' +
@@ -229,7 +251,7 @@
           '<input class="form-input" id="tw-num2" required inputmode="numeric" maxlength="11"></div></div>' +
           '<button type="submit" class="btn btn-primary">Submit wallet details</button></form>';
       } else if (r.wallet_type) {
-        html += '<p class="muted">To ' + U.escapeHtml(r.wallet_type) + ' ' +
+        html += '<p class="muted">Payout account: ' + U.escapeHtml(r.wallet_type) + ' ' +
           U.escapeHtml(r.account_number || '') + ' (' + U.escapeHtml(r.account_name || '') + ')</p>';
       }
       box.innerHTML = html;
@@ -269,6 +291,12 @@
       const box = document.getElementById('track-cancel');
       if (!['PAYMENT_UNDER_VERIFICATION', 'CONFIRMED'].includes(o.status)) {
         box.innerHTML = '';
+        return;
+      }
+      if (o.status === 'CONFIRMED') {
+        box.innerHTML = '<h4>Cancel this order</h4>' +
+          '<p class="muted" style="color:var(--danger,#c0392b); font-size:0.85rem;"><i class="fas fa-lock"></i> This order is already confirmed and can no longer be cancelled or refunded.</p>' +
+          '<button type="button" class="btn btn-outline" disabled style="opacity:0.5; cursor:not-allowed;" title="This order is already confirmed and can no longer be cancelled or refunded.">Cancel order</button>';
         return;
       }
       box.innerHTML = '<h4>Cancel this order</h4>' +

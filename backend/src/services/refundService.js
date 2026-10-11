@@ -69,9 +69,19 @@ async function adminQueue() {
   const { rows: refunds } = await query(
     `SELECT r.*, o.order_code, o.customer_name, o.customer_email,
             o.customer_contact, o.total_centavos, o.downpayment_centavos,
+            o.downpayment_paid_centavos, o.balance_due_centavos, o.payment_method,
+            p.channel AS payment_channel, p.reference_number AS payment_reference,
+            p.created_at AS payment_date, p.amount_centavos AS payment_amount,
             o.status AS order_status
        FROM refund_requests r
        JOIN orders o ON o.id = r.order_id
+       LEFT JOIN LATERAL (
+         SELECT channel, reference_number, created_at, amount_centavos
+           FROM payments
+          WHERE order_id = o.id
+          ORDER BY (stage = 'DOWNPAYMENT') DESC, id ASC
+          LIMIT 1
+       ) p ON true
        ORDER BY r.requested_at DESC
        LIMIT 500;`
   );

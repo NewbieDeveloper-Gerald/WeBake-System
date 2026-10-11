@@ -39,7 +39,7 @@
       OUT_FOR_DELIVERY: ['COMPLETED'],
     };
     const COLLECTIBLE = ['CONFIRMED', 'IN_PRODUCTION', 'OUT_FOR_DELIVERY'];
-    const CANCELLABLE = ['PAYMENT_UNDER_VERIFICATION', 'CONFIRMED'];
+    const CANCELLABLE = ['PAYMENT_UNDER_VERIFICATION'];
 
     let orders = [];
     let queueByCode = {};
@@ -175,6 +175,8 @@
       if (CANCELLABLE.includes(o.status)) {
         btns.push('<button type="button" class="btn btn-danger-outline btn-sm" data-cancel="' +
           ui.esc(o.order_code) + '">Cancel</button>');
+      } else if (o.status === 'CONFIRMED') {
+        btns.push('<button type="button" class="btn btn-danger-outline btn-sm" disabled style="opacity:0.5; cursor:not-allowed;" title="This order is already confirmed and can no longer be cancelled or refunded.">Cancel</button>');
       }
       return btns.join(' ');
     }

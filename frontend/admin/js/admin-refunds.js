@@ -90,8 +90,18 @@
       const r = rows.find((x) => String(x.id) === String(id));
       if (!r) return;
       currentId = id;
+      const downpaymentPaid = r.payment_amount != null
+        ? r.payment_amount
+        : (r.downpayment_paid_centavos || r.downpayment_centavos || 0);
       set('refund-modal-order-id', r.order_code);
+      set('refund-modal-total', ui.pesos(r.total_centavos));
+      set('refund-modal-paid', ui.pesos(downpaymentPaid));
+      set('refund-modal-balance', ui.pesos(r.balance_due_centavos || 0));
+      set('refund-modal-deductions', ui.pesos(0));
       set('refund-modal-amount', ui.pesos(r.refund_amount_centavos));
+      set('refund-modal-pay-method', r.payment_channel || r.payment_method || '-');
+      set('refund-modal-pay-ref', r.payment_reference || '-');
+      set('refund-modal-pay-date', r.payment_date ? ui.fmtDate(r.payment_date) : '-');
       set('refund-modal-wallet', r.wallet_type || '-');
       set('refund-modal-acc-num', r.account_number || '-');
       set('refund-modal-acc-name', r.account_name || '-');

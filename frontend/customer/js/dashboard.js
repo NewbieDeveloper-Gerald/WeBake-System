@@ -217,8 +217,9 @@
       }
 
       container.innerHTML = orders.map((o) => {
+        const isConfirmed = o.status === 'CONFIRMED';
         const canCancel = (o.status === 'PAYMENT_UNDER_VERIFICATION');
-        const canRefund = !!o.refund || (o.status === 'CANCELLED');
+        const canRefund = !isConfirmed && (!!o.refund || o.status === 'CANCELLED');
         const statusText = STAGE_LABEL[o.status] || String(o.status).replace(/_/g, ' ');
         const statusClass = 'status-' + String(o.status).toLowerCase();
 
@@ -245,7 +246,7 @@
         let refundTag = '';
         if (o.refund) {
           refundTag = '<div class="order-refund-tag"><i class="fas fa-undo"></i> Refund: <strong>' +
-            U.escapeHtml(String(o.refund.status).replace(/_/g, ' ')) + '</strong> (' + U.pesos(o.refund.amount_centavos) + ')</div>';
+            U.escapeHtml(String(o.refund.status).replace(/_/g, ' ')) + '</strong> (' + U.pesos(o.refund.refund_amount_centavos || o.refund.amount_centavos) + ')</div>';
         }
 
         return '<div class="order-block" data-order-code="' + U.escapeHtml(o.order_code) + '">' +
@@ -272,11 +273,11 @@
               '<i class="fas fa-location-arrow"></i> Order Status' +
             '</a>' +
             '<button type="button" class="btn btn-outline-danger btn-sm" data-dash-cancel="' + U.escapeHtml(o.order_code) + '"' +
-              (canCancel ? '' : ' disabled title="Cancellation is only permitted while payment is under verification. Once confirmed, orders cannot be cancelled."') + '>' +
+              (canCancel ? '' : ' disabled title="This order is already confirmed and can no longer be cancelled or refunded."') + '>' +
               '<i class="fas fa-ban"></i> Cancel' +
             '</button>' +
             '<button type="button" class="btn btn-outline-warning btn-sm" data-dash-refund="' + U.escapeHtml(o.order_code) + '"' +
-              (canRefund ? '' : ' disabled title="Refunds are not permitted once an order is confirmed."') + '>' +
+              (canRefund ? '' : ' disabled title="This order is already confirmed and can no longer be cancelled or refunded."') + '>' +
               '<i class="fas fa-undo-alt"></i> Refund' +
             '</button>' +
           '</div>' +
@@ -356,26 +357,34 @@
         activeRefundOrder = o;
         document.getElementById('refund-order-code-display').textContent = o.order_code;
         const statusCard = document.getElementById('dash-refund-status-card');
+        const dpPayment = (o.payments || []).find((p) => p.stage === 'DOWNPAYMENT') || (o.payments || [])[0];
+        const downpaymentPaid = dpPayment && dpPayment.amount_centavos != null
+          ? dpPayment.amount_centavos
+          : (o.downpayment_paid_centavos || o.downpayment_centavos || 0);
+        const refundAmt = o.refund ? (o.refund.refund_amount_centavos || o.refund.amount_centavos) : downpaymentPaid;
+        const payMethod = (dpPayment && dpPayment.channel) || o.payment_method || '-';
+        const payRef = (dpPayment && dpPayment.reference_number) || '-';
+        const payDate = dpPayment && dpPayment.created_at ? U.fmtDate(dpPayment.created_at) : U.fmtDate(o.created_at);
+
+        statusCard.innerHTML =
+          '<div style="background:#FFFBF0; border:1px solid #F5E5C9; border-radius:10px; padding:0.85rem; font-size:0.85rem; margin-bottom:0.75rem;">' +
+          '<div style="display:flex; justify-content:space-between; margin-bottom:0.25rem;"><span>Order Total:</span><strong>' + U.pesos(o.total_centavos) + '</strong></div>' +
+          '<div style="display:flex; justify-content:space-between; margin-bottom:0.25rem;"><span>Downpayment Paid (50%):</span><strong>' + U.pesos(downpaymentPaid) + '</strong></div>' +
+          '<div style="display:flex; justify-content:space-between; margin-bottom:0.25rem;"><span>Remaining Balance:</span><span>' + U.pesos(o.balance_due_centavos || 0) + '</span></div>' +
+          '<div style="display:flex; justify-content:space-between; margin-bottom:0.25rem;"><span>Deductions / Fees:</span><span>' + U.pesos(0) + '</span></div>' +
+          '<div style="display:flex; justify-content:space-between; margin-bottom:0.35rem; font-weight:700; color:var(--danger,#c0392b);"><span>Refund Amount:</span><strong>' + U.pesos(refundAmt) + '</strong></div>' +
+          '<div style="margin-top:0.4rem; padding-top:0.4rem; border-top:1px dashed #e5d7c5; font-size:0.78rem; color:#666;">' +
+          '<div><strong>Payment Method:</strong> ' + U.escapeHtml(payMethod) + '</div>' +
+          '<div><strong>Reference No.:</strong> ' + U.escapeHtml(payRef) + '</div>' +
+          '<div><strong>Payment Date:</strong> ' + U.escapeHtml(payDate) + '</div>' +
+          (o.refund ? '<div><strong>Refund Status:</strong> ' + U.escapeHtml(String(o.refund.status).replace(/_/g, ' ')) + '</div>' : '') +
+          '</div></div>';
+
         if (o.refund) {
-          statusCard.innerHTML =
-            '<div style="background:#FFFBF0; border:1px solid #F5E5C9; border-radius:10px; padding:0.75rem; font-size:0.83rem;">' +
-            '<div><strong>Refund Status:</strong> ' + U.escapeHtml(String(o.refund.status).replace(/_/g, ' ')) + '</div>' +
-            '<div><strong>Amount:</strong> ' + U.pesos(o.refund.amount_centavos) + '</div>' +
-            (o.refund.wallet_type ? '<div><strong>Registered Wallet:</strong> ' + U.escapeHtml(o.refund.wallet_type) + ' (' + U.escapeHtml(o.refund.account_number) + ')</div>' : '') +
-            '</div>';
           document.getElementById('dash-refund-name').value = o.refund.account_name || (currentMember && (currentMember.name || currentMember.full_name)) || '';
           document.getElementById('dash-refund-num').value = o.refund.account_number || '';
           document.getElementById('dash-refund-num2').value = o.refund.account_number || '';
         } else {
-          const canCancel = (o.status === 'PAYMENT_UNDER_VERIFICATION');
-          statusCard.innerHTML =
-            '<div style="background:#F0F7FF; border:1px solid #D0E3F7; border-radius:10px; padding:0.75rem; font-size:0.83rem;">' +
-            '<div><strong>Order Status:</strong> ' + U.escapeHtml(STAGE_LABEL[o.status] || o.status) + '</div>' +
-            '<p style="margin:0.25rem 0 0; color:#555;">' +
-            (canCancel
-              ? 'This order is under verification. Cancelling it will initiate a refund for your 50% downpayment (' + U.pesos(o.downpayment_paid_centavos || o.downpayment_centavos) + ').'
-              : 'Refund requests are processed upon order cancellation. You can update your refund wallet details below.') +
-            '</p></div>';
           document.getElementById('dash-refund-name').value = (currentMember && (currentMember.name || currentMember.full_name)) || '';
           document.getElementById('dash-refund-num').value = (currentMember && currentMember.contact) || '';
           document.getElementById('dash-refund-num2').value = (currentMember && currentMember.contact) || '';
