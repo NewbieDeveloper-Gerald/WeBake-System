@@ -217,16 +217,15 @@
             <figure class="au-owner-card" data-au-animate>
               <div class="au-owner-frame">
                 <picture class="au-owner-picture">
-                  <source srcset="images/owner.webp" type="image/webp">
                   <img
-                    src="images/owner.jpg"
+                    src="../img/owner.jpg"
                     alt="Angelita B. Amadeo, owner and founder of Crumbs N' Roll Bakery"
                     class="au-owner-img"
                     loading="eager"
                     fetchpriority="high"
                     width="364"
                     height="501"
-                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                    onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='../images/owner.jpg';}else{this.style.display='none';this.nextElementSibling.style.display='flex';}"
                   >
                   <div class="au-owner-fallback" aria-hidden="true">AA</div>
                 </picture>
