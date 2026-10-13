@@ -1,0 +1,654 @@
+/* ==========================================================================
+   ABOUT US SECTION — SCOPED STYLESHEET (about-us.css)
+   Crumbs N' Roll Bakery (CRB)
+   
+   TECHNICAL ISOLATION RULES:
+   - All selectors strictly scoped under .about-us
+   - No bare element selectors (h2, p, img, a, body, etc.)
+   - No changes to :root, html, body, resets, or shared styles
+   - Variables scoped on .about-us with "au-" prefix
+   - Class names prefixed with "au-"
+   - Keyframes prefixed with "au-"
+   ========================================================================== */
+
+.about-us {
+  /* Scoped color & design tokens */
+  --au-cream: #FFFAF3;
+  --au-white: #FFFFFF;
+  --au-beige: #F6E8D8;
+  --au-chocolate: #4A2C1A;
+  --au-chocolate-light: #5A4636;
+  --au-subtitle: #6B5444;
+  --au-gold: #D4A24C;
+  --au-gold-light: #E8C178;
+  --au-gold-dark: #B88028;
+  --au-gold-tint: rgba(212, 162, 76, 0.2);
+
+  /* Fonts (reused from site) */
+  --au-font-heading: 'Playfair Display', Georgia, serif;
+  --au-font-body: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Shadows */
+  --au-shadow-sm: 0 4px 14px rgba(74, 44, 26, 0.05);
+  --au-shadow-md: 0 8px 24px rgba(74, 44, 26, 0.08);
+  --au-shadow-hover: 0 12px 28px rgba(74, 44, 26, 0.12);
+
+  /* Radii */
+  --au-radius-card: 22px;
+  --au-radius-inner: 20px;
+
+  /* Spacing & container */
+  display: block;
+  width: 100%;
+  padding-block: clamp(3.5rem, 6.5vw, 5.5rem);
+  background-color: var(--au-cream);
+  border-block: 1px solid var(--au-gold-tint);
+  color: var(--au-chocolate);
+  font-family: var(--au-font-body);
+  box-sizing: border-box;
+}
+
+.about-us *,
+.about-us *::before,
+.about-us *::after {
+  box-sizing: border-box;
+}
+
+.about-us .au-container {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 3.5vw, 2rem);
+}
+
+/* ==========================================================================
+   1. Heading Block
+   ========================================================================== */
+.about-us .au-header {
+  text-align: center;
+  max-width: 820px;
+  margin-inline: auto;
+  margin-bottom: 44px; /* 40-48px below heading block */
+}
+
+.about-us .au-eyebrow {
+  display: inline-block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--au-gold-dark);
+  margin-bottom: 14px; /* 12-16px to headline */
+}
+
+.about-us .au-headline {
+  font-family: var(--au-font-heading);
+  font-size: clamp(2.1rem, 1.7rem + 1.8vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.22;
+  color: var(--au-chocolate);
+  margin: 0 0 12px 0; /* 12px to subtitle */
+}
+
+.about-us .au-subtitle {
+  font-size: clamp(1rem, 0.95rem + 0.25vw, 1.12rem);
+  color: var(--au-subtitle); /* WCAG AA: > 4.5:1 on cream */
+  line-height: 1.6;
+  margin: 0;
+}
+
+.about-us .au-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.about-us .au-divider-line {
+  width: 48px;
+  height: 2px;
+  background-color: var(--au-gold);
+  border-radius: 99px;
+  opacity: 0.7;
+}
+
+.about-us .au-divider-icon {
+  font-size: 0.92rem;
+  color: var(--au-gold);
+}
+
+/* ==========================================================================
+   2. Main Two-Column Layout (Matching Height)
+   ========================================================================== */
+.about-us .au-layout-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); /* 56% / 44% */
+  gap: 32px;
+  align-items: stretch; /* equal height columns, no empty gap */
+}
+
+/* ==========================================================================
+   3. Left Column: Story Card (Scannable Chunks)
+   ========================================================================== */
+.about-us .au-story-card {
+  position: relative;
+  background-color: var(--au-white);
+  border: 1px solid var(--au-gold-tint);
+  border-radius: var(--au-radius-card);
+  box-shadow: var(--au-shadow-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.about-us .au-story-top-accent {
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(90deg, var(--au-gold), var(--au-gold-light), var(--au-gold));
+  border-radius: var(--au-radius-card) var(--au-radius-card) 0 0;
+}
+
+.about-us .au-story-card-inner {
+  padding: clamp(1.85rem, 3.8vw, 2.85rem);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.about-us .au-story-header {
+  margin-bottom: 24px;
+}
+
+.about-us .au-story-badge-wrap {
+  margin-bottom: 16px; /* 16px separation above title */
+}
+
+.about-us .au-story-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background-color: var(--au-beige);
+  color: var(--au-chocolate);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.about-us .au-story-badge .fa-heart {
+  color: #C0392B;
+  font-size: 0.76rem;
+}
+
+.about-us .au-story-title {
+  font-family: var(--au-font-heading);
+  font-size: clamp(1.75rem, 1.45rem + 0.8vw, 2.2rem);
+  font-weight: 700;
+  color: var(--au-chocolate);
+  margin: 0;
+  line-height: 1.25;
+}
+
+/* Vertical timeline connector */
+.about-us .au-story-timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 28px; /* 24-32px between blocks */
+  padding-left: 36px;
+  margin-top: 8px;
+}
+
+.about-us .au-story-timeline::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: 28px;
+  left: 12px;
+  width: 2px;
+  background-color: var(--au-gold);
+  border-radius: 1px;
+}
+
+.about-us .au-story-block {
+  position: relative;
+}
+
+.about-us .au-story-marker {
+  position: absolute;
+  top: 2px;
+  left: -36px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: var(--au-white);
+  border: 2px solid var(--au-gold);
+  color: var(--au-gold-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(74, 44, 26, 0.08);
+}
+
+.about-us .au-story-block-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.about-us .au-story-block-title {
+  font-family: var(--au-font-heading);
+  font-size: clamp(1.2rem, 1.1rem + 0.25vw, 1.35rem); /* 20-22px */
+  font-weight: 700;
+  color: var(--au-chocolate);
+  margin: 0 0 8px 0; /* 8px between heading and text */
+  line-height: 1.3;
+}
+
+.about-us .au-story-block-desc {
+  font-size: 1.02rem; /* 16-17px */
+  line-height: 1.65;
+  color: var(--au-chocolate-light); /* WCAG AA: > 4.5:1 on white */
+  max-width: 62ch; /* 55-65 characters line length */
+  margin: 0;
+}
+
+.about-us .au-kw-bold {
+  color: var(--au-chocolate);
+  font-weight: 600;
+  background: linear-gradient(180deg, transparent 65%, rgba(212, 162, 76, 0.22) 65%);
+  padding-inline: 2px;
+  border-radius: 2px;
+}
+
+.about-us .au-map-link {
+  color: inherit;
+  text-decoration: none;
+  display: inline;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  border-bottom: 1.5px dashed var(--au-gold);
+  padding-bottom: 1px;
+}
+
+.about-us .au-map-link:hover,
+.about-us .au-map-link:focus-visible {
+  color: var(--au-gold-dark);
+  border-bottom-color: var(--au-gold-dark);
+  background-color: rgba(212, 162, 76, 0.16);
+  outline: none;
+}
+
+.about-us .au-map-link .fa-arrow-up-right-from-square {
+  font-size: 0.75em;
+  margin-left: 0.25rem;
+  color: var(--au-gold-dark);
+}
+
+/* ==========================================================================
+   4. Right Column: Visual Column (Owner Card + Info Cards)
+   ========================================================================== */
+.about-us .au-visual-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: stretch;
+}
+
+/* Featured Owner Card */
+.about-us .au-owner-card {
+  position: relative;
+  margin: 0;
+  flex: 1; /* stretches to match story card height */
+  display: flex;
+  flex-direction: column;
+}
+
+.about-us .au-owner-frame {
+  position: relative;
+  flex: 1;
+  width: 100%;
+}
+
+/* Thin gold offset frame 12px behind photo */
+.about-us .au-owner-frame::before {
+  content: '';
+  position: absolute;
+  inset: -8px -8px 8px 8px; /* 12px visual offset */
+  border: 1.5px solid var(--au-gold);
+  border-radius: 24px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.85;
+}
+
+.about-us .au-owner-picture {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 4 / 5; /* fixed 4:5 portrait ratio */
+  border-radius: var(--au-radius-inner);
+  overflow: hidden;
+  background-color: var(--au-beige);
+  box-shadow: var(--au-shadow-md);
+}
+
+.about-us .au-owner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 18%; /* face sits in upper third, cap and arms intact */
+  display: block;
+  transition: transform 300ms ease;
+  image-rendering: auto;
+}
+
+.about-us .au-owner-picture:hover .au-owner-img {
+  transform: scale(1.03); /* subtle 1.03 hover zoom */
+}
+
+.about-us .au-owner-fallback {
+  display: none;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--au-beige);
+  color: var(--au-chocolate);
+  font-family: var(--au-font-heading);
+  font-size: 3.5rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+/* Bottom 25-30% gradient caption so face is 100% unobstructed */
+.about-us .au-owner-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  padding: 3.2rem 1.6rem 1.4rem;
+  background: linear-gradient(to top, rgba(74, 44, 26, 0.85) 0%, rgba(74, 44, 26, 0.55) 55%, transparent 100%);
+  border-radius: 0 0 var(--au-radius-inner) var(--au-radius-inner);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.about-us .au-owner-role {
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--au-gold-light);
+}
+
+.about-us .au-owner-name {
+  font-family: var(--au-font-heading);
+  font-size: 1.55rem;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin: 0;
+  line-height: 1.25;
+}
+
+/* ==========================================================================
+   5. Info Cards Row (Established, Location, Bakery Team)
+   ========================================================================== */
+.about-us .au-info-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.about-us .au-info-card {
+  background-color: var(--au-white);
+  border: 1px solid var(--au-gold-tint);
+  border-radius: 16px;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: var(--au-shadow-sm);
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.about-us .au-info-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--au-shadow-hover);
+  border-color: rgba(212, 162, 76, 0.38);
+}
+
+.about-us .au-info-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.about-us .au-info-card--established .au-info-badge { background-color: #FFF4DC; color: #B88028; }
+.about-us .au-info-card--location .au-info-badge    { background-color: #FDF0EA; color: #A84E32; }
+.about-us .au-info-card--team .au-info-badge        { background-color: #EEF6EF; color: #2E7244; }
+
+.about-us .au-info-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.about-us .au-info-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--au-subtitle);
+}
+
+.about-us .au-info-value {
+  color: var(--au-chocolate);
+  font-weight: 700;
+  font-size: 0.98rem; /* 18-20px equivalent in fluid scale */
+  line-height: 1.32;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+.about-us .au-info-highlight {
+  font-size: 1.48rem;
+  font-weight: 800;
+  color: var(--au-chocolate);
+}
+
+/* ==========================================================================
+   6. Accessibility, Focus States & Scoped Motion
+   ========================================================================== */
+.about-us :focus-visible {
+  outline: 2.5px solid var(--au-gold);
+  outline-offset: 3px;
+}
+
+.about-us [data-au-animate] {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 450ms cubic-bezier(0.16, 1, 0.3, 1), transform 450ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.about-us [data-au-animate].au-is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes au-fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-us [data-au-animate] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .about-us .au-info-card:hover,
+  .about-us .au-owner-picture:hover .au-owner-img {
+    transform: none !important;
+  }
+}
+
+/* ==========================================================================
+   7. Responsive Behavior
+   ========================================================================== */
+
+/* Tablet (< 1024px) */
+@media (max-width: 1023px) {
+  .about-us .au-layout-grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+
+  .about-us .au-visual-column {
+    gap: 24px;
+  }
+
+  .about-us .au-owner-card {
+    flex-direction: row;
+    background-color: var(--au-white);
+    border-radius: var(--au-radius-inner);
+    box-shadow: var(--au-shadow-md);
+    overflow: hidden;
+  }
+
+  .about-us .au-owner-frame {
+    flex: 0 0 240px;
+    max-width: 260px;
+  }
+
+  .about-us .au-owner-frame::before {
+    display: none; /* hidden when horizontal */
+  }
+
+  .about-us .au-owner-picture {
+    aspect-ratio: 4 / 5;
+    border-radius: var(--au-radius-inner) 0 0 var(--au-radius-inner);
+    box-shadow: none;
+  }
+
+  .about-us .au-owner-caption {
+    position: static;
+    flex: 1;
+    background: var(--au-white);
+    display: flex;
+    justify-content: center;
+    padding: 24px;
+    pointer-events: auto;
+  }
+
+  .about-us .au-owner-role {
+    color: var(--au-gold-dark);
+  }
+
+  .about-us .au-owner-name {
+    color: var(--au-chocolate);
+    font-size: 1.6rem;
+  }
+}
+
+/* Mobile (< 640px) */
+@media (max-width: 640px) {
+  .about-us .au-header {
+    margin-bottom: 32px;
+  }
+
+  .about-us .au-story-card-inner {
+    padding: 24px 18px;
+  }
+
+  .about-us .au-story-timeline {
+    padding-left: 32px;
+    gap: 24px;
+  }
+
+  .about-us .au-story-timeline::before {
+    left: 10px;
+  }
+
+  .about-us .au-story-marker {
+    left: -32px;
+    width: 24px;
+    height: 24px;
+    font-size: 0.65rem;
+  }
+
+  .about-us .au-story-block-desc {
+    font-size: 1rem; /* at least 16px */
+  }
+
+  .about-us .au-owner-card {
+    flex-direction: column;
+    border-radius: var(--au-radius-inner);
+  }
+
+  .about-us .au-owner-frame {
+    flex: none;
+    max-width: 100%;
+  }
+
+  .about-us .au-owner-picture {
+    border-radius: var(--au-radius-inner);
+  }
+
+  .about-us .au-owner-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(74, 44, 26, 0.85) 0%, rgba(74, 44, 26, 0.55) 55%, transparent 100%);
+    padding: 3rem 1.25rem 1.25rem;
+    pointer-events: none;
+  }
+
+  .about-us .au-owner-role {
+    color: var(--au-gold-light);
+  }
+
+  .about-us .au-owner-name {
+    color: #FFFFFF;
+    font-size: 1.45rem;
+  }
+
+  .about-us .au-info-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .about-us .au-info-card {
+    flex-direction: row;
+    gap: 14px;
+    text-align: left;
+    padding: 14px 16px;
+  }
+
+  .about-us .au-info-badge {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+}
+

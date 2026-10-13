@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="../css/globals.css">
   <link rel="stylesheet" href="../css/components.css">
   <link rel="stylesheet" href="../css/home.css">
+  <link rel="stylesheet" href="../css/about-us.css">
   <link rel="stylesheet" href="../css/storefront-refresh.css">
 </head>
 <body>
@@ -131,107 +132,141 @@
       </div>
     </section>
 
-    <!-- ============ 3. ABOUT ============ -->
-    <section class="home-about-section" id="about" aria-labelledby="about-title">
-      <div class="container">
-        
-        <!-- Heading block -->
-        <div class="about-section-head">
-          <span class="about-section-kicker">A NEIGHBORHOOD BAKERY WITH HEART</span>
-          <h2 class="about-section-title" id="about-title">Good things take a little kneading.</h2>
-          <p class="about-section-subtitle">Our heritage, dedication to quality, and community roots</p>
-          <div class="about-decorative-divider" aria-hidden="true">
-            <span class="divider-line"></span>
-            <i class="fas fa-bread-slice divider-icon"></i>
-            <span class="divider-line"></span>
-          </div>
-        </div>
+    <!-- ============ 3. ABOUT US (SCOPED) ============ -->
+    <section id="about-us" class="about-us" aria-labelledby="about-headline">
+      <div class="au-container">
 
-        <div class="about-main-grid">
-          
-          <!-- Left: Story card -->
-          <article class="about-story-card" data-about-animate>
-            <div class="story-top-accent" aria-hidden="true"></div>
-            <div class="story-card-inner">
-              <div class="story-eyebrow-wrap">
-                <span class="about-story-eyebrow"><i class="fas fa-heart" aria-hidden="true"></i> Our Story</span>
+        <!-- 1. Heading block -->
+        <header class="au-header">
+          <span class="au-eyebrow">A NEIGHBORHOOD BAKERY WITH HEART</span>
+          <h2 class="au-headline" id="about-headline">Good things take a little kneading.</h2>
+          <p class="au-subtitle">Our heritage, dedication to quality, and community roots</p>
+          <div class="au-divider" aria-hidden="true">
+            <span class="au-divider-line"></span>
+            <i class="fas fa-bread-slice au-divider-icon"></i>
+            <span class="au-divider-line"></span>
+          </div>
+        </header>
+
+        <!-- 2. Main two-column layout -->
+        <div class="au-layout-grid">
+
+          <!-- Left Column: Story Card (Scannable Chunks) -->
+          <article class="au-story-card" data-au-animate>
+            <div class="au-story-top-accent" aria-hidden="true"></div>
+            <div class="au-story-card-inner">
+              <div class="au-story-header">
+                <div class="au-story-badge-wrap">
+                  <span class="au-story-badge">
+                    <i class="fas fa-heart" aria-hidden="true"></i> Our Story
+                  </span>
+                </div>
+                <h3 class="au-story-title">Crumbs N' Roll Bakery</h3>
               </div>
-              <h3 class="about-story-title">Crumbs N' Roll Bakery</h3>
-              <div class="about-story-copy">
-                <p class="story-lead-p">
-                  <strong class="text-accent-kw">Crumbs N' Roll Bakery (CRB)</strong> is a trusted local bakery established in <strong class="text-accent-kw">2010</strong> by <strong class="text-accent-kw">Angelita B. Amadeo</strong>. Located at <a href="https://maps.google.com/?q=1356+Cordero+Street,+Lambakin,+Marilao,+Bulacan" target="_blank" rel="noopener noreferrer" class="story-address-link" title="Open address in Google Maps"><strong class="text-accent-kw address-highlight">1356 Cordero Street, Lambakin, Marilao, Bulacan</strong> <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>, our bakery was founded with a heartfelt purpose: to provide quality, freshly baked, and affordable bread products while creating a sustainable livelihood for our family and community.
-                </p>
-                <p>
-                  Over the years, CRB Bakery has grown into a beloved neighborhood bakery and supplier for cafes, local stores, and bread lovers, while continuing to warmly serve walk-in customers whenever fresh batches emerge from our ovens.
-                </p>
-                <p>
-                  Our operations are powered by a dedicated team of <strong class="text-accent-kw">eight skilled bakers and personnel</strong> handling daily baking, hygienic packaging, and prompt deliveries across key areas.
-                </p>
+
+              <!-- Labeled Blocks with Gold Timeline Connector -->
+              <div class="au-story-timeline">
+
+                <!-- Block 1: How We Started -->
+                <div class="au-story-block">
+                  <div class="au-story-marker" aria-hidden="true">
+                    <i class="fas fa-seedling"></i>
+                  </div>
+                  <div class="au-story-block-content">
+                    <h3 class="au-story-block-title">How We Started</h3>
+                    <p class="au-story-block-desc">
+                      <strong class="au-kw-bold">Crumbs N' Roll Bakery (CRB)</strong> was established in <strong class="au-kw-bold">2010</strong> by <strong class="au-kw-bold">Angelita B. Amadeo</strong>. Located at <a href="https://maps.google.com/?q=1356+Cordero+Street,+Lambakin,+Marilao,+Bulacan" target="_blank" rel="noopener noreferrer" class="au-map-link" title="Open in Google Maps"><strong class="au-kw-bold">1356 Cordero Street, Lambakin, Marilao, Bulacan</strong> <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>, our bakery was founded with a heartfelt purpose: to provide quality, freshly baked, and affordable bread products while creating a sustainable livelihood for our family and community.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Block 2: How We've Grown -->
+                <div class="au-story-block">
+                  <div class="au-story-marker" aria-hidden="true">
+                    <i class="fas fa-store"></i>
+                  </div>
+                  <div class="au-story-block-content">
+                    <h3 class="au-story-block-title">How We've Grown</h3>
+                    <p class="au-story-block-desc">
+                      Over the years, CRB Bakery has grown into a beloved <strong class="au-kw-bold">neighborhood bakery and supplier</strong> for cafes, local stores, and bread lovers, while continuing to warmly serve <strong class="au-kw-bold">walk-in customers</strong> whenever fresh batches emerge from our ovens.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Block 3: Who Makes It Happen -->
+                <div class="au-story-block">
+                  <div class="au-story-marker" aria-hidden="true">
+                    <i class="fas fa-users-gear"></i>
+                  </div>
+                  <div class="au-story-block-content">
+                    <h3 class="au-story-block-title">Who Makes It Happen</h3>
+                    <p class="au-story-block-desc">
+                      Our operations are powered by a dedicated team of <strong class="au-kw-bold">eight skilled bakers and personnel</strong> handling <strong class="au-kw-bold">daily baking, hygienic packaging</strong>, and prompt deliveries across key areas.
+                    </p>
+                  </div>
+                </div>
+
               </div>
             </div>
           </article>
 
-          <!-- Right: Visual column (Owner card + Info cards) -->
-          <div class="about-visual-column">
-            
-            <!-- REPLACE: owner photo (Swap images/owner-placeholder.jpg with the real portrait of Angelita B. Amadeo) -->
-            <figure class="about-owner-card" data-about-animate>
-              <div class="owner-frame-layer">
-                <div class="owner-image-container">
-                  <img 
-                    src="images/owner-placeholder.jpg" 
-                    alt="Owner and founder of Crumbs N' Roll Bakery in a chef uniform" 
-                    class="owner-portrait-img" 
-                    loading="lazy" 
-                    width="480" 
-                    height="600"
+          <!-- Right Column: Visual Column (Owner Card + Info Cards) -->
+          <div class="au-visual-column">
+
+            <!-- Featured Owner Card (Real Photo) -->
+            <figure class="au-owner-card" data-au-animate>
+              <div class="au-owner-frame">
+                <picture class="au-owner-picture">
+                  <source srcset="images/owner.webp" type="image/webp">
+                  <img
+                    src="images/owner.jpg"
+                    alt="Angelita B. Amadeo, owner and founder of Crumbs N' Roll Bakery"
+                    class="au-owner-img"
+                    loading="eager"
+                    fetchpriority="high"
+                    width="364"
+                    height="501"
                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                   >
-                  <div class="owner-image-fallback" aria-hidden="true">
-                    <i class="fas fa-bread-slice"></i>
-                  </div>
-                  <div class="owner-warmth-glow" aria-hidden="true"></div>
-                </div>
+                  <div class="au-owner-fallback" aria-hidden="true">AA</div>
+                </picture>
               </div>
-              <figcaption class="owner-caption-overlay">
-                <div class="owner-caption-content">
-                  <span class="owner-title-role">OWNER &amp; FOUNDER</span>
-                  <h3 class="owner-full-name">Angelita B. Amadeo</h3>
-                </div>
+              <figcaption class="au-owner-caption">
+                <span class="au-owner-role">OWNER &amp; FOUNDER</span>
+                <h3 class="au-owner-name">Angelita B. Amadeo</h3>
               </figcaption>
             </figure>
-            <!-- /REPLACE: owner photo -->
 
-            <!-- Row of 3 Info Cards -->
-            <div class="about-info-cards-row" data-about-animate>
-              
-              <div class="about-info-item info-established">
-                <div class="info-icon-disc" aria-hidden="true">
+            <!-- Info Cards Row -->
+            <div class="au-info-row" data-au-animate>
+
+              <div class="au-info-card au-info-card--established">
+                <div class="au-info-badge" aria-hidden="true">
                   <i class="fas fa-calendar-check"></i>
                 </div>
-                <div class="info-content-group">
-                  <span class="info-item-label">ESTABLISHED</span>
-                  <strong class="info-item-val val-year">2010</strong>
+                <div class="au-info-text">
+                  <span class="au-info-label">ESTABLISHED</span>
+                  <strong class="au-info-value au-info-highlight">2010</strong>
                 </div>
               </div>
 
-              <div class="about-info-item info-location">
-                <div class="info-icon-disc" aria-hidden="true">
+              <div class="au-info-card au-info-card--location">
+                <div class="au-info-badge" aria-hidden="true">
                   <i class="fas fa-location-dot"></i>
                 </div>
-                <div class="info-content-group">
-                  <span class="info-item-label">LOCATION</span>
-                  <strong class="info-item-val val-loc">Lambakin, Marilao, Bulacan</strong>
+                <div class="au-info-text">
+                  <span class="au-info-label">LOCATION</span>
+                  <strong class="au-info-value">Lambakin, Marilao, Bulacan</strong>
                 </div>
               </div>
 
-              <div class="about-info-item info-team">
-                <div class="info-icon-disc" aria-hidden="true">
+              <div class="au-info-card au-info-card--team">
+                <div class="au-info-badge" aria-hidden="true">
                   <i class="fas fa-users"></i>
                 </div>
-                <div class="info-content-group">
-                  <span class="info-item-label">BAKERY TEAM</span>
-                  <strong class="info-item-val val-team">8 Dedicated Members</strong>
+                <div class="au-info-text">
+                  <span class="au-info-label">BAKERY TEAM</span>
+                  <strong class="au-info-value">8 Dedicated Members</strong>
                 </div>
               </div>
 
@@ -240,11 +275,6 @@
           </div>
 
         </div>
-
-        <p class="about-photo-disclaimer">
-          <i class="fas fa-circle-info" aria-hidden="true"></i>
-          Placeholder photo in use. Replace <code>images/owner-placeholder.jpg</code> with the real portrait of Angelita B. Amadeo before publishing.
-        </p>
 
       </div>
     </section>
