@@ -134,68 +134,118 @@
     <!-- ============ 3. ABOUT ============ -->
     <section class="home-about-section" id="about" aria-labelledby="about-title">
       <div class="container">
-        <div class="section-head">
-          <span class="section-kicker">A neighborhood bakery with heart</span>
-          <h2 class="section-title" id="about-title">Good things take a little kneading.</h2>
-          <p class="section-subtitle">Our heritage, dedication to quality, and community roots</p>
+        
+        <!-- Heading block -->
+        <div class="about-section-head">
+          <span class="about-section-kicker">A NEIGHBORHOOD BAKERY WITH HEART</span>
+          <h2 class="about-section-title" id="about-title">Good things take a little kneading.</h2>
+          <p class="about-section-subtitle">Our heritage, dedication to quality, and community roots</p>
+          <div class="about-decorative-divider" aria-hidden="true">
+            <span class="divider-line"></span>
+            <i class="fas fa-bread-slice divider-icon"></i>
+            <span class="divider-line"></span>
+          </div>
         </div>
 
         <div class="about-main-grid">
-          <article class="about-story-card">
-            <span class="about-story-badge"><i class="fas fa-heart" aria-hidden="true"></i> Our Story</span>
-            <h3>Crumbs N' Roll Bakery</h3>
-            <p>
-              <strong>Crumbs N' Roll Bakery (CRB)</strong> is a trusted local bakery established in <strong>2010</strong>
-              by <strong>Angelita B. Amadeo</strong>. Located at <strong>1356 Cordero Street, Lambakin, Marilao, Bulacan</strong>,
-              our bakery was founded with a heartfelt purpose: to provide quality, freshly baked, and affordable bread
-              products while creating a sustainable livelihood for our family and community.
-            </p>
-            <p>
-              Over the years, CRB Bakery has grown into a beloved neighborhood bakery and supplier for cafes, local
-              stores, and bread lovers, while continuing to warmly serve walk-in customers whenever fresh batches
-              emerge from our ovens.
-            </p>
-            <p>
-              Our operations are powered by a dedicated team of <strong>eight skilled bakers and personnel</strong>
-              handling daily baking, hygienic packaging, and prompt deliveries across key areas.
-            </p>
+          
+          <!-- Left: Story card -->
+          <article class="about-story-card" data-about-animate>
+            <div class="story-top-accent" aria-hidden="true"></div>
+            <div class="story-card-inner">
+              <div class="story-eyebrow-wrap">
+                <span class="about-story-eyebrow"><i class="fas fa-heart" aria-hidden="true"></i> Our Story</span>
+              </div>
+              <h3 class="about-story-title">Crumbs N' Roll Bakery</h3>
+              <div class="about-story-copy">
+                <p class="story-lead-p">
+                  <strong class="text-accent-kw">Crumbs N' Roll Bakery (CRB)</strong> is a trusted local bakery established in <strong class="text-accent-kw">2010</strong> by <strong class="text-accent-kw">Angelita B. Amadeo</strong>. Located at <a href="https://maps.google.com/?q=1356+Cordero+Street,+Lambakin,+Marilao,+Bulacan" target="_blank" rel="noopener noreferrer" class="story-address-link" title="Open address in Google Maps"><strong class="text-accent-kw address-highlight">1356 Cordero Street, Lambakin, Marilao, Bulacan</strong> <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>, our bakery was founded with a heartfelt purpose: to provide quality, freshly baked, and affordable bread products while creating a sustainable livelihood for our family and community.
+                </p>
+                <p>
+                  Over the years, CRB Bakery has grown into a beloved neighborhood bakery and supplier for cafes, local stores, and bread lovers, while continuing to warmly serve walk-in customers whenever fresh batches emerge from our ovens.
+                </p>
+                <p>
+                  Our operations are powered by a dedicated team of <strong class="text-accent-kw">eight skilled bakers and personnel</strong> handling daily baking, hygienic packaging, and prompt deliveries across key areas.
+                </p>
+              </div>
+            </div>
           </article>
 
-          <div class="info-cards-column">
-            <div class="info-card">
-              <i class="fas fa-calendar-alt" aria-hidden="true"></i>
-              <h4>Established</h4>
-              <p>2010</p>
+          <!-- Right: Visual column (Owner card + Info cards) -->
+          <div class="about-visual-column">
+            
+            <!-- REPLACE: owner photo (Swap images/owner-placeholder.jpg with the real portrait of Angelita B. Amadeo) -->
+            <figure class="about-owner-card" data-about-animate>
+              <div class="owner-frame-layer">
+                <div class="owner-image-container">
+                  <img 
+                    src="images/owner-placeholder.jpg" 
+                    alt="Owner and founder of Crumbs N' Roll Bakery in a chef uniform" 
+                    class="owner-portrait-img" 
+                    loading="lazy" 
+                    width="480" 
+                    height="600"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                  >
+                  <div class="owner-image-fallback" aria-hidden="true">
+                    <i class="fas fa-bread-slice"></i>
+                  </div>
+                  <div class="owner-warmth-glow" aria-hidden="true"></div>
+                </div>
+              </div>
+              <figcaption class="owner-caption-overlay">
+                <div class="owner-caption-content">
+                  <span class="owner-title-role">OWNER &amp; FOUNDER</span>
+                  <h3 class="owner-full-name">Angelita B. Amadeo</h3>
+                </div>
+              </figcaption>
+            </figure>
+            <!-- /REPLACE: owner photo -->
+
+            <!-- Row of 3 Info Cards -->
+            <div class="about-info-cards-row" data-about-animate>
+              
+              <div class="about-info-item info-established">
+                <div class="info-icon-disc" aria-hidden="true">
+                  <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="info-content-group">
+                  <span class="info-item-label">ESTABLISHED</span>
+                  <strong class="info-item-val val-year">2010</strong>
+                </div>
+              </div>
+
+              <div class="about-info-item info-location">
+                <div class="info-icon-disc" aria-hidden="true">
+                  <i class="fas fa-location-dot"></i>
+                </div>
+                <div class="info-content-group">
+                  <span class="info-item-label">LOCATION</span>
+                  <strong class="info-item-val val-loc">Lambakin, Marilao, Bulacan</strong>
+                </div>
+              </div>
+
+              <div class="about-info-item info-team">
+                <div class="info-icon-disc" aria-hidden="true">
+                  <i class="fas fa-users"></i>
+                </div>
+                <div class="info-content-group">
+                  <span class="info-item-label">BAKERY TEAM</span>
+                  <strong class="info-item-val val-team">8 Dedicated Members</strong>
+                </div>
+              </div>
+
             </div>
-            <div class="info-card">
-              <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
-              <h4>Location</h4>
-              <p>Lambakin, Marilao, Bulacan</p>
-            </div>
-            <div class="info-card">
-              <i class="fas fa-user-tie" aria-hidden="true"></i>
-              <h4>Owner &amp; Founder</h4>
-              <p>Angelita B. Amadeo</p>
-            </div>
-            <div class="info-card">
-              <i class="fas fa-users" aria-hidden="true"></i>
-              <h4>Bakery Team</h4>
-              <p>8 Dedicated Members</p>
-            </div>
+
           </div>
+
         </div>
 
-        <div class="distribution-box">
-          <h3><i class="fas fa-truck-fast" aria-hidden="true"></i> Delivery &amp; Service Reach</h3>
-          <p>We deliver freshly baked bread and pastries across Bulacan and nearby cities</p>
-          <div class="distribution-areas">
-            <span class="area-badge"><i class="fas fa-location-dot" aria-hidden="true"></i> Bulacan</span>
-            <span class="area-badge"><i class="fas fa-location-dot" aria-hidden="true"></i> Metro-Manila</span>
-            <span class="area-badge"><i class="fas fa-location-dot" aria-hidden="true"></i> Caloocan</span>
-            <span class="area-badge"><i class="fas fa-location-dot" aria-hidden="true"></i> Malolos</span>
-            <span class="area-badge"><i class="fas fa-location-dot" aria-hidden="true"></i> Surrounding Municipalities</span>
-          </div>
-        </div>
+        <p class="about-photo-disclaimer">
+          <i class="fas fa-circle-info" aria-hidden="true"></i>
+          Placeholder photo in use. Replace <code>images/owner-placeholder.jpg</code> with the real portrait of Angelita B. Amadeo before publishing.
+        </p>
+
       </div>
     </section>
 
