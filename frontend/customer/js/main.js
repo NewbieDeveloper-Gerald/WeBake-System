@@ -385,6 +385,8 @@
       });
     }
 
+    let expandedQtyIndex = null;
+
     function renderCart() {
       const box = document.getElementById('cart-items');
       if (!box) return;
@@ -394,20 +396,32 @@
         const line = p ? l.bundles * p.price_bundle_centavos : 0;
         const pieces = l.bundles * (p ? Number(p.pieces_per_bundle || 25) : 25);
         const available = Number(p && p.bundles_available || 0);
+        const isExpanded = expandedQtyIndex === i;
         return '<div class="cart-line' + (selectedProductIds.has(l.product_id) ? ' is-selected' : '') + '">' +
-          '<label class="cart-line-select"><input type="checkbox" data-cselect="' + l.product_id + '"' +
-          (selectedProductIds.has(l.product_id) ? ' checked' : '') + ' aria-label="Select ' + U.escapeHtml(name) + ' for checkout">' +
-          '<span class="cart-line-product"><strong>' + U.escapeHtml(name) + '</strong><small>' +
-          l.bundles + ' bundles · ' + pieces.toLocaleString() + ' pcs</small></span></label>' +
-          '<div class="cart-quantity-wrap"><div class="quantity-options cart-quantity-options">' + quantityOptions.map((qty) =>
-            '<label class="quantity-option' + (qty === l.bundles ? ' selected' : '') + (qty > available ? ' unavailable' : '') + '">' +
-            '<input type="radio" name="cart-quantity-' + i + '" value="' + qty + '" data-cart-quantity="' + i + '"' +
-            (qty === l.bundles ? ' checked' : '') + (qty > available ? ' disabled' : '') +
-            ' aria-label="Choose ' + qty + ' Bundles of ' + U.escapeHtml(name) + '"><span>' + qty + '</span></label>'
-          ).join('') + '</div><small>Available: ' + available.toLocaleString() + ' bundles</small>' +
-          '<button type="button" data-cdel="' + i + '" aria-label="Remove ' + U.escapeHtml(name) + '">Remove</button></div>' +
-          '<div><strong>' + U.pesos(line) + '</strong></div></div>';
-      }).join('') : '<p class="empty-state">' + t('cart.empty') + '</p>';
+          '<div class="cart-line-main">' +
+            '<label class="cart-line-select"><input type="checkbox" data-cselect="' + l.product_id + '"' +
+            (selectedProductIds.has(l.product_id) ? ' checked' : '') + ' aria-label="Select ' + U.escapeHtml(name) + ' for checkout">' +
+            '<strong>' + U.escapeHtml(name) + '</strong></label>' +
+            '<div class="cart-line-sub">' +
+              '<span>' + l.bundles + ' bundles · ' + pieces.toLocaleString() + ' pcs</span>' +
+              '<button type="button" class="cart-change-qty-btn" data-toggle-qty="' + i + '">' + (isExpanded ? 'Hide' : 'Change') + '</button>' +
+            '</div>' +
+          '</div>' +
+          (isExpanded ? (
+            '<div class="cart-quantity-wrap"><div class="quantity-options cart-quantity-options">' + quantityOptions.map((qty) =>
+              '<label class="quantity-option' + (qty === l.bundles ? ' selected' : '') + (qty > available ? ' unavailable' : '') + '">' +
+              '<input type="radio" name="cart-quantity-' + i + '" value="' + qty + '" data-cart-quantity="' + i + '"' +
+              (qty === l.bundles ? ' checked' : '') + (qty > available ? ' disabled' : '') +
+              ' aria-label="Choose ' + qty + ' Bundles of ' + U.escapeHtml(name) + '"><span>' + qty + '</span></label>'
+            ).join('') + '</div></div>'
+          ) : '') +
+          '<div class="cart-line-meta">' +
+            '<span class="cart-avail-text">Available: ' + available.toLocaleString() + ' bundles</span>' +
+            '<button type="button" class="cart-del-btn" data-cdel="' + i + '" aria-label="Remove ' + U.escapeHtml(name) + '">Remove</button>' +
+          '</div>' +
+          '<div class="cart-line-price"><strong>' + U.pesos(line) + '</strong></div>' +
+        '</div>';
+      }).join('') : '<div class="cart-empty-state"><i class="fas fa-shopping-cart" aria-hidden="true"></i><p>' + t('cart.empty') + '</p></div>';
       const selected = selectedLines();
       const { bundles, total } = totals(selected);
       document.querySelectorAll('#cart-count, .cart-badge').forEach((badge) => {
@@ -419,12 +433,12 @@
       if (cTot) cTot.textContent = U.pesos(total);
       const cSel = document.getElementById('cart-selected-label');
       if (cSel) {
-        cSel.textContent = selected.length + ' product' + (selected.length === 1 ? '' : 's') + ' selected · ' + bundles.toLocaleString() + ' bundles';
+        cSel.textContent = selected.length + (selected.length === 1 ? ' product' : ' products') + ' selected · ' + bundles.toLocaleString() + ' bundles';
       }
       const checkout = document.getElementById('proceed-checkout');
       if (checkout) {
         checkout.disabled = selected.length === 0;
-        checkout.innerHTML = '<i class="fas fa-credit-card"></i> Checkout selected (' + selected.length + ')';
+        checkout.innerHTML = '<i class="fas fa-credit-card" aria-hidden="true"></i> Checkout selected (' + selected.length + ')';
       }
     }
 
@@ -445,6 +459,13 @@
     const cartItemsEl = document.getElementById('cart-items');
     if (cartItemsEl) {
       cartItemsEl.addEventListener('click', (e) => {
+        const toggleQty = e.target.closest('[data-toggle-qty]');
+        if (toggleQty) {
+          const idx = Number(toggleQty.dataset.toggleQty);
+          expandedQtyIndex = (expandedQtyIndex === idx ? null : idx);
+          renderCart();
+          return;
+        }
         const del = e.target.closest('[data-cdel]');
         const select = e.target.closest('[data-cselect]');
         let removedProductId = null;
@@ -456,8 +477,11 @@
           return;
         }
         if (del) {
-          removedProductId = cart[del.dataset.cdel].product_id;
-          cart.splice(del.dataset.cdel, 1);
+          const delIdx = Number(del.dataset.cdel);
+          removedProductId = cart[delIdx].product_id;
+          cart.splice(delIdx, 1);
+          if (expandedQtyIndex === delIdx) expandedQtyIndex = null;
+          else if (expandedQtyIndex !== null && expandedQtyIndex > delIdx) expandedQtyIndex--;
         }
         if (removedProductId !== null) selectedProductIds.delete(removedProductId);
         if (del) { persist(); renderCart(); }
@@ -466,6 +490,7 @@
         const quantity = e.target.closest('[data-cart-quantity]');
         if (!quantity) return;
         cart[Number(quantity.dataset.cartQuantity)].bundles = Number(quantity.value);
+        expandedQtyIndex = null;
         persist();
         renderCart();
       });
