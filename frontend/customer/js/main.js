@@ -178,9 +178,16 @@
         ' (' + p.pieces_per_bundle + ' pcs each)';
       const imgBox = document.querySelector('.modal-product-img');
       if (imgBox) {
-        imgBox.innerHTML = p.image_url
-          ? '<img src="' + U.escapeHtml(p.image_url) + '" alt="' + U.escapeHtml(p.name) + '">'
-          : '<i class="fas fa-image"></i><span>No image added</span>';
+        if (p.image_url) {
+          const altText = U.escapeHtml('CRB Bakery ' + p.name + (p.pieces_per_bundle ? ', ' + p.pieces_per_bundle + ' pcs bundle' : ''));
+          imgBox.innerHTML =
+            '<img src="' + U.escapeHtml(p.image_url) + '" ' +
+            'alt="' + altText + '" ' +
+            'loading="lazy" width="400" height="300" ' +
+            'onerror="this.onerror=null;this.parentElement.innerHTML=\'<div class=\\\'product-image-fallback\\\'><i class=\\\'fas fa-image\\\'></i><span>Image unavailable</span></div>\';">';
+        } else {
+          imgBox.innerHTML = '<div class="product-image-fallback"><i class="fas fa-image"></i><span>No image added</span></div>';
+        }
       }
       modalQuantity = null;
       const qOptions = document.getElementById('quantity-options');
