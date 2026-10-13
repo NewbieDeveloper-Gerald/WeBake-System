@@ -130,7 +130,27 @@
     const navToggle = document.getElementById('nav-toggle');
     const navLinks = document.getElementById('nav-links');
     if (navToggle && navLinks) {
-      navToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
+      const setMenuOpen = (open) => {
+        navLinks.classList.toggle('open', open);
+        navToggle.setAttribute('aria-expanded', String(open));
+      };
+      navToggle.addEventListener('click', () => {
+        setMenuOpen(!navLinks.classList.contains('open'));
+      });
+      navLinks.addEventListener('click', (event) => {
+        if (event.target.closest('a, button[data-auth-open], button[data-signout]')) setMenuOpen(false);
+      });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && navLinks.classList.contains('open')) {
+          setMenuOpen(false);
+          navToggle.focus();
+        }
+      });
+      document.addEventListener('click', (event) => {
+        if (!navLinks.contains(event.target) && !navToggle.contains(event.target)) {
+          setMenuOpen(false);
+        }
+      });
     }
   });
   window.WeBakeUtils = Object.freeze({ escapeHtml, formatCurrency, pesos, fmtDate, toast, uid });

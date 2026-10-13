@@ -19,6 +19,7 @@
     let catalog = [];
     const quantityOptions = window.WEBAKE_ORDER_QUANTITY_OPTIONS || [];
     let modalQuantity = null;
+    let productDialogTrigger = null;
     let cart = [];
     let selectedProductIds = new Set();
     let settings = { min_order_bundles: '300' };
@@ -130,13 +131,13 @@
       const grid = document.getElementById('product-grid');
       if (!grid) return;
       grid.innerHTML = catalog.map((p) =>
-        '<div class="product-card" data-open="' + p.id + '">' +
+        '<article class="product-card" data-open="' + p.id + '" role="button" tabindex="0" aria-label="View ' + U.escapeHtml(p.name) + ' details">' +
         '<div class="product-img">' +
         (p.image_url ? '<img src="' + U.escapeHtml(p.image_url) + '" alt="' + U.escapeHtml(p.name) + '">' : '<i class="fas fa-bread-slice"></i>') +
         '</div><h4>' + U.escapeHtml(p.name) + '</h4>' +
         '<p class="product-price">' + U.pesos(p.price_bundle_centavos) + t('shop.per_bundle') + '</p>' +
         '<p class="product-stock">' + U.escapeHtml(stockNote(p)) + '</p>' +
-        '</div>'
+        '</article>'
       ).join('') || '<p class="muted">No products available.</p>';
     }
 
@@ -146,7 +147,18 @@
     if (prodGrid) {
       prodGrid.addEventListener('click', (e) => {
         const card = e.target.closest('[data-open]');
-        if (card) openModal(card.dataset.open);
+        if (card) {
+          productDialogTrigger = card;
+          card.focus();
+          openModal(card.dataset.open);
+        }
+      });
+      prodGrid.addEventListener('keydown', (e) => {
+        const card = e.target.closest('[data-open]');
+        if (!card || (e.key !== 'Enter' && e.key !== ' ')) return;
+        e.preventDefault();
+        productDialogTrigger = card;
+        openModal(card.dataset.open);
       });
     }
 
@@ -215,7 +227,10 @@
       const mo = document.getElementById('modal-overlay');
       if (mo) mo.classList.add('active');
       const pm = document.getElementById('product-modal');
-      if (pm) pm.classList.add('active');
+      if (pm) {
+        pm.classList.add('active');
+        modalClose?.focus();
+      }
     }
 
     function closeModal() {
@@ -223,6 +238,8 @@
       if (mo) mo.classList.remove('active');
       const pm = document.getElementById('product-modal');
       if (pm) pm.classList.remove('active');
+      if (productDialogTrigger && document.contains(productDialogTrigger)) productDialogTrigger.focus();
+      productDialogTrigger = null;
     }
 
     const modalClose = document.getElementById('modal-close');
@@ -764,9 +781,15 @@
       const methInput = document.getElementById('payment-method');
       if (methInput) methInput.value = isGcash ? 'GCash' : 'PayMaya';
       const btnG = document.getElementById('btn-method-gcash');
-      if (btnG) btnG.classList.toggle('active-gcash', isGcash);
+      if (btnG) {
+        btnG.classList.toggle('active-gcash', isGcash);
+        btnG.setAttribute('aria-pressed', String(isGcash));
+      }
       const btnM = document.getElementById('btn-method-maya');
-      if (btnM) btnM.classList.toggle('active-maya', !isGcash);
+      if (btnM) {
+        btnM.classList.toggle('active-maya', !isGcash);
+        btnM.setAttribute('aria-pressed', String(!isGcash));
+      }
       const brandLbl = document.getElementById('qr-brand-label');
       if (brandLbl) brandLbl.textContent = isGcash ? 'GCash' : 'Maya';
       const refLbl = document.getElementById('ref-field-label');
@@ -1036,7 +1059,10 @@
       const textEl = document.getElementById('rev-text');
       if (textEl) textEl.value = '';
       if (starBox) {
-        starBox.querySelectorAll('[data-star]').forEach((s) => { s.className = 'fas fa-star'; });
+        starBox.querySelectorAll('[data-star]').forEach((s) => {
+          s.className = 'fas fa-star';
+          s.setAttribute('aria-pressed', String(Number(s.dataset.star) === 5));
+        });
       }
       if (document.getElementById('rev-rating')) document.getElementById('rev-rating').value = '5';
       openReviewModal();
@@ -1096,6 +1122,7 @@
         starIcons.forEach((s) => {
           const num = Number(s.dataset.star);
           s.className = num <= val ? 'fas fa-star' : 'far fa-star';
+          s.setAttribute('aria-pressed', String(num === val));
         });
       };
       starIcons.forEach((s) => {
@@ -1128,8 +1155,11 @@
           });
           U.toast('Review submitted! Thank you for your feedback.');
           revForm.reset();
-          if (starBox) {
-            starBox.querySelectorAll('[data-star]').forEach((s) => { s.className = 'fas fa-star'; });
+            if (starBox) {
+            starBox.querySelectorAll('[data-star]').forEach((s) => {
+              s.className = 'fas fa-star';
+              s.setAttribute('aria-pressed', String(Number(s.dataset.star) === 5));
+            });
           }
           if (document.getElementById('rev-rating')) document.getElementById('rev-rating').value = '5';
           closeReviewModal();

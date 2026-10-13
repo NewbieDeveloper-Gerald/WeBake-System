@@ -177,20 +177,20 @@
           <div class="form-group"><label for="login-email">Email address</label><input class="form-input" id="login-email" type="email" required autocomplete="username" placeholder="you@example.com"></div>
           <div class="form-group"><label for="login-password">Password</label><input class="form-input" id="login-password" type="password" required autocomplete="current-password" placeholder="Enter your password"></div>
           <button type="submit" class="btn btn-primary btn-block" id="btn-login">Sign In <i class="fas fa-arrow-right"></i></button>
-          <p class="auth-switch"><a href="#" id="forgot-toggle">Forgot password?</a></p>
-          <p class="auth-switch">New to WeBake? <a href="#" data-auth-open="register">Create an account</a></p>
+          <p class="auth-switch"><button type="button" id="forgot-toggle">Forgot password?</button></p>
+          <p class="auth-switch">New to WeBake? <button type="button" data-auth-open="register">Create an account</button></p>
         </form>
         <div id="forgot-box" class="auth-modal-view">
           <span class="auth-modal-kicker">Account help</span><h2>Reset your password</h2>
           <p class="auth-modal-sub">We’ll email you a 6-digit verification code.</p><div id="forgot-msg" class="auth-error"></div>
           <div class="form-group"><label for="forgot-email">Email address</label><input class="form-input" id="forgot-email" type="email" autocomplete="username" placeholder="you@example.com"></div>
           <button type="button" class="btn btn-outline btn-block" id="forgot-send">Send verification code</button>
-          <div id="forgot-otp-wrap"><div class="otp-inputs"><input class="otp-input form-input" inputmode="numeric" maxlength="1"><input class="otp-input form-input" inputmode="numeric" maxlength="1"><input class="otp-input form-input" inputmode="numeric" maxlength="1"><input class="otp-input form-input" inputmode="numeric" maxlength="1"><input class="otp-input form-input" inputmode="numeric" maxlength="1"><input class="otp-input form-input" inputmode="numeric" maxlength="1"></div>
-            <p class="auth-timer"><span id="forgot-timer-wrap">Resend in <strong id="forgot-timer">60</strong>s</span><a href="#" id="forgot-resend" style="display:none">Resend code</a></p>
+          <div id="forgot-otp-wrap"><div class="otp-inputs"><input class="otp-input form-input" inputmode="numeric" maxlength="1" aria-label="Verification code digit 1"><input class="otp-input form-input" inputmode="numeric" maxlength="1" aria-label="Verification code digit 2"><input class="otp-input form-input" inputmode="numeric" maxlength="1" aria-label="Verification code digit 3"><input class="otp-input form-input" inputmode="numeric" maxlength="1" aria-label="Verification code digit 4"><input class="otp-input form-input" inputmode="numeric" maxlength="1" aria-label="Verification code digit 5"><input class="otp-input form-input" inputmode="numeric" maxlength="1" aria-label="Verification code digit 6"></div>
+            <p class="auth-timer"><span id="forgot-timer-wrap">Resend in <strong id="forgot-timer">60</strong>s</span><button type="button" id="forgot-resend" style="display:none">Resend code</button></p>
             <div class="form-group"><label for="forgot-new-password">New password</label><input class="form-input" id="forgot-new-password" type="password" minlength="6" autocomplete="new-password" placeholder="At least 6 characters"></div>
             <div class="form-group"><label for="forgot-confirm-password">Confirm new password</label><input class="form-input" id="forgot-confirm-password" type="password" minlength="6" autocomplete="new-password" data-match-password="forgot-new-password" placeholder="Repeat your new password"></div>
             <button type="button" class="btn btn-primary btn-block" id="forgot-submit">Set new password</button></div>
-          <p class="auth-switch"><a href="#" id="forgot-back">Back to sign in</a></p>
+          <p class="auth-switch"><button type="button" id="forgot-back">Back to sign in</button></p>
         </div>
         <form id="reg-form" class="auth-modal-view">
           <span class="auth-modal-kicker">Join the neighborhood</span><h2 id="auth-modal-title-register">Create your account</h2>
@@ -201,8 +201,8 @@
           <div class="form-group"><label for="reg-password">Password</label><input class="form-input" id="reg-password" type="password" required minlength="6" autocomplete="new-password" placeholder="At least 6 characters"></div>
           <div class="form-group"><label for="reg-confirm">Confirm password</label><input class="form-input" id="reg-confirm" type="password" required minlength="6" autocomplete="new-password" data-match-password="reg-password" placeholder="Repeat password"></div>
           <button type="button" class="btn btn-outline btn-block" id="reg-send-otp">Send verification code</button>
-          <div id="reg-otp-section"><div class="auth-verify-note"><i class="fas fa-envelope-open-text"></i><span>Enter the 6-digit code we sent to your email.</span></div><div class="otp-inputs"><input class="otp-input form-input" inputmode="numeric" maxlength="1"><input class="otp-input form-input" inputmode="numeric" maxlength="1"><input class="otp-input form-input" inputmode="numeric" maxlength="1"><input class="otp-input form-input" inputmode="numeric" maxlength="1"><input class="otp-input form-input" inputmode="numeric" maxlength="1"><input class="otp-input form-input" inputmode="numeric" maxlength="1"></div><p class="auth-timer"><span id="reg-timer-wrap">Resend in <strong id="reg-timer">60</strong>s</span><a href="#" id="reg-resend" style="display:none">Resend code</a></p><button type="submit" class="btn btn-primary btn-block" id="reg-submit">Verify &amp; create account <i class="fas fa-arrow-right"></i></button></div>
-          <p class="auth-switch">Already have an account? <a href="#" data-auth-open="login">Sign in</a></p>
+          <div id="reg-otp-section"><div class="auth-verify-note"><i class="fas fa-envelope-open-text"></i><span>Enter the 6-digit code we sent to your email.</span></div><div class="otp-inputs"><input class="otp-input form-input" inputmode="numeric" maxlength="1" aria-label="Verification code digit 1"><input class="otp-input form-input" inputmode="numeric" maxlength="1" aria-label="Verification code digit 2"><input class="otp-input form-input" inputmode="numeric" maxlength="1" aria-label="Verification code digit 3"><input class="otp-input form-input" inputmode="numeric" maxlength="1" aria-label="Verification code digit 4"><input class="otp-input form-input" inputmode="numeric" maxlength="1" aria-label="Verification code digit 5"><input class="otp-input form-input" inputmode="numeric" maxlength="1" aria-label="Verification code digit 6"></div><p class="auth-timer"><span id="reg-timer-wrap">Resend in <strong id="reg-timer">60</strong>s</span><button type="button" id="reg-resend" style="display:none">Resend code</button></p><button type="submit" class="btn btn-primary btn-block" id="reg-submit">Verify &amp; create account <i class="fas fa-arrow-right"></i></button></div>
+          <p class="auth-switch">Already have an account? <button type="button" data-auth-open="login">Sign in</button></p>
         </form>
       </section>`;
     document.body.appendChild(modal);
@@ -272,8 +272,8 @@
         mobileAuth.innerHTML = token()
           ? '<a href="dashboard.html" class="btn btn-outline btn-sm">' + t('nav.dashboard') + '</a>' +
             signoutHtml
-          : '<a href="#" data-auth-open="login" class="btn btn-outline btn-sm">' + t('nav.signin') + '</a>' +
-            '<a href="#" data-auth-open="register" class="btn btn-primary btn-sm">' + t('nav.register') + '</a>';
+          : '<button type="button" data-auth-open="login" class="btn btn-outline btn-sm">' + t('nav.signin') + '</button>' +
+            '<button type="button" data-auth-open="register" class="btn btn-primary btn-sm">' + t('nav.register') + '</button>';
       });
       document.querySelectorAll('[data-signout]').forEach((b) => {
         b.addEventListener('click', logout);

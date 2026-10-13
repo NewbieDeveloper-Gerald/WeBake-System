@@ -112,12 +112,12 @@
             ' You have ONE chance to resubmit.</p>' : '') +
         '<h4>' + (isResubmit ? 'Resubmit payment' : 'Submit payment') + '</h4>' +
         '<form id="track-pay-form">' +
-        '<div class="form-row"><div class="form-group"><label>Channel</label>' +
+        '<div class="form-row"><div class="form-group"><label for="tp-channel">Channel</label>' +
         '<select class="form-input" id="tp-channel"><option value="GCASH">GCash</option>' +
         '<option value="MAYA">Maya</option></select></div>' +
-        '<div class="form-group"><label>Reference number</label>' +
+        '<div class="form-group"><label for="tp-ref">Reference number</label>' +
         '<input class="form-input" id="tp-ref" required autocomplete="off"></div></div>' +
-        '<div class="form-group"><label>Payment screenshot</label>' +
+        '<div class="form-group"><label for="tp-proof">Payment screenshot</label>' +
         '<div id="tp-proof-input-wrap"><input class="form-input" id="tp-proof" type="file" accept="image/*" required></div>' +
         '<div id="tp-proof-preview-wrap" style="display:none; margin-top:8px; padding:10px; border:1px solid #e0d0c5; border-radius:8px; background:#fffcf9; align-items:center; gap:12px;">' +
         '<img id="tp-proof-preview-img" src="" alt="Receipt Preview" style="width:52px; height:52px; object-fit:cover; border-radius:6px; border:1px solid #ddd;">' +
@@ -240,14 +240,14 @@
       if (r.status === 'AWAITING_DETAILS') {
         html += '<p>Submit your wallet details so the bakery can send your refund. Type the number twice - it cannot be edited after.</p>' +
           '<form id="track-wallet-form">' +
-          '<div class="form-row"><div class="form-group"><label>Wallet</label>' +
+          '<div class="form-row"><div class="form-group"><label for="tw-type">Wallet</label>' +
           '<select class="form-input" id="tw-type"><option value="GCASH">GCash</option>' +
           '<option value="PAYMAYA">PayMaya</option></select></div>' +
-          '<div class="form-group"><label>Account name</label>' +
+          '<div class="form-group"><label for="tw-name">Account name</label>' +
           '<input class="form-input" id="tw-name" required></div></div>' +
-          '<div class="form-row"><div class="form-group"><label>Account number (09XXXXXXXXX)</label>' +
+          '<div class="form-row"><div class="form-group"><label for="tw-num">Account number (09XXXXXXXXX)</label>' +
           '<input class="form-input" id="tw-num" required inputmode="numeric" maxlength="11"></div>' +
-          '<div class="form-group"><label>Retype account number</label>' +
+          '<div class="form-group"><label for="tw-num2">Retype account number</label>' +
           '<input class="form-input" id="tw-num2" required inputmode="numeric" maxlength="11"></div></div>' +
           '<button type="submit" class="btn btn-primary">Submit wallet details</button></form>';
       } else if (r.wallet_type) {
@@ -302,7 +302,7 @@
       box.innerHTML = '<h4>Cancel this order</h4>' +
         '<p class="muted">Cancellation opens a refund for your downpayment. Wallet details are required now (type the number twice).</p>' +
         '<form id="track-cancel-form">' +
-        '<div class="form-group"><label>Reason for cancellation *</label>' +
+        '<div class="form-group"><label for="tc-reason-select">Reason for cancellation *</label>' +
         '<select class="form-input" id="tc-reason-select" required style="margin-bottom:0.5rem;">' +
         '<option value="" disabled selected>-- Select a reason --</option>' +
         '<option value="Change of schedule or delivery date">Change of schedule or delivery date</option>' +
@@ -313,15 +313,15 @@
         '<option value="Placed duplicate order by mistake">Placed duplicate order by mistake</option>' +
         '<option value="Other">Other reason (please specify below)</option>' +
         '</select>' +
-        '<textarea class="form-textarea" id="tc-reason-note" placeholder="Additional details or specific reason (required if Other)..." rows="2"></textarea></div>' +
-        '<div class="form-row"><div class="form-group"><label>Wallet</label>' +
+        '<textarea class="form-textarea" id="tc-reason-note" aria-label="Additional cancellation details" placeholder="Additional details or specific reason (required if Other)..." rows="2"></textarea></div>' +
+        '<div class="form-row"><div class="form-group"><label for="tc-type">Wallet</label>' +
         '<select class="form-input" id="tc-type"><option value="GCASH">GCash</option>' +
         '<option value="PAYMAYA">PayMaya</option></select></div>' +
-        '<div class="form-group"><label>Account name</label>' +
+        '<div class="form-group"><label for="tc-name">Account name</label>' +
         '<input class="form-input" id="tc-name" required></div></div>' +
-        '<div class="form-row"><div class="form-group"><label>Account number</label>' +
+        '<div class="form-row"><div class="form-group"><label for="tc-num">Account number</label>' +
         '<input class="form-input" id="tc-num" required inputmode="numeric" maxlength="11"></div>' +
-        '<div class="form-group"><label>Retype account number</label>' +
+        '<div class="form-group"><label for="tc-num2">Retype account number</label>' +
         '<input class="form-input" id="tc-num2" required inputmode="numeric" maxlength="11"></div></div>' +
         '<button type="submit" class="btn btn-outline">Cancel order</button></form>';
 

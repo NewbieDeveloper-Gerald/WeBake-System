@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Review your Crumbs N' Roll Bakery profile, saved cart, and order history in your customer dashboard.">
   <title>Dashboard — WeBake</title>
   <link rel="icon" type="image/png" href="../img/favicon.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -10,26 +11,30 @@
   <link rel="stylesheet" href="../css/globals.css">
   <link rel="stylesheet" href="../css/components.css">
   <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="../css/storefront-refresh.css">
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
 
   <!-- HEADER -->
   <header class="header">
     <nav class="nav container">
       <a href="home.html" class="logo" aria-label="WeBake Home">
-        <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Rolls Bakery" class="logo-img">
+        <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Roll Bakery" class="logo-img">
       </a>
       <div class="nav-right">
         <div class="nav-links" id="nav-links">
           <a href="home.html">Home</a>
           <a href="products.html">Products</a>
+          <a href="track.html" data-track-order-open>Order Status</a>
           <a href="home.html#about">About Us</a>
+          <a href="home.html#contact">Contact</a>
         </div>
         <div class="auth-buttons">
           <button type="button" data-auth-open="login" class="btn btn-outline btn-sm">Sign In</button>
           <button type="button" data-auth-open="register" class="btn btn-primary btn-sm">Register</button>
         </div>
-        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+        <button class="nav-toggle" id="nav-toggle" type="button" aria-label="Toggle menu" aria-controls="nav-links" aria-expanded="false">
           <i class="fas fa-bars"></i>
         </button>
       </div>
@@ -37,7 +42,7 @@
   </header>
 
   <!-- DASHBOARD MAIN -->
-  <main class="dashboard-main">
+  <main class="dashboard-main" id="main-content">
     <div class="container">
       <h1 class="section-title">My Dashboard</h1>
       <p class="dashboard-welcome">Welcome back, <strong id="dashboard-member-name">there</strong>. Your profile, cart, and orders are all here.</p>
@@ -50,19 +55,19 @@
           <form id="profile-form">
             <div class="profile-grid">
               <div class="form-group">
-                <label class="dash-label">Full Name</label>
+                <label class="dash-label" for="dash-name">Full Name</label>
                 <input type="text" class="form-input" id="dash-name" required autocomplete="name" placeholder="Your full name">
               </div>
               <div class="form-group">
-                <label class="dash-label">Contact Number</label>
+                <label class="dash-label" for="dash-contact">Contact Number</label>
                 <input type="tel" class="form-input" id="dash-contact" placeholder="09XXXXXXXXX" pattern="09[0-9]{9}" maxlength="11">
               </div>
               <div class="form-group full-width">
-                <label class="dash-label">Email Address</label>
+                <label class="dash-label" for="dash-email">Email Address</label>
                 <input type="email" class="form-input" id="dash-email" readonly style="background:var(--light); cursor:not-allowed;">
               </div>
               <div class="form-group full-width">
-                <label class="dash-label">Saved Delivery Address</label>
+                <label class="dash-label" for="dash-address">Saved Delivery Address</label>
                 <textarea class="form-textarea" id="dash-address" placeholder="Enter your full delivery address..."></textarea>
               </div>
             </div>
@@ -98,30 +103,31 @@
       <div class="footer-content">
         <div class="footer-brand">
           <a href="home.html" class="logo" aria-label="WeBake Home">
-            <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Rolls Bakery" class="logo-img">
+            <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Roll Bakery" class="logo-img">
           </a>
-          <p>Crumbs N' Rolls Bakery</p>
+          <p>Crumbs N' Roll Bakery</p>
         </div>
         <nav class="footer-nav">
           <a href="home.html">Home</a>
           <a href="products.html">Products</a>
           <a href="home.html#about">About Us</a>
+          <a href="home.html#faq">FAQs</a>
+          <a href="home.html#contact">Contact</a>
         </nav>
-        <div class="footer-social">
-          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-          <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+        <div class="footer-contact" aria-label="Bakery contact information">
+          <a href="tel:09101158032">09101158032</a>
+          <a href="mailto:crbwebake@gmail.com">crbwebake@gmail.com</a>
         </div>
       </div>
       <div class="footer-bottom">
-        &copy; 2026 Crumbs N' Rolls Bakery. All Rights Reserved.
+        &copy; 2026 Crumbs N' Roll Bakery. All Rights Reserved.
       </div>
     </div>
   </footer>
 
   <!-- CANCEL ORDER MODAL -->
   <div class="overlay" id="dash-cancel-overlay"></div>
-  <div class="modal" id="dash-cancel-modal" role="dialog" aria-labelledby="cancel-modal-title">
+  <div class="modal" id="dash-cancel-modal" role="dialog" aria-modal="true" aria-labelledby="cancel-modal-title">
     <button class="modal-close" id="dash-cancel-close" type="button" aria-label="Close dialog">&times;</button>
     <h3 id="cancel-modal-title" style="margin-bottom:0.4rem; color:var(--primary);"><i class="fas fa-ban"></i> Cancel Order</h3>
     <p style="font-size:0.85rem; color:var(--gray); margin-bottom:1rem;">
@@ -129,7 +135,7 @@
     </p>
     <form id="dash-cancel-form">
       <div class="form-group">
-        <label class="dash-label">Reason for cancellation *</label>
+        <label class="dash-label" for="dash-cancel-reason-select">Reason for cancellation *</label>
         <select class="form-select" id="dash-cancel-reason-select" required style="margin-bottom:0.5rem;">
           <option value="" disabled selected>-- Select a reason --</option>
           <option value="Change of schedule or delivery date">Change of schedule or delivery date</option>
@@ -140,28 +146,28 @@
           <option value="Placed duplicate order by mistake">Placed duplicate order by mistake</option>
           <option value="Other">Other reason (please specify below)</option>
         </select>
-        <textarea class="form-textarea" id="dash-cancel-reason-note" placeholder="Additional details or specific reason (required if Other)..." rows="2"></textarea>
+        <textarea class="form-textarea" id="dash-cancel-reason-note" aria-label="Additional cancellation details" placeholder="Additional details or specific reason (required if Other)..." rows="2"></textarea>
       </div>
       <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
         <div class="form-group">
-          <label class="dash-label">Refund Wallet *</label>
+          <label class="dash-label" for="dash-cancel-type">Refund Wallet *</label>
           <select class="form-select" id="dash-cancel-type" required>
             <option value="GCASH">GCash</option>
             <option value="PAYMAYA">Maya (PayMaya)</option>
           </select>
         </div>
         <div class="form-group">
-          <label class="dash-label">Account Name *</label>
+          <label class="dash-label" for="dash-cancel-name">Account Name *</label>
           <input class="form-input" id="dash-cancel-name" type="text" placeholder="e.g. Maria Santos" required minlength="2">
         </div>
       </div>
       <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
         <div class="form-group">
-          <label class="dash-label">Account Number *</label>
+          <label class="dash-label" for="dash-cancel-num">Account Number *</label>
           <input class="form-input" id="dash-cancel-num" type="tel" placeholder="09XXXXXXXXX" maxlength="11" pattern="09[0-9]{9}" inputmode="numeric" required>
         </div>
         <div class="form-group">
-          <label class="dash-label">Retype Account Number *</label>
+          <label class="dash-label" for="dash-cancel-num2">Retype Account Number *</label>
           <input class="form-input" id="dash-cancel-num2" type="tel" placeholder="09XXXXXXXXX" maxlength="11" pattern="09[0-9]{9}" inputmode="numeric" required>
         </div>
       </div>
@@ -174,7 +180,7 @@
 
   <!-- REFUND DETAILS MODAL -->
   <div class="overlay" id="dash-refund-overlay"></div>
-  <div class="modal" id="dash-refund-modal" role="dialog" aria-labelledby="refund-modal-title">
+  <div class="modal" id="dash-refund-modal" role="dialog" aria-modal="true" aria-labelledby="refund-modal-title">
     <button class="modal-close" id="dash-refund-close" type="button" aria-label="Close dialog">&times;</button>
     <h3 id="refund-modal-title" style="margin-bottom:0.4rem; color:var(--primary);"><i class="fas fa-undo-alt"></i> Refund Information</h3>
     <p style="font-size:0.85rem; color:var(--gray); margin-bottom:1rem;">
@@ -184,24 +190,24 @@
     <form id="dash-refund-form">
       <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
         <div class="form-group">
-          <label class="dash-label">Wallet Type *</label>
+          <label class="dash-label" for="dash-refund-type">Wallet Type *</label>
           <select class="form-select" id="dash-refund-type" required>
             <option value="GCASH">GCash</option>
             <option value="PAYMAYA">Maya (PayMaya)</option>
           </select>
         </div>
         <div class="form-group">
-          <label class="dash-label">Account Name *</label>
+          <label class="dash-label" for="dash-refund-name">Account Name *</label>
           <input class="form-input" id="dash-refund-name" type="text" placeholder="e.g. Maria Santos" required minlength="2">
         </div>
       </div>
       <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
         <div class="form-group">
-          <label class="dash-label">Account Number *</label>
+          <label class="dash-label" for="dash-refund-num">Account Number *</label>
           <input class="form-input" id="dash-refund-num" type="tel" placeholder="09XXXXXXXXX" maxlength="11" pattern="09[0-9]{9}" inputmode="numeric" required>
         </div>
         <div class="form-group">
-          <label class="dash-label">Retype Account Number *</label>
+          <label class="dash-label" for="dash-refund-num2">Retype Account Number *</label>
           <input class="form-input" id="dash-refund-num2" type="tel" placeholder="09XXXXXXXXX" maxlength="11" pattern="09[0-9]{9}" inputmode="numeric" required>
         </div>
       </div>
@@ -214,7 +220,7 @@
 
   <!-- DASHBOARD REVIEW MODAL -->
   <div class="overlay" id="dash-review-overlay"></div>
-  <div class="modal" id="dash-review-modal" role="dialog" aria-labelledby="dash-review-title" style="max-width:480px;">
+  <div class="modal" id="dash-review-modal" role="dialog" aria-modal="true" aria-labelledby="dash-review-title" style="max-width:480px;">
     <button class="modal-close" id="dash-review-close" type="button" aria-label="Close dialog">&times;</button>
     <h3 id="dash-review-title" style="margin-bottom:0.4rem; color:var(--primary); text-align:center;">
       <i class="fas fa-star" style="color:#F59E0B;"></i> Review Product
@@ -226,16 +232,16 @@
       <input type="hidden" id="dash-review-order-id">
       <input type="hidden" id="dash-review-product-id">
       <div class="form-group">
-        <label>Product</label>
+        <label for="dash-review-product-name">Product</label>
         <input class="form-input" id="dash-review-product-name" type="text" readonly style="background:#F7F4EE;">
       </div>
       <div class="form-group">
-        <label>Completed Order</label>
+        <label for="dash-review-order-code">Completed Order</label>
         <input class="form-input" id="dash-review-order-code" type="text" readonly style="background:#F7F4EE;">
       </div>
       <div class="form-group">
-        <label>Rating *</label>
-        <div class="review-star-rating" id="dash-review-stars" style="display:flex; gap:0.5rem; font-size:1.5rem; color:#F59E0B; cursor:pointer; margin-top:0.25rem;">
+        <span id="dash-review-rating-label" class="storefront-field-label">Rating *</span>
+        <div class="review-star-rating" id="dash-review-stars" role="group" aria-labelledby="dash-review-rating-label" style="display:flex; gap:0.5rem; font-size:1.5rem; color:#F59E0B; cursor:pointer; margin-top:0.25rem;">
           <i class="fas fa-star" data-star="1"></i>
           <i class="fas fa-star" data-star="2"></i>
           <i class="fas fa-star" data-star="3"></i>
@@ -245,7 +251,7 @@
         <input type="hidden" id="dash-review-rating-val" value="5">
       </div>
       <div class="form-group">
-        <label>Your Review *</label>
+        <label for="dash-review-text">Your Review *</label>
         <textarea class="form-textarea" id="dash-review-text" rows="3" placeholder="Tell us about the bread freshness, taste, and delivery..." required minlength="5" maxlength="500"></textarea>
       </div>
       <div style="display:flex; gap:0.75rem; margin-top:1.25rem;">
@@ -269,6 +275,7 @@
   <script src="../js/auth.js?v=2.3"></script>
   <script src="../js/tracking.js?v=2.3"></script>
   <script src="../js/dashboard.js?v=2.3"></script>
+  <script src="../js/storefront-ui.js?v=1"></script>
 <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a475d8a60afce0a2',t:'MTc5MTQ2OTg1NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
 

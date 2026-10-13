@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Check the latest status of a Crumbs N' Roll Bakery order using its order ID and checkout email.">
   <title>Order Status — WeBake</title>
   <link rel="icon" type="image/png" href="../img/favicon.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -29,42 +30,45 @@
     .reject-note { background: #FDE8E8; border-radius: 8px; padding: .8rem 1rem; }
     .ok-note { background: #EAF7ED; border-radius: 8px; padding: .8rem 1rem; }
   </style>
+  <link rel="stylesheet" href="../css/storefront-refresh.css">
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
   <header class="header">
     <nav class="nav container">
       <a href="home.html" class="logo" aria-label="WeBake Home">
-        <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Rolls Bakery" class="logo-img">
+        <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Roll Bakery" class="logo-img">
       </a>
       <div class="nav-right">
         <div class="nav-links" id="nav-links">
           <a href="home.html">Home</a>
           <a href="products.html">Products</a>
-          <a href="#" data-track-order-open class="active">Order Status</a>
+          <a href="track.html" data-track-order-open class="active">Order Status</a>
           <a href="home.html#about">About Us</a>
+          <a href="home.html#contact">Contact</a>
         </div>
         <div class="auth-buttons">
           <button type="button" data-auth-open="login" class="btn btn-outline btn-sm">Sign In</button>
           <button type="button" data-auth-open="register" class="btn btn-primary btn-sm">Register</button>
         </div>
-        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+        <button class="nav-toggle" id="nav-toggle" type="button" aria-label="Toggle menu" aria-controls="nav-links" aria-expanded="false">
           <i class="fas fa-bars"></i>
         </button>
       </div>
     </nav>
   </header>
 
-  <main class="track-wrap">
+  <main class="track-wrap" id="main-content">
     <div class="track-card">
-      <h3 data-i18n="nav.track">Order Status</h3>
+      <h1 data-i18n="nav.track">Order Status</h1>
       <form id="track-lookup">
         <div class="form-row">
           <div class="form-group">
-            <label>Order ID</label>
+            <label for="track-code">Order ID</label>
             <input class="form-input" id="track-code" placeholder="WB-XXXXX" required autocomplete="off">
           </div>
           <div class="form-group">
-            <label>Gmail used for the order</label>
+            <label for="track-email">Gmail used for the order</label>
             <input class="form-input" id="track-email" type="email" placeholder="you@gmail.com" required>
           </div>
         </div>
@@ -75,7 +79,7 @@
 
     <div id="track-result">
       <div class="track-card">
-        <h3 id="track-order-code"></h3>
+        <h2 id="track-order-code"></h2>
         <div><span id="track-status-pill"></span></div>
         <div id="track-timeline"></div>
       </div>
@@ -101,24 +105,25 @@
       <div class="footer-content">
         <div class="footer-brand">
           <a href="home.html" class="logo" aria-label="WeBake Home">
-            <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Rolls Bakery" class="logo-img">
+            <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Roll Bakery" class="logo-img">
           </a>
-          <p>Crumbs N' Rolls Bakery</p>
+          <p>Crumbs N' Roll Bakery</p>
         </div>
         <nav class="footer-nav">
           <a href="home.html">Home</a>
           <a href="products.html">Products</a>
           <a href="home.html#about">About Us</a>
-          <a href="#" data-track-order-open>Order Status</a>
+          <a href="home.html#faq">FAQs</a>
+          <a href="home.html#contact">Contact</a>
+          <a href="track.html" data-track-order-open>Order Status</a>
         </nav>
-        <div class="footer-social">
-          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-          <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+        <div class="footer-contact" aria-label="Bakery contact information">
+          <a href="tel:09101158032">09101158032</a>
+          <a href="mailto:crbwebake@gmail.com">crbwebake@gmail.com</a>
         </div>
       </div>
       <div class="footer-bottom">
-        &copy; 2026 Crumbs N' Rolls Bakery. All Rights Reserved.
+        &copy; 2026 Crumbs N' Roll Bakery. All Rights Reserved.
       </div>
     </div>
   </footer>

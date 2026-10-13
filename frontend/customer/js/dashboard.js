@@ -512,6 +512,7 @@
         starIcons.forEach((s) => {
           const num = Number(s.dataset.star);
           s.className = num <= val ? 'fas fa-star' : 'far fa-star';
+          s.setAttribute('aria-pressed', String(num === val));
         });
       };
       starIcons.forEach((s) => {
@@ -528,7 +529,10 @@
       document.getElementById('dash-review-product-name').value = btn.dataset.revPname;
       document.getElementById('dash-review-text').value = '';
       if (starBox) {
-        starBox.querySelectorAll('[data-star]').forEach((s) => { s.className = 'fas fa-star'; });
+        starBox.querySelectorAll('[data-star]').forEach((s) => {
+          s.className = 'fas fa-star';
+          s.setAttribute('aria-pressed', String(Number(s.dataset.star) === 5));
+        });
       }
       if (document.getElementById('dash-review-rating-val')) {
         document.getElementById('dash-review-rating-val').value = '5';

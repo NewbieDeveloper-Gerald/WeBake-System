@@ -7,6 +7,7 @@
  */
 (function (window, document) {
   'use strict';
+  let lastTrigger = null;
 
   function ensureModal() {
     if (document.getElementById('track-modal')) return;
@@ -24,12 +25,12 @@
     wrap.id = 'track-modal';
     wrap.innerHTML =
       '<div class="tm-backdrop" data-tm-close></div>' +
-      '<div class="tm-card" role="dialog" aria-label="Order status">' +
-      '<h3 data-i18n="nav.track">Order Status</h3>' +
+      '<div class="tm-card" role="dialog" aria-modal="true" aria-labelledby="track-modal-title">' +
+      '<h3 id="track-modal-title" data-i18n="nav.track">Order Status</h3>' +
       '<p>WB-XXXXX + Gmail</p>' +
       '<form id="track-modal-form">' +
-      '<div class="form-group"><input class="form-input" id="tm-code" placeholder="WB-XXXXX" required autocomplete="off"></div>' +
-      '<div class="form-group"><input class="form-input" id="tm-email" type="email" placeholder="you@gmail.com" required></div>' +
+      '<div class="form-group"><label class="sr-only" for="tm-code">Order ID</label><input class="form-input" id="tm-code" placeholder="WB-XXXXX" required autocomplete="off"></div>' +
+      '<div class="form-group"><label class="sr-only" for="tm-email">Email used for the order</label><input class="form-input" id="tm-email" type="email" placeholder="you@gmail.com" required></div>' +
       '<button type="submit" class="btn btn-primary btn-block">Check Status</button> ' +
       '<button type="button" class="btn btn-outline btn-block" data-tm-close style="margin-top:.5rem">Close</button>' +
       '</form></div>';
@@ -39,7 +40,25 @@
       if (e.target.closest('[data-tm-close]')) close();
     });
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') close();
+      const modal = document.getElementById('track-modal');
+      if (!modal || !modal.classList.contains('open')) return;
+      if (e.key === 'Escape') {
+        close();
+        return;
+      }
+      if (e.key === 'Tab') {
+        const focusable = Array.from(modal.querySelectorAll('a[href], button:not([disabled]), input:not([disabled])'));
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     });
     document.getElementById('track-modal-form').addEventListener('submit', (e) => {
       e.preventDefault();
@@ -52,7 +71,8 @@
     if (window.WB_I18N) window.WB_I18N.applyI18n();
   }
 
-  function open(prefillCode) {
+  function open(prefillCode, trigger) {
+    lastTrigger = trigger || document.activeElement;
     ensureModal();
     if (prefillCode) document.getElementById('tm-code').value = prefillCode;
     document.getElementById('track-modal').classList.add('open');
@@ -61,14 +81,21 @@
 
   function close() {
     const m = document.getElementById('track-modal');
-    if (m) m.classList.remove('open');
+    if (!m) return;
+    m.classList.remove('open');
+    if (lastTrigger && document.contains(lastTrigger) && lastTrigger.getClientRects().length) {
+      lastTrigger.focus();
+    } else {
+      document.getElementById('nav-toggle')?.focus();
+    }
+    lastTrigger = null;
   }
 
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-track-order-open]').forEach((a) => {
       a.addEventListener('click', (e) => {
         e.preventDefault();
-        open();
+        open(undefined, a);
       });
     });
   });

@@ -3,353 +3,392 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WeBake — Crumbs N' Rolls Bakery</title>
+  <meta name="description" content="Crumbs N' Roll Bakery — Quality Bakes, Sulit sa Bawat Batch. Fresh mamon, otap, eggnog and buttertoast baked daily in Marilao, Bulacan. Browse the catalog and order online, or call 09101158032.">
+  <meta name="theme-color" content="#F6EBDD">
+  <title>Crumbs N' Roll Bakery — Quality Bakes, Sulit sa Bawat Batch</title>
   <link rel="icon" type="image/png" href="../img/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="../css/variables.css">
   <link rel="stylesheet" href="../css/globals.css">
   <link rel="stylesheet" href="../css/components.css">
   <link rel="stylesheet" href="../css/home.css">
+  <link rel="stylesheet" href="../css/storefront-refresh.css">
 </head>
 <body>
-  <!-- HEADER -->
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <!-- ============ HEADER ============ -->
   <header class="header">
-    <nav class="nav container">
-      <a href="home.html" class="logo" aria-label="WeBake Home">
-        <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Rolls Bakery" class="logo-img">
+    <nav class="nav container" aria-label="Main navigation">
+      <a href="home.html" class="logo" aria-label="WeBake — Crumbs N' Roll Bakery, home">
+        <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Roll Bakery" class="logo-img" width="778" height="250">
       </a>
       <div class="nav-right">
         <div class="nav-links" id="nav-links">
-          <a href="home.html" class="active">Home</a>
+          <a href="home.html" class="active" aria-current="page">Home</a>
           <a href="products.html">Products</a>
-          <a href="#" data-track-order-open>Order Status</a>
+          <a href="track.html" data-track-order-open>Order Status</a>
           <a href="#about">About Us</a>
+          <a href="#contact">Contact</a>
         </div>
-        <button class="cart-icon" id="cart-icon" aria-label="View Cart">
-          <i class="fas fa-shopping-cart"></i>
+        <button class="cart-icon" id="cart-icon" type="button" aria-label="View Cart">
+          <i class="fas fa-shopping-cart" aria-hidden="true"></i>
           <span class="cart-badge" id="cart-count">0</span>
         </button>
         <div class="auth-buttons">
           <button type="button" data-auth-open="login" class="btn btn-outline btn-sm">Sign In</button>
           <button type="button" data-auth-open="register" class="btn btn-primary btn-sm">Register</button>
         </div>
-        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
-          <i class="fas fa-bars"></i>
+        <button class="nav-toggle" id="nav-toggle" type="button" aria-label="Toggle menu" aria-controls="nav-links" aria-expanded="false">
+          <i class="fas fa-bars" aria-hidden="true"></i>
         </button>
       </div>
     </nav>
   </header>
 
-  <!-- MAIN LANDING CONTENT -->
-  <main>
-    <!-- 1. HERO SECTION -->
-    <section class="hero">
-      <div class="hero-orbit hero-orbit-one" aria-hidden="true"></div>
-      <div class="hero-orbit hero-orbit-two" aria-hidden="true"></div>
-      <div class="hero-content">
-        <span class="hero-pill"><i class="fas fa-award"></i> Fresh Bakery Since 2010</span>
-        <p class="hero-eyebrow">A little joy, straight from our oven</p>
-        <h1>Freshly baked.<br><span>Made to be shared.</span></h1>
-        <p>
-          Small-batch favorites from Crumbs N’ Rolls Bakery, baked fresh every day in Marilao. Find your new snack favorite, then we’ll bring it to your door.
+  <main id="main-content">
+    <!-- ============ 1. HERO ============ -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero-grid">
+        <div class="hero-content">
+          <p class="hero-brand">WeBake &middot; Crumbs N' Roll Bakery</p>
+          <h1 id="hero-title">Quality Bakes,<br>Sulit sa Bawat Batch.</h1>
+          <p class="hero-lede">
+            Small-batch mamon, otap, eggnog, and buttertoast baked every morning at our Marilao bakery
+            &mdash; order online and we&rsquo;ll bring it to your door.
+          </p>
+          <div class="hero-buttons">
+            <a href="products.html" class="btn btn-accent"><i class="fas fa-bread-slice" aria-hidden="true"></i> Order Now</a>
+            <a href="#contact" class="btn btn-outline"><i class="fas fa-comment-dots" aria-hidden="true"></i> Contact Us</a>
+          </div>
+          <a class="hero-call" href="tel:09101158032">
+            <i class="fas fa-phone" aria-hidden="true"></i>
+            Prefer to order by phone? Call or text 09101158032
+          </a>
+        </div>
+
+        <div class="hero-visual">
+          <figure class="hero-photo">
+            <picture>
+              <source type="image/webp" srcset="../img/hero-bakes-1x.webp 373w, ../img/hero-bakes.webp 746w" sizes="(min-width: 1024px) 500px, (min-width: 768px) 470px, calc(100vw - 2.5rem)">
+              <img src="../img/hero-bakes.jpg"
+                   srcset="../img/hero-bakes-1x.jpg 373w, ../img/hero-bakes.jpg 746w"
+                   sizes="(min-width: 1024px) 500px, (min-width: 768px) 470px, calc(100vw - 2.5rem)"
+                   width="746" height="706" loading="eager" decoding="async" fetchpriority="high"
+                   alt="Top-down view of a round walnut board holding Crumbs N' Roll Bakery bakes: a buttertoast slice, a sugar-dusted otap, a palmier, a square puff pastry, a round mamon sponge cake, shortbread, and small seeded cookies, with crumbs scattered on the cream table.">
+            </picture>
+            <figcaption>Freshly baked today at 1356 Cordero St., Lambakin, Marilao, Bulacan.</figcaption>
+          </figure>
+          <span class="hero-stamp" aria-hidden="true">BAKED<br>DAILY</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 2. FEATURED BAKES ============ -->
+    <section class="home-products-section" aria-labelledby="featured-title">
+      <div class="container">
+        <div class="section-head">
+          <span class="section-kicker">Our signature bestsellers</span>
+          <h2 class="section-title" id="featured-title">Four Trays That Sell Out First</h2>
+          <p class="section-subtitle">Baked fresh daily with the finest ingredients. Available in wholesale bundles.</p>
+        </div>
+
+        <div class="home-product-grid">
+          <a class="home-product-card" href="products.html">
+            <span class="home-product-icon" aria-hidden="true"><i class="fas fa-cake-candles"></i></span>
+            <h3>Mamon</h3>
+            <p class="product-desc">Soft, fluffy sponge cake with a melt-in-your-mouth texture. A classic favorite snack or treat.</p>
+            <span class="card-cta">View &amp; order <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+          </a>
+
+          <a class="home-product-card" href="products.html">
+            <span class="home-product-icon" aria-hidden="true"><i class="fas fa-cookie"></i></span>
+            <h3>Otap</h3>
+            <p class="product-desc">Crispy, flaky oval puff pastry coated in caramelized sugar. A beloved delicacy with irresistible crunch.</p>
+            <span class="card-cta">View &amp; order <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+          </a>
+
+          <a class="home-product-card" href="products.html">
+            <span class="home-product-icon" aria-hidden="true"><i class="fas fa-cookie-bite"></i></span>
+            <h3>Eggnog</h3>
+            <p class="product-desc">Sweet, crumbly meringue-based cookies baked to golden perfection. Light, sweet, and comforting.</p>
+            <span class="card-cta">View &amp; order <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+          </a>
+
+          <a class="home-product-card" href="products.html">
+            <span class="home-product-icon" aria-hidden="true"><i class="fas fa-bread-slice"></i></span>
+            <h3>Buttertoast</h3>
+            <p class="product-desc">Golden, crunchy butter-toasted bread slices with a rich, aromatic flavor. Perfect for coffee dipping.</p>
+            <span class="card-cta">View &amp; order <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+          </a>
+        </div>
+
+        <p class="home-products-cta">
+          <a href="products.html" class="btn btn-primary"><i class="fas fa-bread-slice" aria-hidden="true"></i> Explore Our Fresh Bakes &amp; Order</a>
         </p>
-        <div class="hero-buttons">
-          <a href="products.html" class="btn btn-accent">
-            <i class="fas fa-bread-slice"></i> Order Now
-          </a>
-          <a href="#" data-track-order-open class="btn btn-outline">
-            <i class="fas fa-truck-fast"></i> Order Status
-          </a>
-        </div>
       </div>
     </section>
 
-    <!-- 2. QUICK STATS STRIP -->
-    <section class="stats-strip">
+    <!-- ============ 3. ABOUT ============ -->
+    <section class="home-about-section" id="about" aria-labelledby="about-title">
       <div class="container">
-        <div class="stats-grid">
-          <div class="stat-item">
-            <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
-            <div class="stat-text">
-              <h4>Est. 2010</h4>
-              <p>Over a decade of baking excellence</p>
-            </div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-icon"><i class="fas fa-map-location-dot"></i></div>
-            <div class="stat-text">
-              <h4>Marilao, Bulacan</h4>
-              <p>1356 Cordero St., Lambakin</p>
-            </div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
-            <div class="stat-text">
-              <h4>Angelita B. Amadeo</h4>
-              <p>Founder & Owner</p>
-            </div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-icon"><i class="fas fa-users-gear"></i></div>
-            <div class="stat-text">
-              <h4>8 Team Members</h4>
-              <p>Production, packaging & delivery</p>
-            </div>
-          </div>
+        <div class="section-head">
+          <span class="section-kicker">A neighborhood bakery with heart</span>
+          <h2 class="section-title" id="about-title">Good things take a little kneading.</h2>
+          <p class="section-subtitle">Our heritage, dedication to quality, and community roots</p>
         </div>
-      </div>
-    </section>
-
-    <!-- 3. ABOUT US SECTION -->
-    <section class="home-about-section" id="about">
-      <div class="container">
-        <span class="section-kicker">A neighborhood bakery with heart</span>
-        <h2 class="section-title"><i class="fas fa-info-circle"></i> Good things take a little kneading.</h2>
-        <p class="section-subtitle">Our heritage, dedication to quality, and community roots</p>
 
         <div class="about-main-grid">
-          <!-- Story Narrative Card -->
-          <div class="about-story-card">
-            <span class="about-story-badge"><i class="fas fa-heart"></i> Our Story</span>
-            <h3>Crumbs N' Rolls Bakery</h3>
+          <article class="about-story-card">
+            <span class="about-story-badge"><i class="fas fa-heart" aria-hidden="true"></i> Our Story</span>
+            <h3>Crumbs N' Roll Bakery</h3>
             <p>
-              <strong>Crumbs N' Rolls Bakery (CRB)</strong> is a trusted local bakery established in <strong>2010</strong> by <strong>Angelita B. Amadeo</strong>. Located at <strong>1356 Cordero Street, Lambakin, Marilao, Bulacan</strong>, our bakery was founded with a heartfelt purpose: to provide quality, freshly baked, and affordable bread products while creating a sustainable livelihood for our family and community.
+              <strong>Crumbs N' Roll Bakery (CRB)</strong> is a trusted local bakery established in <strong>2010</strong>
+              by <strong>Angelita B. Amadeo</strong>. Located at <strong>1356 Cordero Street, Lambakin, Marilao, Bulacan</strong>,
+              our bakery was founded with a heartfelt purpose: to provide quality, freshly baked, and affordable bread
+              products while creating a sustainable livelihood for our family and community.
             </p>
             <p>
-              Over the years, CRB Bakery has grown into a beloved neighborhood bakery and supplier for cafes, local stores, and bread lovers, while continuing to warmly serve walk-in customers whenever fresh batches emerge from our ovens.
+              Over the years, CRB Bakery has grown into a beloved neighborhood bakery and supplier for cafes, local
+              stores, and bread lovers, while continuing to warmly serve walk-in customers whenever fresh batches
+              emerge from our ovens.
             </p>
             <p>
-              Our operations are powered by a dedicated team of <strong>eight skilled bakers and personnel</strong> handling daily baking, hygienic packaging, and prompt deliveries across key areas.
+              Our operations are powered by a dedicated team of <strong>eight skilled bakers and personnel</strong>
+              handling daily baking, hygienic packaging, and prompt deliveries across key areas.
             </p>
-          </div>
+          </article>
 
-          <!-- Key Info Cards Column -->
           <div class="info-cards-column">
             <div class="info-card">
-              <i class="fas fa-calendar-alt"></i>
+              <i class="fas fa-calendar-alt" aria-hidden="true"></i>
               <h4>Established</h4>
               <p>2010</p>
             </div>
             <div class="info-card">
-              <i class="fas fa-map-marker-alt"></i>
+              <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
               <h4>Location</h4>
               <p>Lambakin, Marilao, Bulacan</p>
             </div>
             <div class="info-card">
-              <i class="fas fa-user-tie"></i>
-              <h4>Owner & Founder</h4>
+              <i class="fas fa-user-tie" aria-hidden="true"></i>
+              <h4>Owner &amp; Founder</h4>
               <p>Angelita B. Amadeo</p>
             </div>
             <div class="info-card">
-              <i class="fas fa-users"></i>
+              <i class="fas fa-users" aria-hidden="true"></i>
               <h4>Bakery Team</h4>
               <p>8 Dedicated Members</p>
             </div>
           </div>
         </div>
 
-        <!-- Distribution Areas -->
         <div class="distribution-box">
-          <h3><i class="fas fa-truck-fast"></i> Delivery &amp; Service Reach</h3>
+          <h3><i class="fas fa-truck-fast" aria-hidden="true"></i> Delivery &amp; Service Reach</h3>
           <p>We deliver freshly baked bread and pastries across Bulacan and nearby cities</p>
           <div class="distribution-areas">
-            <span class="area-badge"><i class="fas fa-location-dot"></i> Bulacan</span>
-            <span class="area-badge"><i class="fas fa-location-dot"></i> Metro-Manila</span>
-            <span class="area-badge"><i class="fas fa-location-dot"></i> Caloocan</span>
-            <span class="area-badge"><i class="fas fa-location-dot"></i> Malolos</span>
-            <span class="area-badge"><i class="fas fa-location-dot"></i> Surrounding Municipalities</span>
+            <span class="area-badge"><i class="fas fa-location-dot" aria-hidden="true"></i> Bulacan</span>
+            <span class="area-badge"><i class="fas fa-location-dot" aria-hidden="true"></i> Metro-Manila</span>
+            <span class="area-badge"><i class="fas fa-location-dot" aria-hidden="true"></i> Caloocan</span>
+            <span class="area-badge"><i class="fas fa-location-dot" aria-hidden="true"></i> Malolos</span>
+            <span class="area-badge"><i class="fas fa-location-dot" aria-hidden="true"></i> Surrounding Municipalities</span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 4. SIGNATURE PRODUCTS TEASER -->
-    <section class="home-products-section">
-      <div class="container text-center">
-        <h2 class="section-title"><i class="fas fa-bread-slice"></i> Our Signature Bestsellers</h2>
-        <p class="section-subtitle">Baked fresh daily with the finest ingredients. Available in wholesale bundles.</p>
-
-        <div class="home-product-grid">
-          <div class="home-product-card">
-            <div class="home-product-icon"><i class="fas fa-cake-candles"></i></div>
-            <h4>Mamon</h4>
-            <p class="product-desc">Soft, fluffy sponge cake with a melt-in-your-mouth texture. A classic favorite snack or treat.</p>
-          </div>
-
-          <div class="home-product-card">
-            <div class="home-product-icon"><i class="fas fa-cookie"></i></div>
-            <h4>Otap</h4>
-            <p class="product-desc">Crispy, flaky oval puff pastry coated in caramelized sugar. A beloved delicacy with irresistible crunch.</p>
-          </div>
-
-          <div class="home-product-card">
-            <div class="home-product-icon"><i class="fas fa-cookie-bite"></i></div>
-            <h4>Eggnog</h4>
-            <p class="product-desc">Sweet, crumbly meringue-based cookies baked to golden perfection. Light, sweet, and comforting.</p>
-          </div>
-
-          <div class="home-product-card">
-            <div class="home-product-icon"><i class="fas fa-bread-slice"></i></div>
-            <h4>Buttertoast</h4>
-            <p class="product-desc">Golden, crunchy butter-toasted bread slices with a rich, aromatic flavor. Perfect for coffee dipping.</p>
-          </div>
+    <!-- ============ 4. REVIEWS ============ -->
+    <section class="home-reviews-section" id="reviews" aria-labelledby="reviews-title">
+      <div class="container">
+        <div class="section-head">
+          <span class="section-kicker">Words from our suki &amp; wholesale partners</span>
+          <h2 class="section-title" id="reviews-title">What Our Customers Say</h2>
+          <p class="section-subtitle">Real experiences and feedback from our beloved local community</p>
         </div>
-
-        <div>
-          <a href="products.html" class="btn btn-primary" style="padding:0.85rem 2rem; font-size:1rem;">
-            <i class="fas fa-bread-slice"></i> Explore Our Fresh Bakes & Order
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- 5. CUSTOMER REVIEWS & TESTIMONIALS -->
-    <section class="home-reviews-section" id="reviews">
-      <div class="container text-center">
-        <span class="section-kicker">Words from our suki &amp; wholesale partners</span>
-        <h2 class="section-title"><i class="fas fa-star" style="color:#F59E0B;"></i> What Our Customers Say</h2>
-        <p class="section-subtitle">Real experiences and feedback from our beloved local community</p>
-
 
         <div class="reviews-grid" id="reviews-container">
-          <div class="review-card">
-            <div class="review-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-            <p class="review-quote">"The mamon is always soft and fresh. Our suki buyers ask for Crumbs N Rolls by name."</p>
+          <article class="review-card">
+            <div class="review-stars" role="img" aria-label="Rated 5 out of 5">
+              <i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i>
+            </div>
+            <p class="review-quote">&ldquo;The mamon is always soft and fresh. Our suki buyers ask for Crumbs N' Roll Bakery by name.&rdquo;</p>
             <div class="review-author">
-              <div class="review-avatar">AN</div>
+              <span class="review-avatar" aria-hidden="true">AN</span>
               <div class="review-author-info">
-                <h4>Aling Nena</h4>
+                <p class="review-author-name">Aling Nena</p>
                 <small>Marilao, Bulacan</small>
               </div>
             </div>
-          </div>
-          <div class="review-card">
-            <div class="review-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-            <p class="review-quote">"Ordered 400 bundles of otap for our bakery. Crisp, well-packed, and delivered on time."</p>
+          </article>
+
+          <article class="review-card">
+            <div class="review-stars" role="img" aria-label="Rated 5 out of 5">
+              <i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i>
+            </div>
+            <p class="review-quote">&ldquo;Ordered 400 bundles of otap for our bakery. Crisp, well-packed, and delivered on time.&rdquo;</p>
             <div class="review-author">
-              <div class="review-avatar">MT</div>
+              <span class="review-avatar" aria-hidden="true">MT</span>
               <div class="review-author-info">
-                <h4>Mang Tonyo</h4>
+                <p class="review-author-name">Mang Tonyo</p>
                 <small>Meycauayan, Bulacan</small>
               </div>
             </div>
-          </div>
-          <div class="review-card">
-            <div class="review-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-            <p class="review-quote">"Fair wholesale price and honest bundle counts. Highly recommended for resellers."</p>
+          </article>
+
+          <article class="review-card">
+            <div class="review-stars" role="img" aria-label="Rated 5 out of 5">
+              <i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i><i class="fas fa-star" aria-hidden="true"></i>
+            </div>
+            <p class="review-quote">&ldquo;Fair wholesale price and honest bundle counts. Highly recommended for resellers.&rdquo;</p>
             <div class="review-author">
-              <div class="review-avatar">KP</div>
+              <span class="review-avatar" aria-hidden="true">KP</span>
               <div class="review-author-info">
-                <h4>Ka Pabling</h4>
+                <p class="review-author-name">Ka Pabling</p>
                 <small>Marilao, Bulacan</small>
               </div>
             </div>
-          </div>
+          </article>
         </div>
       </div>
     </section>
 
-    <!-- 6. ORDER CALL TO ACTION -->
-    <section class="home-cta-section">
+    <!-- ============ 5. FAQ + CONTACT ============ -->
+    <section class="faq-contact-section" aria-label="Frequently asked questions and contact information">
+      <div class="container faq-contact-grid">
+        <section class="faq-card" id="faq" aria-labelledby="faq-title">
+          <span class="section-kicker">Good to know</span>
+          <h2 id="faq-title">Frequently asked questions</h2>
+          <p>Quick answers for your first order.</p>
+          <details>
+            <summary>How do I place an online order?</summary>
+            <p>Choose a product from the catalog, select an available bundle quantity, and follow the checkout steps. The catalog shows current prices and minimum order requirements.</p>
+          </details>
+          <details>
+            <summary>How does payment work?</summary>
+            <p>Checkout shows the current payment instructions and the 50% downpayment due. Submit your payment reference and transfer screenshot so the bakery can verify it.</p>
+          </details>
+          <details>
+            <summary>How can I check my order status?</summary>
+            <p>Use Order Status with the order ID and email address used at checkout. You can also follow the status link in the site navigation.</p>
+          </details>
+        </section>
+
+        <section class="contact-card" id="contact" aria-labelledby="contact-title">
+          <span class="section-kicker">We&rsquo;re here to help</span>
+          <h2 id="contact-title">Contact the bakery</h2>
+          <p>Questions about an order? Reach Crumbs N' Roll Bakery directly.</p>
+          <div class="contact-details">
+            <a href="tel:09101158032"><i class="fas fa-phone" aria-hidden="true"></i><span>09101158032</span></a>
+            <a href="mailto:crbwebake@gmail.com"><i class="fas fa-envelope" aria-hidden="true"></i><span>crbwebake@gmail.com</span></a>
+            <p><i class="fas fa-location-dot" aria-hidden="true"></i><span>1356 Cordero St., Lambakin, Marilao, Bulacan</span></p>
+          </div>
+          <a class="btn btn-primary" href="products.html"><i class="fas fa-bread-slice" aria-hidden="true"></i> Browse the catalog</a>
+        </section>
+      </div>
+    </section>
+
+    <!-- ============ 6. ORDER CALL TO ACTION ============ -->
+    <section class="home-cta-section" aria-labelledby="cta-title">
       <div class="container">
         <div class="home-cta-box">
-          <h2>Craving Freshly Baked <span>Bakery Treats</span>?</h2>
+          <h2 id="cta-title">Craving Freshly Baked <span>Bakery Treats</span>?</h2>
           <p>
-            Browse our full catalog of fresh bread, delicate sponge cakes, and crispy snacks. Convenient online ordering, secure checkout, and scheduled deliveries.
+            Browse our full catalog of fresh bread, delicate sponge cakes, and crispy snacks.
+            Convenient online ordering, secure checkout, and scheduled deliveries.
           </p>
-          <div style="display:flex; justify-content:center; gap:1rem; flex-wrap:wrap; margin-top:1.5rem;">
-            <a href="products.html" class="btn btn-accent" style="padding:0.85rem 2rem; font-size:1rem;">
-              <i class="fas fa-shopping-bag"></i> Order Fresh Bakes Now
-            </a>
-            <a href="#" data-track-order-open class="btn btn-outline" style="padding:0.85rem 1.75rem; font-size:1rem; border-color:#fff; color:#fff;">
-              <i class="fas fa-truck-fast"></i> Track Existing Order
-            </a>
+          <div class="home-cta-actions">
+            <a href="products.html" class="btn btn-accent"><i class="fas fa-shopping-bag" aria-hidden="true"></i> Order Fresh Bakes Now</a>
+            <a href="track.html" data-track-order-open class="btn btn-outline"><i class="fas fa-truck-fast" aria-hidden="true"></i> Track Existing Order</a>
           </div>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- FOOTER -->
+  <!-- ============ FOOTER ============ -->
   <footer class="footer">
     <div class="container">
       <div class="footer-content">
         <div class="footer-brand">
-          <a href="home.html" class="logo" aria-label="WeBake Home">
-            <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Rolls Bakery" class="logo-img">
+          <a href="home.html" class="logo" aria-label="WeBake — Crumbs N' Roll Bakery, home">
+            <img src="../img/webake-logo.png" alt="WeBake — Crumbs N' Roll Bakery" class="logo-img" width="778" height="250" loading="lazy">
           </a>
-          <p>Crumbs N' Rolls Bakery</p>
+          <p>Crumbs N' Roll Bakery</p>
+          <p>Quality Bakes, Sulit sa Bawat Batch.</p>
         </div>
-        <nav class="footer-nav">
+        <nav class="footer-nav" aria-label="Footer navigation">
           <a href="home.html">Home</a>
           <a href="products.html">Products</a>
           <a href="#about">About Us</a>
-          <a href="#" data-track-order-open>Order Status</a>
+          <a href="#faq">FAQs</a>
+          <a href="#contact">Contact</a>
+          <a href="track.html" data-track-order-open>Order Status</a>
         </nav>
-        <div class="footer-social">
-          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-          <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+        <div class="footer-contact">
+          <a href="tel:09101158032">09101158032</a>
+          <a href="mailto:crbwebake@gmail.com">crbwebake@gmail.com</a>
         </div>
       </div>
       <div class="footer-bottom">
-        &copy; 2026 Crumbs N' Rolls Bakery. All Rights Reserved.
+        &copy; 2026 Crumbs N' Roll Bakery. All Rights Reserved.
       </div>
     </div>
   </footer>
 
-  <!-- CART SIDEBAR -->
+  <!-- ============ CART SIDEBAR (markup + IDs used by main.js) ============ -->
   <div class="overlay" id="cart-overlay"></div>
   <div class="cart-sidebar" id="cart-sidebar">
     <div class="cart-header">
-      <h3><i class="fas fa-shopping-cart"></i> Your Cart</h3>
-      <button id="cart-close"><i class="fas fa-times"></i></button>
+      <h3><i class="fas fa-shopping-cart" aria-hidden="true"></i> Your Cart</h3>
+      <button id="cart-close" type="button" aria-label="Close cart"><i class="fas fa-times" aria-hidden="true"></i></button>
     </div>
     <div class="cart-body" id="cart-items"></div>
     <div class="cart-footer">
-      <div class="cart-total"><span id="cart-selected-label">0 products selected</span><span id="cart-total">₱0</span></div>
+      <div class="cart-total"><span id="cart-selected-label">0 products selected</span><span id="cart-total">&#8369;0</span></div>
       <p class="cart-selection-hint">Only selected products will be checked out.</p>
-      <button class="btn btn-accent btn-block" id="continue-browsing"><i class="fas fa-arrow-left"></i> Continue Browsing</button>
-      <button class="btn btn-primary btn-block" id="proceed-checkout"><i class="fas fa-credit-card"></i> Proceed to Checkout</button>
+      <button class="btn btn-accent btn-block" id="continue-browsing" type="button"><i class="fas fa-arrow-left" aria-hidden="true"></i> Continue Browsing</button>
+      <button class="btn btn-primary btn-block" id="proceed-checkout" type="button"><i class="fas fa-credit-card" aria-hidden="true"></i> Proceed to Checkout</button>
     </div>
   </div>
 
-  <!-- REVIEW MODAL -->
+  <!-- ============ REVIEW MODAL (markup + IDs used by main.js) ============ -->
   <div class="overlay" id="review-overlay"></div>
-  <div class="modal" id="review-modal" role="dialog" aria-labelledby="review-modal-title" style="max-width:480px;">
+  <div class="modal modal--review" id="review-modal" role="dialog" aria-modal="true" aria-labelledby="review-modal-title">
     <button class="modal-close" id="review-close" type="button" aria-label="Close dialog">&times;</button>
-    <h3 id="review-modal-title" style="margin-bottom:0.4rem; color:var(--primary); text-align:center;">
-      <i class="fas fa-star" style="color:#F59E0B;"></i> Leave a Customer Review
+    <h3 id="review-modal-title">
+      <i class="fas fa-star" aria-hidden="true"></i> Leave a Customer Review
     </h3>
-    <p style="font-size:0.85rem; color:var(--gray); margin-bottom:1.25rem; text-align:center;">
-      Share your experience with our bakery treats and delivery!
-    </p>
+    <p class="modal-sub">Share your experience with our bakery treats and delivery!</p>
     <form id="review-form">
       <input type="hidden" id="rev-order-id">
       <input type="hidden" id="rev-product-id">
+      <!-- The three groups below are shown/hidden by main.js via style.display,
+           so their initial state stays inline on purpose. -->
       <div class="form-group" id="rev-product-select-group" style="display:none;">
-        <label>Select Item to Review *</label>
+        <label for="rev-product-select">Select Item to Review *</label>
         <select class="form-select" id="rev-product-select"></select>
       </div>
       <div class="form-group" id="rev-product-name-group" style="display:none;">
-        <label>Product</label>
-        <input class="form-input" id="rev-product-name" type="text" readonly style="background:#F7F4EE;">
+        <label for="rev-product-name">Product</label>
+        <input class="form-input" id="rev-product-name" type="text" readonly>
       </div>
       <div class="form-group" id="rev-order-code-group" style="display:none;">
-        <label>Completed Order</label>
-        <input class="form-input" id="rev-order-code" type="text" readonly style="background:#F7F4EE;">
+        <label for="rev-order-code">Completed Order</label>
+        <input class="form-input" id="rev-order-code" type="text" readonly>
       </div>
       <div class="form-group">
-        <label>Your Name</label>
+        <label for="rev-name">Your Name</label>
         <input class="form-input" id="rev-name" type="text" placeholder="e.g. Maria Santos" maxlength="80">
       </div>
       <div class="form-group">
-        <label>Location / Area (optional)</label>
+        <label for="rev-location">Location / Area (optional)</label>
         <input class="form-input" id="rev-location" type="text" placeholder="e.g. Marilao, Bulacan" maxlength="80">
       </div>
       <div class="form-group">
-        <label>Rating *</label>
-        <div class="review-star-rating" id="review-star-rating" style="display:flex; gap:0.5rem; font-size:1.5rem; color:#F59E0B; cursor:pointer; margin-top:0.25rem;">
+        <span id="review-rating-label" class="storefront-field-label">Rating *</span>
+        <div class="review-star-rating" id="review-star-rating" role="group" aria-labelledby="review-rating-label">
           <i class="fas fa-star" data-star="1"></i>
           <i class="fas fa-star" data-star="2"></i>
           <i class="fas fa-star" data-star="3"></i>
@@ -359,17 +398,18 @@
         <input type="hidden" id="rev-rating" value="5">
       </div>
       <div class="form-group">
-        <label>Your Review *</label>
+        <label for="rev-text">Your Review *</label>
         <textarea class="form-textarea" id="rev-text" rows="3" placeholder="Tell us about the bread freshness, taste, and service..." required minlength="5" maxlength="500"></textarea>
       </div>
-      <div style="display:flex; gap:0.75rem; margin-top:1.25rem;">
-        <button type="button" class="btn btn-outline" id="review-cancel" style="flex:1;">Cancel</button>
-        <button type="submit" class="btn btn-primary" id="review-submit-btn" style="flex:1;">Submit Review</button>
+      <div class="modal-actions-row">
+        <button type="button" class="btn btn-outline" id="review-cancel">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="review-submit-btn">Submit Review</button>
       </div>
     </form>
   </div>
 
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
   <script src="../js/config.js?v=2.3"></script>
   <script src="../js/utils.js?v=2.3"></script>
   <script src="../js/shop-api.js?v=2.3"></script>
@@ -378,5 +418,6 @@
   <script src="../js/main.js?v=2.4"></script>
   <script src="../js/auth.js?v=2.3"></script>
   <script src="../js/tracking.js?v=2.3"></script>
+  <script src="../js/storefront-ui.js?v=1"></script>
 <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a475d9810d4ee0a2',t:'MTc5MTQ2OTg5MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
