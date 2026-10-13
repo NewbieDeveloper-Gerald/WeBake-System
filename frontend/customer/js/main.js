@@ -24,6 +24,7 @@
     let selectedProductIds = new Set();
     let settings = { min_order_bundles: '300' };
     let memberEmail = '';
+    let memberProfile = null;
     let minBundles = 300;
     let cartWriteQueue = Promise.resolve();
     let isDirectSingleCheckout = false;
@@ -61,7 +62,8 @@
           }
           cart = serverLines;
           localStorage.setItem('webake_cart', JSON.stringify(cart));
-          memberEmail = (profRes.member && profRes.member.email) || '';
+          memberProfile = (profRes && profRes.member) || null;
+          memberEmail = (memberProfile && memberProfile.email) || '';
         } catch {
           cart = loadGuest();
         }
@@ -540,7 +542,7 @@
       openCheckout();
       gotoStep('step-stock');
       // Client-side stock sanity (the SERVER re-checks at approval).
-      window.setTimeout(() => {
+      window.setTimeout(async () => {
         const short = co.items.find((l) => {
           const p = byId(l.product_id);
           return !p || l.bundles > (p.bundles_available || 0);
@@ -551,9 +553,48 @@
           U.toast(t('co.stock_fail'));
           return;
         }
-        prefillInfo();
-        gotoStep('step-info');
+        await prefillInfo();
+
+        const isMember = !!auth.token();
+        const nameVal = (document.getElementById('cust-name')?.value || '').trim();
+        const contactVal = (document.getElementById('cust-contact')?.value || '').replace(/\D/g, '').slice(0, 11).trim();
+        const emailVal = (document.getElementById('cust-email')?.value || '').trim().toLowerCase();
+        const addressVal = (document.getElementById('cust-address')?.value || '').trim();
+
+        const isContactValid = /^09\d{9}$/.test(contactVal);
+        const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal);
+        const isInfoComplete = isMember && !!nameVal && isContactValid && isEmailValid && !!addressVal;
+
+        if (isInfoComplete) {
+          co.name = nameVal;
+          co.contact = contactVal;
+          co.email = emailVal;
+          co.address = addressVal;
+          renderReview();
+          setMethod(co.method || 'GCASH');
+          gotoStep('step-payment');
+        } else {
+          gotoStep('step-info');
+          if (isMember) {
+            if (!nameVal) document.getElementById('cust-name')?.focus();
+            else if (!isContactValid) document.getElementById('cust-contact')?.focus();
+            else if (!isEmailValid) document.getElementById('cust-email')?.focus();
+            else if (!addressVal) document.getElementById('cust-address')?.focus();
+          }
+        }
       }, 600);
+    }
+
+    function resolveMemberName(m) {
+      if (!m) return (localStorage.getItem('webake_member_name') || '').trim();
+      return (
+        m.name ||
+        m.full_name ||
+        m.fullName ||
+        [m.first_name, m.last_name].filter(Boolean).join(' ') ||
+        localStorage.getItem('webake_member_name') ||
+        ''
+      ).trim();
     }
 
     async function prefillInfo() {
@@ -563,21 +604,36 @@
           setMethod(co.method || 'GCASH');
         }
       }).catch(() => {});
-      if (!auth.token()) return;
+      if (!auth.token()) {
+        memberProfile = null;
+        memberEmail = '';
+        setVal('cust-name', '');
+        setVal('cust-contact', '');
+        setVal('cust-email', '');
+        setVal('cust-address', '');
+        return;
+      }
       try {
-        const { member: m } = await api.profile();
-        if (!m) return;
-        setVal('cust-name', m.full_name);
-        setVal('cust-contact', m.contact);
-        setVal('cust-email', m.email);
-        setVal('cust-address', m.address);
-        memberEmail = m.email || '';
-      } catch { /* guest flow continues */ }
+        const res = await api.profile();
+        if (res && res.member) memberProfile = res.member;
+      } catch { /* use cached profile or local storage fallback */ }
+
+      const m = memberProfile;
+      const name = resolveMemberName(m);
+      const contact = (m && (m.contact || m.phone || '')).replace(/\D/g, '').slice(0, 11);
+      const email = (m && m.email ? m.email : '').trim().toLowerCase();
+      const address = (m && (m.address || m.delivery_address || '')).trim();
+
+      setVal('cust-name', name);
+      setVal('cust-contact', contact);
+      setVal('cust-email', email);
+      setVal('cust-address', address);
+      if (email) memberEmail = email;
     }
 
     function setVal(id, v) {
       const el = document.getElementById(id);
-      if (el && v) el.value = v;
+      if (el) el.value = v !== undefined && v !== null ? v : '';
     }
 
     const infoBackBtn = document.getElementById('info-back-btn');
@@ -621,6 +677,13 @@
         co.contact = document.getElementById('cust-contact').value.replace(/\D/g, '').slice(0, 11).trim();
         co.email = document.getElementById('cust-email').value.trim().toLowerCase();
         co.address = document.getElementById('cust-address').value.trim();
+
+        if (auth.token() && memberEmail && memberEmail.toLowerCase() === co.email) {
+          renderReview();
+          setMethod(co.method || 'GCASH');
+          gotoStep('step-payment');
+          return;
+        }
 
         const proceedBtn = document.getElementById('info-proceed-btn');
         if (proceedBtn) {
