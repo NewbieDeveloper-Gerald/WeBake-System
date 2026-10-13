@@ -18,7 +18,6 @@ html {
 /* 2. Section offsets to prevent fixed header overlap */
 #home,
 #products,
-#order-status,
 #about-us,
 #contact {
   scroll-margin-top: var(--spy-offset);
@@ -107,34 +106,7 @@ html {
   }
 }
 
-/* 9. Landing page Order Status section card */
-.home-order-status-section {
-  padding: clamp(2rem, 4vw, 3.5rem) 0;
-  background: var(--cream-deep, #EFE0CE);
-}
 
-.order-status-card {
-  max-width: 760px;
-  margin: 0 auto;
-  padding: clamp(1.5rem, 3vw, 2.25rem);
-  background: var(--white, #ffffff);
-  border: 1px solid var(--border, #E6D6C2);
-  border-radius: var(--radius-card, 16px);
-  box-shadow: 0 4px 18px rgba(91, 58, 41, 0.06);
-  text-align: center;
-}
-
-.order-status-card .section-title {
-  margin-bottom: 0.5rem;
-}
-
-.order-status-card .order-status-actions {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 1.25rem;
-}
 
 /* 10. Accessibility: Respect prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {

@@ -21,7 +21,6 @@
   const sections = [
     { id: 'home', label: 'Home' },
     { id: 'products', label: 'Products' },
-    { id: 'order-status', label: 'Order Status' },
     { id: 'about-us', label: 'About Us' },
     { id: 'contact', label: 'Contact' }
   ];
@@ -137,6 +136,11 @@
    * Nav click event listener
    */
   function onNavClick(event) {
+    const anyLink = event.target.closest('a');
+    if (anyLink) {
+      closeMobileMenu();
+    }
+
     const link = event.target.closest('[data-scroll-spy="true"]');
     if (!link) return;
 
@@ -226,6 +230,12 @@
   function handleInitialHash() {
     let rawHash = window.location.hash ? window.location.hash.slice(1) : '';
     if (rawHash === 'about') rawHash = 'about-us';
+    if (rawHash === 'order-status') {
+      if (window.TrackModal && window.TrackModal.open) {
+        window.TrackModal.open();
+      }
+      return;
+    }
 
     if (!rawHash) {
       if ((window.pageYOffset || document.documentElement.scrollTop) < 80) {
