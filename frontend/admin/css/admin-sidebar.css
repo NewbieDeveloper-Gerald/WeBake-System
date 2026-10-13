@@ -26,7 +26,7 @@
   --sb-font: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --sb-radius-item: 10px;
   --sb-radius-badge: 10px;
-  --sb-width: 268px;
+  --sb-width: var(--sidebar-w, 260px);
   --sb-width-rail: 72px;
   --sb-transition: 150ms ease;
 
@@ -510,7 +510,9 @@
     box-shadow: none;
   }
 
-  .sb.sb--open {
+  .sb.sb--open,
+  .sb.open,
+  .sb.sidebar-open {
     transform: translateX(0);
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
   }

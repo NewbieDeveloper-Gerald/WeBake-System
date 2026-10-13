@@ -9,7 +9,7 @@
   align-items: start;
 }
 
-/* --- Left Column: Product Catalog --- */
+/* --- Left Column: Product Inventory --- */
 .pos-products-panel {
   display: flex;
   flex-direction: column;

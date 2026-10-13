@@ -2,7 +2,7 @@
  * admin-inventory.js
  *
  * Daily Inventory stock adjustments and audit history have been consolidated
- * into the Product Catalog (admin-products.js).
+ * into Product Inventory (admin-products.js).
  */
 (function () {
   'use strict';

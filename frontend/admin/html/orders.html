@@ -7,72 +7,121 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../css/admin-globals.css">
   <link rel="stylesheet" href="../css/admin-orders.css">
+  <link rel="stylesheet" href="../css/admin-sidebar.css">
 </head>
 <body>
   <div class="admin-layout">
     <!-- Sidebar -->
-    <aside class="admin-sidebar">
-      <div class="sidebar-brand">
-        <div class="sidebar-logo-icon">
+    <nav id="admin-sidebar" class="sb admin-sidebar" aria-label="Main navigation">
+      <!-- Brand Header -->
+      <div class="sb-brand">
+        <div class="sb-brand-icon" aria-hidden="true">
           <i class="fas fa-bread-slice"></i>
         </div>
-        <div class="brand-text">
-          <h2>WeBake</h2>
-          <span>Admin Portal</span>
+        <div class="sb-brand-info">
+          <h2 class="sb-brand-title">WeBake</h2>
+          <span class="sb-brand-sub">Admin Portal</span>
         </div>
       </div>
 
-      <nav class="sidebar-nav">
-        <div class="nav-section-title">Operations</div>
-        <a href="walkin-pos.html" class="nav-item-link pos-highlight">
-          <i class="fas fa-cash-register"></i>
-          <span>Walk-In</span>
-        </a>
-        <a href="dashboard.html" class="nav-item-link">
-          <i class="fas fa-chart-pie"></i>
-          <span>Dashboard</span>
-        </a>
-        <a href="sales.html" class="nav-item-link">
-          <i class="fas fa-chart-line"></i>
-          <span>Sales</span>
-        </a>
-        <a href="orders.html" class="nav-item-link active">
-          <i class="fas fa-clipboard-list"></i>
-          <span>Orders &amp; Verify</span>
-          <span class="nav-badge" id="sidebar-orders-badge">0</span>
-        </a>
-        <a href="refunds.html" class="nav-item-link">
-          <i class="fas fa-undo-alt"></i>
-          <span>Refunds Queue</span>
-          <span class="nav-badge" id="sidebar-refunds-badge">0</span>
-        </a>
+      <!-- Navigation Scroll Area -->
+      <div class="sb-nav-scroll">
+        <!-- Section 1: OPERATIONS -->
+        <section class="sb-section" aria-labelledby="sb-sec-ops">
+          <div id="sb-sec-ops" class="sb-section-label">OPERATIONS</div>
+          <ul class="sb-list" role="group" aria-labelledby="sb-sec-ops">
+            <li class="sb-item">
+              <a href="dashboard.html" class="sb-link" title="Dashboard">
+                <span class="sb-icon" aria-hidden="true"><i class="fas fa-chart-pie"></i></span>
+                <span class="sb-label">Dashboard</span>
+                <span class="sb-tooltip" role="tooltip">Dashboard</span>
+              </a>
+            </li>
+            <li class="sb-item">
+              <a href="walkin-pos.html" class="sb-link" title="Walk-In">
+                <span class="sb-icon" aria-hidden="true"><i class="fas fa-cash-register"></i></span>
+                <span class="sb-label">Walk-In</span>
+                <span class="sb-tooltip" role="tooltip">Walk-In</span>
+              </a>
+            </li>
+            <li class="sb-item">
+              <a href="orders.html" class="sb-link" aria-current="page" title="Orders &amp; Verify">
+                <span class="sb-icon" aria-hidden="true"><i class="fas fa-clipboard-list"></i></span>
+                <span class="sb-label">Orders &amp; Verify</span>
+                <span class="sb-badge sb-badge--orders" data-sb-badge="orders">
+                  <span class="sb-badge-count" id="sidebar-orders-badge">0</span>
+                  <span class="sb-sr-only">pending orders</span>
+                </span>
+                <span class="sb-tooltip" role="tooltip">Orders &amp; Verify</span>
+              </a>
+            </li>
+            <li class="sb-item">
+              <a href="sales.html" class="sb-link" title="Sales">
+                <span class="sb-icon" aria-hidden="true"><i class="fas fa-chart-line"></i></span>
+                <span class="sb-label">Sales</span>
+                <span class="sb-tooltip" role="tooltip">Sales</span>
+              </a>
+            </li>
+            <li class="sb-item">
+              <a href="refunds.html" class="sb-link" title="Refunds Queue">
+                <span class="sb-icon" aria-hidden="true"><i class="fas fa-undo-alt"></i></span>
+                <span class="sb-label">Refunds Queue</span>
+                <span class="sb-badge sb-badge--refunds" data-sb-badge="refunds">
+                  <span class="sb-badge-count" id="sidebar-refunds-badge">0</span>
+                  <span class="sb-sr-only">pending refunds</span>
+                </span>
+                <span class="sb-tooltip" role="tooltip">Refunds Queue</span>
+              </a>
+            </li>
+          </ul>
+        </section>
 
-        <div class="nav-section-title">Bakery Management</div>
-        <a href="products.html" class="nav-item-link">
-          <i class="fas fa-tags"></i>
-          <span>Product Catalog</span>
-        </a>
-        <a href="settings.html" class="nav-item-link">
-          <i class="fas fa-cog"></i>
-          <span>Bakery Settings</span>
-        </a>
-      </nav>
+        <!-- Divider -->
+        <hr class="sb-divider" aria-hidden="true">
 
-      <div class="sidebar-footer">
-        <div class="staff-profile-card">
-          <div class="staff-avatar">GV</div>
-          <div class="staff-details">
-            <div class="staff-name">Gerald V.</div>
+        <!-- Section 2: BAKERY MANAGEMENT -->
+        <section class="sb-section" aria-labelledby="sb-sec-mgmt">
+          <div id="sb-sec-mgmt" class="sb-section-label">BAKERY MANAGEMENT</div>
+          <ul class="sb-list" role="group" aria-labelledby="sb-sec-mgmt">
+            <li class="sb-item">
+              <a href="products.html" class="sb-link" title="Product Inventory">
+                <span class="sb-icon" aria-hidden="true"><i class="fas fa-boxes-stacked"></i></span>
+                <span class="sb-label">Product Inventory</span>
+                <span class="sb-tooltip" role="tooltip">Product Inventory</span>
+              </a>
+            </li>
+            <li class="sb-item">
+              <a href="settings.html" class="sb-link" title="Bakery Settings">
+                <span class="sb-icon" aria-hidden="true"><i class="fas fa-cog"></i></span>
+                <span class="sb-label">Bakery Settings</span>
+                <span class="sb-tooltip" role="tooltip">Bakery Settings</span>
+              </a>
+            </li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- Staff Profile & Quick Actions Footer -->
+      <footer class="sb-footer">
+        <div class="sb-profile">
+          <div class="sb-avatar" id="staff-initials" aria-hidden="true">OW</div>
+          <div class="sb-profile-text">
+            <div class="sb-profile-name" id="staff-email">Owner</div>
+            <div class="sb-profile-role">Store Manager</div>
           </div>
         </div>
-        <div class="sidebar-actions">
-          <a href="../../customer/html/home.html" target="_blank" class="btn-sidebar" title="Open Customer Storefront">
-            <i class="fas fa-external-link-alt"></i> Store
+        <div class="sb-actions">
+          <a href="../../customer/html/home.html" target="_blank" class="sb-btn-action" title="Open Customer Storefront">
+            <i class="fas fa-external-link-alt" aria-hidden="true"></i>
+            <span>Store</span>
           </a>
-          <button type="button" class="btn-sidebar" id="btn-logout" title="Sign out"><i class="fas fa-sign-out-alt"></i> Out</button>
+          <button type="button" class="sb-btn-action" id="btn-logout" title="Sign out">
+            <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+            <span>Out</span>
+          </button>
         </div>
-      </div>
-    </aside>
+      </footer>
+    </nav>
 
     <!-- Main Wrapper -->
     <div class="main-wrapper">
@@ -411,6 +460,7 @@
   <script src="../../customer/js/config.js"></script>
   <script src="../js/admin-api.js"></script>
   <script src="../js/admin-main.js"></script>
+  <script src="../js/admin-sidebar.js"></script>
   <script src="../js/admin-auth.js"></script>
   <script src="../js/admin-orders.js"></script>
 </body>
