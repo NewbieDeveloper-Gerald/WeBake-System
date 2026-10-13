@@ -1,0 +1,149 @@
+/* ==========================================================================
+   WeBake / Crumbs N' Roll Bakery — Scroll Spy & Nav Underline Styles
+   Brown underline indicator, hover preview, section offset,
+   mobile drawer navigation, and reduced-motion accessibility.
+   ========================================================================== */
+
+:root {
+  --spy-underline: #8B5E3C;
+  --spy-underline-hover: rgba(139, 94, 60, 0.42);
+  --spy-offset: calc(var(--header-h, 76px) + 16px);
+}
+
+/* 1. Global smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 2. Section offsets to prevent fixed header overlap */
+#home,
+#products,
+#order-status,
+#about-us,
+#contact {
+  scroll-margin-top: var(--spy-offset);
+}
+
+/* 3. Base nav link styles */
+.nav-links a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.25rem 0.2rem;
+  color: var(--dark, #2E2118);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--radius-sm, 4px);
+  transition: color 0.2s ease;
+}
+
+/* 4. Keyboard focus visible styles */
+.nav-links a:focus-visible {
+  outline: 2px solid var(--spy-underline);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm, 4px);
+}
+
+/* 5. Brown Underline (2.5px solid, 4px below text, scaleX transition) */
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 2.5px;
+  border-radius: 2px;
+  background-color: var(--spy-underline);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.25s ease, background-color 0.25s ease;
+  pointer-events: none;
+}
+
+/* 6. Hover preview on inactive links (lighter brown underline preview) */
+.nav-links a:hover:not(.active) {
+  color: var(--spy-underline);
+}
+
+.nav-links a:hover:not(.active)::after {
+  background-color: var(--spy-underline-hover);
+  transform: scaleX(1);
+}
+
+/* 7. Active link state (full solid brown underline) */
+.nav-links a.active {
+  color: var(--spy-underline);
+  font-weight: 700;
+}
+
+.nav-links a.active::after {
+  background-color: var(--spy-underline);
+  transform: scaleX(1);
+}
+
+/* 8. Mobile navigation menu (screens <= 900px) */
+@media (max-width: 900px) {
+  :root {
+    --spy-offset: calc(var(--header-h, 68px) + 12px);
+  }
+
+  /* Restore and center underline inside mobile dropdown drawer */
+  .nav-links a::after {
+    display: block !important;
+    left: 20%;
+    right: 20%;
+    width: 60%;
+    bottom: 6px;
+    height: 2.5px;
+    transform-origin: center center;
+  }
+
+  .nav-links a.active {
+    background-color: rgba(139, 94, 60, 0.08);
+    color: var(--spy-underline);
+  }
+}
+
+/* 9. Landing page Order Status section card */
+.home-order-status-section {
+  padding: clamp(2rem, 4vw, 3.5rem) 0;
+  background: var(--cream-deep, #EFE0CE);
+}
+
+.order-status-card {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  background: var(--white, #ffffff);
+  border: 1px solid var(--border, #E6D6C2);
+  border-radius: var(--radius-card, 16px);
+  box-shadow: 0 4px 18px rgba(91, 58, 41, 0.06);
+  text-align: center;
+}
+
+.order-status-card .section-title {
+  margin-bottom: 0.5rem;
+}
+
+.order-status-card .order-status-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1.25rem;
+}
+
+/* 10. Accessibility: Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  .nav-links a::after {
+    transition: none !important;
+  }
+}
+
