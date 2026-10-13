@@ -358,6 +358,7 @@
         await api.approvePayment(currentCode);
         document.getElementById('modal-verify-payment').classList.remove('active');
         window.alert(currentCode + ' verified and Confirmed. The customer was emailed.');
+        try { localStorage.setItem('webake_sale_updated', Date.now()); } catch {}
         await load();
       } catch (err) {
         window.alert(err.message);
@@ -512,6 +513,7 @@
         const res = await api.recordBalance(currentCode, 'Cash collected on handover', enteredCents);
         document.getElementById('modal-collect-balance').classList.remove('active');
         window.alert('Collection successful! Amount paid: ' + ui.pesos(res.amount_paid_centavos) + '. Remaining balance: ' + ui.pesos(res.balance_due_centavos) + ' (' + res.payment_status + ').');
+        try { localStorage.setItem('webake_sale_updated', Date.now()); } catch {}
         await load();
       } catch (err) {
         window.alert(err.message);

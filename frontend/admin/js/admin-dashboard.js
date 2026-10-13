@@ -8,7 +8,7 @@
   'use strict';
 
   document.addEventListener('DOMContentLoaded', () => {
-    if (!document.getElementById('stat-online')) return; // not the dashboard
+    if (!document.getElementById('stat-combined')) return; // not the dashboard
 
     const ui = window.AdminUI;
     const api = window.AdminAPI;
@@ -26,12 +26,6 @@
         : (onlineDownpayment + walkinCollected + balanceCollected);
 
       set('stat-combined', ui.pesos(combinedTotal));
-      set('stat-online', ui.pesos(onlineDownpayment));
-      set('stat-online-count', (s.sales_today.online_count || 0) + ' order(s)');
-      set('stat-walkin', ui.pesos(walkinCollected));
-      set('stat-walkin-count', (s.sales_today.walkin_count || 0) + ' sale(s)');
-      set('stat-collected', ui.pesos(balanceCollected));
-      set('stat-collected-count', (s.sales_today.collected_balance_count || 0) + ' payment(s) collected');
       set('stat-pending', String(s.pending_verification));
       set('stat-outstanding', ui.pesos(s.outstanding_balances_centavos));
 

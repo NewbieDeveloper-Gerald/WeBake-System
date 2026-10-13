@@ -99,6 +99,25 @@
 
       <!-- Content Area -->
       <main class="content-area">
+        <!-- Today's Sales Channel Breakdown Cards (Moved from Dashboard) -->
+        <div class="today-channels-grid">
+          <div class="stat-card">
+            <div class="stat-label"><i class="fas fa-globe text-primary"></i> Online sales today (downpayment)</div>
+            <div class="stat-value" id="stat-sales-online">₱0.00</div>
+            <div class="stat-sub" id="stat-sales-online-count">0 order(s)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label"><i class="fas fa-store text-success"></i> Walk-in sales today</div>
+            <div class="stat-value" id="stat-sales-walkin">₱0.00</div>
+            <div class="stat-sub" id="stat-sales-walkin-count">0 sale(s)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label"><i class="fas fa-hand-holding-usd text-warning"></i> Collected Payment</div>
+            <div class="stat-value" id="stat-sales-collected">₱0.00</div>
+            <div class="stat-sub" id="stat-sales-collected-count">delivery balances collected</div>
+          </div>
+        </div>
+
         <!-- Sales Stat Cards -->
         <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 1.5rem;">
           <div class="stat-card">

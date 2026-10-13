@@ -269,7 +269,7 @@
 /* Dashboard composition */
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: .9rem;
   margin-bottom: 1.15rem;
 }
@@ -327,10 +327,12 @@
 .dash-table tbody tr:hover { background: #FCFAF7; }
 .muted { color: var(--text-muted); font-size: .8rem; }
 
-@media (max-width: 1200px) { .stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (max-width: 850px) { .dashboard-cols { grid-template-columns: 1fr; } }
+@media (max-width: 850px) {
+  .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dashboard-cols { grid-template-columns: 1fr; }
+}
 @media (max-width: 600px) {
-  .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+  .stat-grid { grid-template-columns: 1fr; gap: .65rem; }
   .stat-card { padding: .9rem; border-radius: 14px; }
   .stat-label { font-size: .65rem; }
   .stat-sub { font-size: .64rem; }

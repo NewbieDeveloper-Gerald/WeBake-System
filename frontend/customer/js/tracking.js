@@ -31,9 +31,14 @@
     let current = null; // {order, email}
 
     const params = new URLSearchParams(window.location.search);
-    if (params.get('code')) document.getElementById('track-code').value = params.get('code');
-    if (params.get('email')) document.getElementById('track-email').value = params.get('email');
-    if (params.get('code') && params.get('email')) lookup();
+    const codeParam = (params.get('code') || params.get('order') || '').trim();
+    let emailParam = (params.get('email') || '').trim();
+    if (!emailParam && window.ShopAuth && window.ShopAuth.user()) {
+      emailParam = (window.ShopAuth.user().email || '').trim();
+    }
+    if (codeParam) document.getElementById('track-code').value = codeParam;
+    if (emailParam) document.getElementById('track-email').value = emailParam;
+    if (codeParam && emailParam) lookup();
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();

@@ -135,6 +135,41 @@
       return cart.reduce((sum, c) => sum + c.unit_price * c.qty, 0);
     }
 
+    function getMaxStockForLine(idx) {
+      const c = cart[idx];
+      if (!c) return 1;
+      const p = products.find((x) => x.id === c.product_id);
+      if (!p) return 9999;
+      const otherPieces = cart.reduce((sum, item, i) => {
+        if (i === idx || item.product_id !== p.id) return sum;
+        return sum + (item.unit === 'BUNDLE' ? item.qty * item.ppb : item.qty);
+      }, 0);
+      const remainingPieces = Math.max(0, p.stock_pieces - otherPieces);
+      if (c.unit === 'BUNDLE') {
+        return Math.floor(remainingPieces / (c.ppb || 1));
+      }
+      return remainingPieces;
+    }
+
+    function updateLiveTotals(idx, qtyVal) {
+      const box = document.getElementById('pos-cart-items-list');
+      const lines = box.querySelectorAll('.pos-cart-line');
+      if (lines[idx]) {
+        const lineTotalEl = lines[idx].querySelector('.pos-line-total');
+        if (lineTotalEl) lineTotalEl.textContent = ui.pesos(cart[idx].unit_price * qtyVal);
+      }
+      const itemCount = cart.reduce((sum, line, i) => sum + (i === idx ? qtyVal : line.qty), 0);
+      const countEl = document.getElementById('pos-slip-count');
+      if (countEl) {
+        countEl.textContent = itemCount + ' item' + (itemCount === 1 ? '' : 's');
+        countEl.classList.toggle('is-empty', itemCount === 0);
+      }
+      const total = cart.reduce((sum, line, i) => sum + (line.unit_price * (i === idx ? qtyVal : line.qty)), 0);
+      document.getElementById('pos-cart-subtotal').textContent = ui.pesos(total);
+      document.getElementById('pos-total-due').textContent = ui.pesos(total);
+      updateChange();
+    }
+
     function renderCart() {
       const box = document.getElementById('pos-cart-items-list');
       if (!cart.length) {
@@ -146,6 +181,8 @@
           '</div>';
       } else {
         box.innerHTML = cart.map((c, i) => {
+          const maxStock = getMaxStockForLine(i);
+          const ariaLabel = c.unit === 'BUNDLE' ? 'Quantity in bundles' : 'Quantity in pieces';
           const unitTag = c.unit === 'BUNDLE'
             ? '<span style="display:inline-block;padding:1px 6px;border-radius:4px;background:#F8EEE5;color:#704638;font-size:0.68rem;font-weight:700;">Bundle (' + c.ppb + ' pcs)</span>'
             : '<span style="display:inline-block;padding:1px 6px;border-radius:4px;background:#EAF7ED;color:#28A745;font-size:0.68rem;font-weight:700;">Piece</span>';
@@ -160,12 +197,12 @@
             '<div class="pos-cart-line-controls">' +
             '<div class="pos-qty-ctrl">' +
             '<button type="button" class="btn btn-outline btn-sm pos-qty-button" data-dec="' + i + '" aria-label="Decrease quantity" style="border-radius:8px;font-weight:700;">&minus;</button>' +
-            '<span style="min-width:1.5rem;text-align:center;font-weight:800;font-size:0.82rem;color:#4D332A;">' + c.qty + '</span>' +
+            '<input type="number" inputmode="numeric" min="1" max="' + maxStock + '" value="' + c.qty + '" class="pos-qty-input" data-qty-idx="' + i + '" aria-label="' + ariaLabel + '">' +
             '<button type="button" class="btn btn-outline btn-sm pos-qty-button" data-inc="' + i + '" aria-label="Increase quantity" style="border-radius:8px;font-weight:700;">&plus;</button>' +
             '</div>' +
             '<button type="button" class="btn btn-danger-outline btn-sm pos-remove-line" data-del="' + i + '" title="Remove item" style="border-radius:8px;"><i class="fas fa-trash-alt"></i></button>' +
             '</div>' +
-            '<div style="text-align:right;"><strong style="font-size:0.88rem;color:#4B2B23;">' + ui.pesos(c.unit_price * c.qty) + '</strong></div>' +
+            '<div style="text-align:right;"><strong class="pos-line-total" style="font-size:0.88rem;color:#4B2B23;">' + ui.pesos(c.unit_price * c.qty) + '</strong></div>' +
             '</div>';
         }).join('');
       }
@@ -181,16 +218,85 @@
       updateChange();
     }
 
-    document.getElementById('pos-cart-items-list').addEventListener('click', (e) => {
+    const cartList = document.getElementById('pos-cart-items-list');
+
+    cartList.addEventListener('focusin', (e) => {
+      if (e.target.classList.contains('pos-qty-input')) {
+        e.target.select();
+      }
+    });
+
+    cartList.addEventListener('keydown', (e) => {
+      if (!e.target.classList.contains('pos-qty-input')) return;
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.target.blur();
+        return;
+      }
+      if (['e', 'E', '+', '-', '.'].includes(e.key)) {
+        e.preventDefault();
+      }
+    });
+
+    cartList.addEventListener('input', (e) => {
+      if (!e.target.classList.contains('pos-qty-input')) return;
+      const input = e.target;
+      const idx = parseInt(input.dataset.qtyIdx, 10);
+      const c = cart[idx];
+      if (!c) return;
+
+      let cleanVal = input.value.replace(/[^0-9]/g, '');
+      if (cleanVal !== input.value) {
+        input.value = cleanVal;
+      }
+
+      if (cleanVal === '') {
+        updateLiveTotals(idx, 0);
+        return;
+      }
+
+      let val = parseInt(cleanVal, 10);
+      const maxStock = getMaxStockForLine(idx);
+      if (val > maxStock) {
+        const unitWord = c.unit === 'BUNDLE' ? 'bundles' : 'pieces';
+        ui.toast('Only ' + maxStock + ' ' + unitWord + ' available', 'warning');
+        val = maxStock;
+        input.value = val;
+      }
+
+      c.qty = val;
+      updateLiveTotals(idx, val);
+    });
+
+    cartList.addEventListener('blur', (e) => {
+      if (!e.target.classList.contains('pos-qty-input')) return;
+      const input = e.target;
+      const idx = parseInt(input.dataset.qtyIdx, 10);
+      const c = cart[idx];
+      if (!c) return;
+
+      let val = parseInt(input.value, 10);
+      const maxStock = getMaxStockForLine(idx);
+      if (isNaN(val) || val < 1) {
+        val = 1;
+      } else if (val > maxStock) {
+        val = Math.max(1, maxStock);
+      }
+      c.qty = val;
+      renderCart();
+    }, true);
+
+    cartList.addEventListener('click', (e) => {
       const inc = e.target.closest('[data-inc]');
       const dec = e.target.closest('[data-dec]');
       const del = e.target.closest('[data-del]');
       if (inc) {
-        const c = cart[inc.dataset.inc];
-        const p = products.find((x) => x.id === c.product_id);
-        const pieces = c.unit === 'BUNDLE' ? (c.qty + 1) * p.pieces_per_bundle : c.qty + 1;
-        if (p && p.stock_pieces < pieces) {
-          ui.toast('Cannot add more. Insufficient stock of ' + p.name, 'danger');
+        const idx = parseInt(inc.dataset.inc, 10);
+        const c = cart[idx];
+        const maxStock = getMaxStockForLine(idx);
+        if (c.qty >= maxStock) {
+          const unitWord = c.unit === 'BUNDLE' ? 'bundles' : 'pieces';
+          ui.toast('Only ' + maxStock + ' ' + unitWord + ' available', 'warning');
           return;
         }
         c.qty += 1;
@@ -271,6 +377,7 @@
         renderCart();
         await refreshStock();
         ui.toast('Counter sale recorded successfully!', 'success');
+        try { localStorage.setItem('webake_sale_updated', Date.now()); } catch {}
       } catch (err) {
         ui.alert(err.message, 'Sale Processing Failed');
       } finally {

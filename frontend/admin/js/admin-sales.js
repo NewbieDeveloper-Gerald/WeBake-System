@@ -122,12 +122,55 @@
       }
     }
 
+    async function loadTodayCards() {
+      const onlineEl = document.getElementById('stat-sales-online');
+      const walkinEl = document.getElementById('stat-sales-walkin');
+      const collectedEl = document.getElementById('stat-sales-collected');
+      const onlineCountEl = document.getElementById('stat-sales-online-count');
+      const walkinCountEl = document.getElementById('stat-sales-walkin-count');
+      const collectedCountEl = document.getElementById('stat-sales-collected-count');
+      if (!onlineEl) return;
+
+      try {
+        const { stats: s } = await api.dashboardStats();
+        const salesToday = (s && s.sales_today) || {};
+        const onlineDownpayment = salesToday.online_downpayment_centavos != null
+          ? salesToday.online_downpayment_centavos
+          : (salesToday.online_collected_centavos || 0);
+        const walkinCollected = salesToday.walkin_gross_centavos || 0;
+        const balanceCollected = salesToday.collected_balance_centavos || 0;
+
+        onlineEl.textContent = ui.pesos(onlineDownpayment);
+        if (onlineCountEl) onlineCountEl.textContent = (salesToday.online_count || 0) + ' order(s)';
+
+        walkinEl.textContent = ui.pesos(walkinCollected);
+        if (walkinCountEl) walkinCountEl.textContent = (salesToday.walkin_count || 0) + ' sale(s)';
+
+        collectedEl.textContent = ui.pesos(balanceCollected);
+        if (collectedCountEl) collectedCountEl.textContent = (salesToday.collected_balance_count || 0) + ' payment(s) collected';
+      } catch (err) {
+        console.error('Failed to load today sales summary cards', err);
+        onlineEl.textContent = '₱0.00';
+        walkinEl.textContent = '₱0.00';
+        collectedEl.textContent = '₱0.00';
+      }
+    }
+
     if (periodSelect) periodSelect.addEventListener('change', loadReport);
     if (anchorInput) anchorInput.addEventListener('change', loadReport);
-    if (refreshBtn) refreshBtn.addEventListener('click', () => { loadKpis(); loadReport(); });
+    if (refreshBtn) refreshBtn.addEventListener('click', () => { loadTodayCards(); loadKpis(); loadReport(); });
     if (exportBtn) exportBtn.addEventListener('click', downloadPdf);
     if (quickExportBtn) quickExportBtn.addEventListener('click', downloadPdf);
 
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'webake_sale_updated') {
+        loadTodayCards();
+        loadKpis();
+      }
+    });
+    window.addEventListener('focus', loadTodayCards);
+
+    loadTodayCards();
     loadKpis();
     loadReport();
   });

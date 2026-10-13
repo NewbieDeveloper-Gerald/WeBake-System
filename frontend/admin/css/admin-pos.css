@@ -737,6 +737,31 @@
 .pos-cart-line > div:last-child strong { white-space: nowrap; color: #4B2B23; font-size: .8rem; }
 .pos-qty-ctrl { display: flex; align-items: center; gap: .3rem; }
 .pos-qty-ctrl > span { min-width: 1.2rem; text-align: center; color: #4D332A; font-size: .76rem; font-weight: 700; }
+.pos-qty-input {
+  width: 52px;
+  min-height: 30px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 0.86rem;
+  color: #4D332A;
+  background: #FFF;
+  border: 1.5px solid #D4A53C;
+  border-radius: 8px;
+  padding: 0 4px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  -moz-appearance: textfield;
+}
+.pos-qty-input::-webkit-outer-spin-button,
+.pos-qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.pos-qty-input:focus {
+  border-color: #B45309;
+  box-shadow: 0 0 0 2px rgba(212, 165, 60, 0.25);
+  background: #FFFDF8;
+}
 .pos-qty-button { width: 30px; min-width: 30px; min-height: 30px; padding: 0; }
 .pos-remove-line { width: 30px; min-width: 30px; min-height: 30px; padding: 0; }
 .btn-clear-cart { display: inline-flex; align-items: center; gap: .35rem; padding: .4rem .65rem; border: 1px solid #F2D7D5; border-radius: 9px; background: #FFF7F6; color: #AF3734; font-size: .72rem; font-weight: 700; }

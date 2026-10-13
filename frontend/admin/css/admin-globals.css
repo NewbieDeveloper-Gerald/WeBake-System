@@ -1348,3 +1348,18 @@ body {
   color: rgba(255, 255, 255, 0.75);
 }
 
+/* Today's Sales Channel Breakdown Grid (Sales Page) */
+.today-channels-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.15rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .today-channels-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+

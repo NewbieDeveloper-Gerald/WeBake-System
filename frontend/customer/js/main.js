@@ -1020,20 +1020,38 @@
 
     function showSuccess() {
       const o = co.order;
+      const customerEmail = co.email || (auth.user() && auth.user().email) || '';
+
       document.getElementById('success-order-id-card').innerHTML =
-        '<div class="success-id-card"><span>Order ID</span><strong>' + U.escapeHtml(o.order_code) +
-        '</strong><a href="track.html?code=' + encodeURIComponent(o.order_code) +
-        '">Check order status</a></div>';
+        '<div class="success-id-card">' +
+        '<span class="order-ref-label">Order Reference</span>' +
+        '<strong>Order #' + U.escapeHtml(o.order_code) + '</strong>' +
+        '<p class="order-helper-text">You can track your order anytime in Order Status.</p>' +
+        '</div>';
+
       document.getElementById('success-downpayment-summary').innerHTML =
         '<div class="success-summary"><div class="review-line"><span>Downpayment submitted</span><strong>' +
         U.pesos(o.downpayment_centavos) + '</strong></div>' +
         '<div class="review-line"><span>Balance on delivery</span><span>' +
         U.pesos(o.balance_due_centavos) + '</span></div>' +
         '<p class="pending-note">' + t('co.submit_pay') + '</p></div>';
+
       document.getElementById('success-guest-convert-box').innerHTML = auth.token() ? '' :
         '<div class="guest-convert"><p>Have an account? Your orders link automatically when you register with ' +
         U.escapeHtml(co.email) + '.</p><a class="btn btn-outline btn-sm" href="register.html?email=' +
         encodeURIComponent(co.email) + '">Create account</a></div>';
+
+      const actionsBar = document.getElementById('success-actions-bar');
+      if (actionsBar) {
+        actionsBar.style.display = 'flex';
+        const statusBtn = document.getElementById('btn-view-order-status');
+        if (statusBtn) {
+          statusBtn.href = 'track.html?code=' + encodeURIComponent(o.order_code) +
+            (customerEmail ? '&email=' + encodeURIComponent(customerEmail) : '');
+          setTimeout(() => statusBtn.focus(), 60);
+        }
+      }
+
       gotoStep('step-success');
       // Keep unchecked products in the saved cart after placing this order.
       const checkedOutIds = new Set(co.items.map((line) => line.product_id));
@@ -1041,6 +1059,18 @@
       checkedOutIds.forEach((id) => selectedProductIds.delete(id));
       persist();
       renderCart();
+    }
+
+    const continueShoppingBtn = document.getElementById('btn-continue-shopping');
+    if (continueShoppingBtn) {
+      continueShoppingBtn.addEventListener('click', () => {
+        const ref = document.getElementById('gcash-ref');
+        if (ref) ref.value = '';
+        clearProofSelection();
+        co.order = null;
+        closeCheckout();
+        window.location.href = 'products.html';
+      });
     }
 
     const orderAgainBtn = document.getElementById('order-again-btn');
@@ -1051,7 +1081,7 @@
         clearProofSelection();
         co.order = null;
         closeCheckout();
-        init().catch(() => {});
+        window.location.href = 'products.html';
       });
     }
     const successNavBtn = document.getElementById('success-nav-btn');
