@@ -20,7 +20,6 @@
   // =========================================================================
   const sections = [
     { id: 'home', label: 'Home' },
-    { id: 'products', label: 'Products' },
     { id: 'about-us', label: 'About Us' },
     { id: 'contact', label: 'Contact' }
   ];
@@ -230,6 +229,10 @@
   function handleInitialHash() {
     let rawHash = window.location.hash ? window.location.hash.slice(1) : '';
     if (rawHash === 'about') rawHash = 'about-us';
+    if (rawHash === 'products') {
+      window.location.href = 'products.html';
+      return;
+    }
     if (rawHash === 'order-status') {
       if (window.TrackModal && window.TrackModal.open) {
         window.TrackModal.open();

@@ -17,7 +17,6 @@ html {
 
 /* 2. Section offsets to prevent fixed header overlap */
 #home,
-#products,
 #about-us,
 #contact {
   scroll-margin-top: var(--spy-offset);
