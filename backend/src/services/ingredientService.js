@@ -16,7 +16,7 @@ async function list() {
       query(`
         SELECT
           id, name, stock_quantity, unit, reorder_level, cost_per_unit,
-          supplier, expiry_date, storage_location, stock_updated_at,
+          supplier, expiry_date::text AS expiry_date, storage_location, stock_updated_at,
           created_at, updated_at, stock_status,
           CASE
             WHEN expiry_date IS NOT NULL
@@ -61,7 +61,7 @@ async function getById(id) {
   const res = await query(`
     SELECT
       id, name, stock_quantity, unit, reorder_level, cost_per_unit,
-      supplier, expiry_date, storage_location, stock_updated_at,
+      supplier, expiry_date::text AS expiry_date, storage_location, stock_updated_at,
       created_at, updated_at, stock_status,
       CASE
         WHEN expiry_date IS NOT NULL

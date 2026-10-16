@@ -74,12 +74,15 @@
 
   function formatDate(dStr) {
     if (!dStr) return '—';
-    const parts = dStr.split('-');
+    const clean = String(dStr).split('T')[0];
+    const parts = clean.split('-');
     if (parts.length === 3) {
-      const d = new Date(parts[0], parts[1] - 1, parts[2]);
-      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      }
     }
-    return dStr;
+    return '—';
   }
 
   function formatDateTime(iso) {
@@ -346,7 +349,7 @@
     document.getElementById('ing-unit').value = ing.unit || 'sack';
     document.getElementById('ing-reorder').value = ing.reorder_level != null ? ing.reorder_level : 0;
     document.getElementById('ing-cost').value = ing.cost_per_unit != null ? ing.cost_per_unit : '';
-    document.getElementById('ing-expiry').value = ing.expiry_date || '';
+    document.getElementById('ing-expiry').value = ing.expiry_date ? String(ing.expiry_date).split('T')[0] : '';
 
     // Per rules: cannot edit stock_quantity here! Changes must go through adjust_stock RPC
     wrapInitialStock.style.display = 'none';
