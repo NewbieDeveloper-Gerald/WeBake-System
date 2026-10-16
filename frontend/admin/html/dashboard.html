@@ -130,14 +130,15 @@
       </footer>
     </nav>
 
-    <!-- Main Wrapper -->
+    <!-- Main Content Area -->
     <div class="main-wrapper">
+      <!-- 3. Header -->
       <header class="admin-topbar">
         <div class="topbar-left">
           <button type="button" class="mobile-menu-toggle" aria-label="Toggle Navigation"><i class="fas fa-bars"></i></button>
           <div class="page-headline">
             <h1>Dashboard</h1>
-            <p>Today's sales, queues, and alerts at a glance</p>
+            <p>Today's sales, orders, and inventory at a glance</p>
           </div>
         </div>
         <div class="topbar-right">
@@ -146,77 +147,145 @@
       </header>
 
       <main class="content-area">
-        <!-- Refund alert card (spec: stays until Refunded/Closed, links to queue) -->
-        <div class="refund-alert-card" id="refund-alert-card" hidden>
-          <div class="refund-alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
-          <div class="refund-alert-body">
-            <h3><span id="refund-alert-count">0</span> refund(s) need action</h3>
-            <p>Awaiting details or pending payout. Money is sent manually, then recorded.</p>
+        <!-- 4. Summary Cards (Row 1) -->
+        <section class="stat-grid" aria-label="Summary Metrics">
+          <!-- Card A: Today's Sales -->
+          <div class="stat-card stat-card--primary">
+            <div class="stat-label">TODAY'S SALES</div>
+            <div class="stat-value" id="stat-combined">₱0.00</div>
+            <div class="stat-sub">Recorded sales for today</div>
           </div>
-          <a href="refunds.html" class="btn btn-primary">Open Refund Queue</a>
-        </div>
 
-        <!-- Stat cards -->
-        <div class="stat-grid">
-          <div class="stat-card highlight">
-            <div class="stat-label"><i class="fas fa-coins text-warning"></i> Today's Sales (Combined)</div>
-            <div class="stat-value" id="stat-combined">—</div>
-            <div class="stat-sub">downpayment + walk-in + collected payment</div>
-          </div>
+          <!-- Card B: Awaiting Verification -->
+          <a href="orders.html" class="stat-card stat-card--clickable" title="Review payment proofs">
+            <div class="stat-label">AWAITING VERIFICATION</div>
+            <div class="stat-value" id="stat-pending">0</div>
+            <div class="stat-sub">Orders requiring payment review <span class="arrow-indicator">&rarr;</span></div>
+          </a>
+
+          <!-- Card C: Possible Collection -->
           <div class="stat-card">
-            <div class="stat-label">Awaiting verification</div>
-            <div class="stat-value" id="stat-pending">—</div>
-            <div class="stat-sub"><a href="orders.html">Review proofs</a></div>
+            <div class="stat-label">POSSIBLE COLLECTION</div>
+            <div class="stat-value" id="stat-outstanding">₱0.00</div>
+            <div class="stat-sub">Remaining downpayment to collect</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">Possible collections</div>
-            <div class="stat-value" id="stat-outstanding">—</div>
-            <div class="stat-sub">outstanding balance to collect</div>
-          </div>
+        </section>
+
+        <!-- Middle Row: Orders by Status + Low Stock Alerts -->
+        <div class="dashboard-middle-grid">
+          <!-- 5. Orders by Status -->
+          <section class="dash-card orders-status-card" aria-labelledby="heading-orders-status">
+            <div class="dash-card-header">
+              <h2 id="heading-orders-status"><i class="fas fa-clipboard-list"></i> Orders by Status</h2>
+            </div>
+            <div class="dash-card-body">
+              <div id="status-breakdown" class="status-list">
+                <p class="muted">Loading status counts…</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- 6. Low Stock Alerts for Products and Ingredients -->
+          <section class="dash-card low-stock-card" aria-labelledby="heading-low-stock">
+            <div class="dash-card-header">
+              <h2 id="heading-low-stock"><i class="fas fa-triangle-exclamation"></i> Low Stock Alerts</h2>
+            </div>
+            <div class="dash-card-body low-stock-body">
+              <!-- Group A: Products -->
+              <div class="lowstock-group">
+                <h3 class="lowstock-group-title"><i class="fas fa-boxes-stacked"></i> Products</h3>
+                <div class="table-scroll-container">
+                  <table class="dash-table">
+                    <thead>
+                      <tr>
+                        <th>Item</th>
+                        <th>Current Stock</th>
+                        <th>Minimum Stock</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="lowstock-products-tbody">
+                      <tr><td colspan="4" class="muted">Loading products…</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Group B: Ingredients -->
+              <div class="lowstock-group">
+                <h3 class="lowstock-group-title"><i class="fas fa-wheat-awn"></i> Ingredients</h3>
+                <div class="table-scroll-container">
+                  <table class="dash-table">
+                    <thead>
+                      <tr>
+                        <th>Item</th>
+                        <th>Current Stock</th>
+                        <th>Minimum Stock</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="lowstock-ingredients-tbody">
+                      <tr><td colspan="4" class="muted">Loading ingredients…</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
 
-        <div class="dashboard-cols">
-          <!-- Orders by status -->
-          <div class="dash-panel">
-            <h3><i class="fas fa-clipboard-list"></i> Orders by status</h3>
-            <div id="status-breakdown" class="status-list"><p class="muted">Loading…</p></div>
+        <!-- 7. Recent Orders -->
+        <section class="dash-card recent-orders-card" aria-labelledby="heading-recent-orders">
+          <div class="dash-card-header">
+            <h2 id="heading-recent-orders"><i class="fas fa-clock-rotate-left"></i> Recent Orders</h2>
           </div>
-          <!-- Low stock -->
-          <div class="dash-panel">
-            <h3><i class="fas fa-boxes-stacked"></i> Low stock alerts</h3>
-            <table class="dash-table">
-              <thead><tr><th>Product</th><th>Stock</th><th>Status</th></tr></thead>
-              <tbody id="lowstock-tbody"><tr><td colspan="3" class="muted">Loading…</td></tr></tbody>
-            </table>
+          <div class="dash-card-body">
+            <div class="table-scroll-container">
+              <table class="dash-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-tbody">
+                  <tr><td colspan="5" class="muted">Loading orders…</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        </section>
 
-        <!-- Recent orders -->
-        <div class="dash-panel">
-          <h3><i class="fas fa-clock"></i> Recent orders</h3>
-          <div class="table-responsive">
-            <table class="dash-table">
-              <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th></tr></thead>
-              <tbody id="recent-tbody"><tr><td colspan="5" class="muted">Loading…</td></tr></tbody>
-            </table>
+        <!-- 8. Sales Report -->
+        <section class="dash-card sales-report-card" aria-labelledby="heading-sales-report">
+          <div class="dash-card-header">
+            <h2 id="heading-sales-report"><i class="fas fa-file-invoice-dollar"></i> Sales Report</h2>
           </div>
-        </div>
-
-        <!-- Sales report quick export -->
-        <div class="dash-panel">
-          <h3><i class="fas fa-file-pdf"></i> Sales reports (PDF)</h3>
-          <div class="report-row">
-            <select id="report-period" class="form-select">
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-            </select>
-            <input type="date" id="report-anchor" class="form-input">
-            <button type="button" class="btn btn-outline" id="btn-report-view">View</button>
-            <button type="button" class="btn btn-primary" id="btn-report-pdf"><i class="fas fa-download"></i> Export PDF</button>
+          <div class="dash-card-body">
+            <form class="report-controls" id="sales-report-form" onsubmit="return false;">
+              <div class="report-field">
+                <label for="report-period" class="form-label">Report Period</label>
+                <select id="report-period" class="form-select">
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+              <div class="report-field">
+                <label for="report-anchor" class="form-label">Date</label>
+                <input type="date" id="report-anchor" class="form-input" required>
+              </div>
+              <div class="report-actions">
+                <button type="button" class="btn btn-outline" id="btn-report-view">View</button>
+                <button type="button" class="btn btn-primary" id="btn-report-pdf"><i class="fas fa-file-pdf"></i> Export PDF</button>
+              </div>
+            </form>
+            <div id="report-summary" class="report-summary"></div>
           </div>
-          <div id="report-summary" class="report-summary"></div>
-        </div>
+        </section>
       </main>
     </div>
   </div>
