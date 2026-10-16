@@ -45,13 +45,6 @@
           badgeAriaUnit: 'pending orders'
         },
         {
-          id: 'sales',
-          label: 'Sales',
-          route: 'sales.html',
-          icon: 'fas fa-chart-line',
-          badgeType: null
-        },
-        {
           id: 'refunds',
           label: 'Refunds Queue',
           route: 'refunds.html',
@@ -78,6 +71,13 @@
           label: 'Ingredients',
           route: 'ingredients.html',
           icon: 'fas fa-wheat-awn',
+          badgeType: null
+        },
+        {
+          id: 'sales',
+          label: 'Sales',
+          route: 'sales.html',
+          icon: 'fas fa-chart-line',
           badgeType: null
         },
         {
