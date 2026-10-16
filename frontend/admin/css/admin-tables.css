@@ -1,0 +1,229 @@
+/* ==========================================================================
+   WeBake Admin Portal — Shared Table Styles (admin-tables.css)
+   Reusable, WCAG AA compliant table design system across all admin pages.
+   Header: Dark Bakery Brown (#4A2518) with Cream/White text (#FFF8EE) (>11:1 contrast)
+   Rows: Crisp white / subtle warm tint with warm hover highlight (#FBF3E8)
+   ========================================================================== */
+
+:root {
+  --table-header-bg: #4A2518;
+  --table-header-text: #FFF8EE;
+  --table-row-bg: #FFFFFF;
+  --table-row-alt: #FCFAF7;
+  --table-row-hover: #FBF3E8;
+  --table-row-border: #F0E6DA;
+  --table-header-gold: #E2B96F;
+}
+
+/* --- Responsive Table Wrapper --- */
+.table-responsive,
+.table-scroll-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #FFFFFF;
+  border: 1px solid #EAE0D5;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(78, 38, 31, 0.04);
+  margin-bottom: 1rem;
+}
+
+/* --- Core Admin Table Selector (covers .admin-table, .dash-table, .catalog-table) --- */
+.admin-table,
+.dash-table,
+.catalog-table,
+table.admin-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+  font-size: 0.84rem;
+  background: #FFFFFF;
+}
+
+/* --- Sticky Dark Brown Header --- */
+.admin-table thead,
+.dash-table thead,
+.catalog-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.admin-table thead th,
+.dash-table thead th,
+.catalog-table thead th {
+  background-color: var(--table-header-bg, #4A2518) !important;
+  color: var(--table-header-text, #FFF8EE) !important;
+  font-size: 0.75rem !important; /* 12px */
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  padding: 14px 16px !important;
+  line-height: 1.3 !important;
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+  border: none !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 2 !important;
+  box-shadow: 0 1px 0 var(--table-header-bg, #4A2518);
+}
+
+/* Rounded top corners matching the outer container */
+.admin-table thead tr th:first-child,
+.dash-table thead tr th:first-child,
+.catalog-table thead tr th:first-child {
+  border-top-left-radius: 11px;
+}
+
+.admin-table thead tr th:last-child,
+.dash-table thead tr th:last-child,
+.catalog-table thead tr th:last-child {
+  border-top-right-radius: 11px;
+}
+
+/* Lighter Gold sort indicators */
+.admin-table th .sort-icon,
+.dash-table th .sort-icon,
+.catalog-table th .sort-icon {
+  display: inline-block;
+  margin-left: 6px;
+  color: var(--table-header-gold, #E2B96F);
+  font-size: 0.75rem;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.admin-table th.sortable,
+.dash-table th.sortable,
+.catalog-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.admin-table th.sortable:hover,
+.dash-table th.sortable:hover,
+.catalog-table th.sortable:hover {
+  background-color: #3B1B12 !important;
+  color: #FFF !important;
+}
+
+/* --- Row Styling --- */
+.admin-table tbody tr,
+.dash-table tbody tr,
+.catalog-table tbody tr {
+  background-color: var(--table-row-bg, #FFFFFF);
+  transition: background-color 0.15s ease;
+}
+
+/* Subtle Zebra Striping */
+.admin-table tbody tr:nth-child(even),
+.dash-table tbody tr:nth-child(even),
+.catalog-table tbody tr:nth-child(even) {
+  background-color: var(--table-row-alt, #FCFAF7);
+}
+
+.admin-table tbody td,
+.dash-table tbody td,
+.catalog-table tbody td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--table-row-border, #F0E6DA);
+  vertical-align: middle;
+  color: #2D2422;
+  font-size: 0.84rem;
+}
+
+/* Warm Hover Highlight */
+.admin-table tbody tr:hover,
+.dash-table tbody tr:hover,
+.catalog-table tbody tr:hover {
+  background-color: var(--table-row-hover, #FBF3E8) !important;
+}
+
+.admin-table tbody tr:last-child td,
+.dash-table tbody tr:last-child td,
+.catalog-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* --- Column Alignments & Numerical Clarity --- */
+.col-number,
+.col-price,
+.col-numeric,
+.text-right,
+th.text-right,
+td.text-right {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.col-center,
+th.col-center,
+td.col-center {
+  text-align: center !important;
+}
+
+/* --- Actions Cell --- */
+.actions-cell,
+td.actions-cell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.actions-btn-group {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+}
+
+.btn-icon-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #D8CFC8;
+  background: #FFFFFF;
+  color: #4E261F;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+
+.btn-icon-action:hover {
+  background: #4E261F;
+  color: #FFFFFF;
+  border-color: #4E261F;
+  transform: translateY(-1px);
+}
+
+.btn-icon-action.danger:hover {
+  background: #DC3545;
+  color: #FFFFFF;
+  border-color: #DC3545;
+}
+
+/* --- Empty and Loading States --- */
+.table-empty-notice {
+  text-align: center;
+  padding: 2.5rem 1rem !important;
+  color: #8C7B73;
+}
+
+.table-empty-notice i {
+  font-size: 2rem;
+  color: #C8B9B0;
+  display: block;
+  margin-bottom: 0.6rem;
+}
+
+/* Focus styles for keyboard accessibility */
+.admin-table a:focus-visible,
+.admin-table button:focus-visible,
+.btn-icon-action:focus-visible {
+  outline: 2px solid #C88A2C;
+  outline-offset: 2px;
+}

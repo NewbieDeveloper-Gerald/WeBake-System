@@ -2,7 +2,8 @@
  * admin-products: catalog table + add/edit modal + archive/restore + KPI metrics + category filters.
  *
  * WHAT: Lists products with live KPI counters, category filter pills,
- * instant search, image thumbnail previews, and in-page modal dialogs.
+ * instant search with debounce, image thumbnail previews, pagination, CSV export,
+ * and in-page modal dialogs.
  */
 (function () {
   'use strict';
@@ -15,9 +16,20 @@
     let editingId = null;
     let cachedProducts = [];
     let currentFilter = 'all';
+    let currentPage = 1;
+    let searchDebounceTimer = null;
 
     const search = document.getElementById('catalog-search');
     const countLabel = document.getElementById('catalog-count');
+    const sortSelect = document.getElementById('catalog-sort');
+    const resetBtn = document.getElementById('btn-reset-filters');
+    const clearSearchBtn = document.getElementById('btn-clear-search');
+    const rowsPerPageSelect = document.getElementById('rows-per-page');
+    const prevBtn = document.getElementById('btn-page-prev');
+    const nextBtn = document.getElementById('btn-page-next');
+    const pageNumberEl = document.getElementById('pagination-current-page');
+    const paginationInfo = document.getElementById('pagination-info');
+    const exportBtn = document.getElementById('btn-export-products-csv');
 
     const modal = () => document.getElementById('modal-product');
     const open = () => modal().classList.add('active');
@@ -32,7 +44,7 @@
     }
 
     function updateKpiCards(products) {
-      const total = products.length;
+      const total = products.filter((p) => !p.is_archived).length;
       const inStock = products.filter((p) => !p.is_archived && p.stock_status === 'IN_STOCK').length;
       const lowStock = products.filter((p) => !p.is_archived && p.stock_status === 'LOW_STOCK').length;
       const outOfStock = products.filter((p) => !p.is_archived && (p.stock_status === 'OUT_OF_STOCK' || Number(p.stock_pieces) <= 0)).length;
@@ -42,11 +54,56 @@
         const el = document.getElementById(id);
         if (el) el.textContent = val;
       };
+
+      // Top stat cards
       setEl('stat-total-products', total);
       setEl('stat-instock-products', inStock);
       setEl('stat-lowstock-products', lowStock);
       setEl('stat-outofstock-products', outOfStock);
       setEl('stat-archived-products', archived);
+
+      // Filter pill badges
+      setEl('badge-count-all', total);
+      setEl('badge-count-active', inStock);
+      setEl('badge-count-lowstock', lowStock);
+      setEl('badge-count-outofstock', outOfStock);
+      setEl('badge-count-archived', archived);
+    }
+
+    function updateResetVisibility() {
+      const sortVal = sortSelect ? sortSelect.value : 'name_asc';
+      const term = search ? search.value.trim() : '';
+      const hasActiveFilters = currentFilter !== 'all' || term.length > 0 || sortVal !== 'name_asc';
+      if (resetBtn) resetBtn.style.display = hasActiveFilters ? 'inline-flex' : 'none';
+      if (clearSearchBtn) clearSearchBtn.style.display = term.length > 0 ? 'inline-block' : 'none';
+    }
+
+    function syncFilterUI() {
+      // Sync stat cards
+      document.querySelectorAll('#product-kpi-cards .stat-card').forEach((card) => {
+        if (card.dataset.filter === currentFilter) {
+          card.classList.add('active');
+        } else {
+          card.classList.remove('active');
+        }
+      });
+
+      // Sync filter pills
+      document.querySelectorAll('#catalog-filters [data-filter]').forEach((pill) => {
+        if (pill.dataset.filter === currentFilter) {
+          pill.classList.add('active');
+        } else {
+          pill.classList.remove('active');
+        }
+      });
+    }
+
+    function setFilter(filterKey) {
+      currentFilter = filterKey;
+      currentPage = 1;
+      syncFilterUI();
+      updateResetVisibility();
+      renderTable();
     }
 
     async function load() {
@@ -71,10 +128,11 @@
 
       let filtered = cachedProducts.filter((p) => {
         // Category filter
-        if (currentFilter === 'active' && p.is_archived) return false;
-        if (currentFilter === 'archived' && !p.is_archived) return false;
+        if (currentFilter === 'all' && p.is_archived) return false;
+        if (currentFilter === 'active' && (p.is_archived || p.stock_status !== 'IN_STOCK')) return false;
         if (currentFilter === 'low_stock' && (p.is_archived || p.stock_status !== 'LOW_STOCK')) return false;
         if (currentFilter === 'out_of_stock' && (p.is_archived || (p.stock_status !== 'OUT_OF_STOCK' && Number(p.stock_pieces) > 0))) return false;
+        if (currentFilter === 'archived' && !p.is_archived) return false;
 
         // Search text filter
         if (term) {
@@ -85,41 +143,114 @@
         return true;
       });
 
-      if (!filtered.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="muted" style="text-align:center;padding:2rem;">No products match your filter criteria.</td></tr>';
+      // Sorting
+      const sortVal = sortSelect ? sortSelect.value : 'name_asc';
+      filtered.sort((a, b) => {
+        switch (sortVal) {
+          case 'name_desc':
+            return b.name.localeCompare(a.name);
+          case 'price_asc':
+            return (a.price_bundle_centavos || 0) - (b.price_bundle_centavos || 0);
+          case 'price_desc':
+            return (b.price_bundle_centavos || 0) - (a.price_bundle_centavos || 0);
+          case 'stock_asc':
+            return (Number(a.stock_pieces) || 0) - (Number(b.stock_pieces) || 0);
+          case 'stock_desc':
+            return (Number(b.stock_pieces) || 0) - (Number(a.stock_pieces) || 0);
+          case 'name_asc':
+          default:
+            return a.name.localeCompare(b.name);
+        }
+      });
+
+      const totalItems = filtered.length;
+
+      // Handle Empty State
+      if (!totalItems) {
+        const isFiltered = term || currentFilter !== 'all' || sortVal !== 'name_asc';
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-table-state">' +
+          '<i class="fas fa-box-open empty-state-icon"></i>' +
+          '<div class="empty-state-title">' + (term ? 'No products match "' + ui.esc(term) + '"' : 'No products found') + '</div>' +
+          '<div class="empty-state-desc">' + (isFiltered ? 'Try clearing your search or switching categories.' : 'Get started by creating your first bakery product.') + '</div>' +
+          (isFiltered ? '<button type="button" class="btn btn-outline btn-sm" id="btn-empty-reset"><i class="fas fa-rotate-left"></i> Reset all filters</button>' : '') +
+          '</td></tr>';
+
+        const emptyResetBtn = document.getElementById('btn-empty-reset');
+        if (emptyResetBtn) {
+          emptyResetBtn.addEventListener('click', () => {
+            if (resetBtn) resetBtn.click();
+          });
+        }
+
         if (countLabel) countLabel.textContent = '0 products matching';
+        if (paginationInfo) paginationInfo.textContent = 'Showing 0–0 of 0 products';
+        if (prevBtn) prevBtn.disabled = true;
+        if (nextBtn) nextBtn.disabled = true;
+        if (pageNumberEl) pageNumberEl.textContent = 'Page 1 of 1';
         return;
       }
 
-      tbody.innerHTML = filtered.map((p) => {
+      // Pagination calculation
+      const pageSizeVal = rowsPerPageSelect ? rowsPerPageSelect.value : '25';
+      const pageSize = pageSizeVal === 'all' ? totalItems : Math.max(1, parseInt(pageSizeVal, 10) || 25);
+      const totalPages = Math.ceil(totalItems / pageSize) || 1;
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      const startIndex = (currentPage - 1) * pageSize;
+      const endIndex = Math.min(startIndex + pageSize, totalItems);
+      const pageItems = filtered.slice(startIndex, endIndex);
+
+      // Update Pagination UI
+      if (prevBtn) prevBtn.disabled = currentPage <= 1;
+      if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+      if (pageNumberEl) pageNumberEl.textContent = 'Page ' + currentPage + ' of ' + totalPages;
+      if (paginationInfo) {
+        paginationInfo.textContent = 'Showing ' + (startIndex + 1) + '–' + endIndex + ' of ' + totalItems + ' products';
+      }
+
+      // Render table rows
+      tbody.innerHTML = pageItems.map((p) => {
         const thumbHtml = p.image_url
           ? '<div class="catalog-product-thumb-box"><img src="' + ui.esc(p.image_url) + '" class="catalog-product-img" alt="' + ui.esc(p.name) + '" onerror="this.onerror=null;this.parentElement.innerHTML=\'<span class=\\\'catalog-product-icon\\\'><i class=\\\'fas fa-bread-slice\\\'></i></span>\';"></div>'
           : '<span class="catalog-product-icon"><i class="fas fa-bread-slice"></i></span>';
 
-        const statusPill = p.is_archived
+        const isOut = p.stock_status === 'OUT_OF_STOCK' || Number(p.stock_pieces) <= 0;
+        const isLow = !isOut && p.stock_status === 'LOW_STOCK';
+        const stockDotClass = isOut ? 'stock-out' : (isLow ? 'stock-low' : 'stock-ok');
+
+        const statusBadge = p.is_archived
           ? '<span class="catalog-status-badge status-archived"><i class="fas fa-box-archive"></i> Archived</span>'
-          : p.stock_status === 'OUT_OF_STOCK'
+          : isOut
             ? '<span class="catalog-status-badge status-out"><i class="fas fa-circle-xmark"></i> Out of Stock</span>'
-            : p.stock_status === 'LOW_STOCK'
+            : isLow
               ? '<span class="catalog-status-badge status-low"><i class="fas fa-triangle-exclamation"></i> Low Stock</span>'
               : '<span class="catalog-status-badge status-ok"><i class="fas fa-circle-check"></i> In Stock</span>';
 
         return '<tr' + (p.is_archived ? ' class="is-archived"' : '') + '>' +
-          '<td><div class="catalog-product-name">' + thumbHtml +
+          '<td class="col-product"><div class="catalog-product-name">' + thumbHtml +
           '<div class="catalog-name-meta"><strong>' + ui.esc(p.name) + '</strong>' +
-          (p.is_archived ? '<small class="text-danger"><i class="fas fa-box-archive"></i> Archived</small>' : '<small class="text-muted">' + (p.description ? ui.esc(p.description.slice(0, 45) + (p.description.length > 45 ? '…' : '')) : 'Standard bakery item') + '</small>') +
-          '</div></div></td>' +
-          '<td><span class="catalog-price-bundle">' + ui.pesos(p.price_bundle_centavos) + '</span></td>' +
-          '<td><span class="catalog-pcs-pill">' + p.pieces_per_bundle + ' pcs</span></td>' +
-          '<td><span class="catalog-price-piece">' + ui.pesos(p.piece_price_centavos) + '</span></td>' +
-          '<td><div class="catalog-stock-group"><strong class="stock-qty">' + p.stock_pieces.toLocaleString() + ' pcs</strong><span class="stock-bdls">(' + Number(p.bundles_available || 0) + ' bdls)</span></div></td>' +
-          '<td>' + statusPill + '</td>' +
-          '<td class="actions-cell">' +
-          '<button type="button" class="btn btn-outline btn-sm" data-edit="' + p.id + '"><i class="fas fa-pen"></i> Edit</button> ' +
-          (!p.is_archived ? '<button type="button" class="btn btn-outline btn-sm" data-adjust="' + p.id + '" title="Adjust Stock"><i class="fas fa-sliders-h"></i> Adjust</button> ' : '') +
           (p.is_archived
-            ? '<button type="button" class="btn btn-success btn-sm" data-restore="' + p.id + '"><i class="fas fa-rotate-left"></i> Restore</button>'
-            : '<button type="button" class="btn btn-danger-outline btn-sm" data-archive="' + p.id + '"><i class="fas fa-box-archive"></i> Archive</button>') +
+            ? '<small class="text-danger"><i class="fas fa-box-archive"></i> Archived from store</small>'
+            : '<small class="text-muted">' + (p.description ? ui.esc(p.description.slice(0, 48) + (p.description.length > 48 ? '…' : '')) : 'Bakery Item #' + p.id) + '</small>') +
+          '</div></div></td>' +
+          '<td class="col-bundle-price text-right"><span class="catalog-price-bundle">' + ui.pesos(p.price_bundle_centavos) + '</span></td>' +
+          '<td class="col-pcs-bundle col-center"><span class="catalog-pcs-pill">' + p.pieces_per_bundle + ' pcs</span></td>' +
+          '<td class="col-piece-price text-right"><span class="catalog-price-piece">' + ui.pesos(p.piece_price_centavos) + '</span></td>' +
+          '<td class="col-stock"><div class="catalog-stock-group">' +
+          '<span class="stock-dot ' + stockDotClass + '" title="' + (isOut ? 'Depleted' : (isLow ? 'Below threshold' : 'Sufficient')) + '"></span>' +
+          '<div class="stock-text-col"><strong class="stock-qty">' + Number(p.stock_pieces).toLocaleString() + ' pcs</strong><span class="stock-bdls">(' + Number(p.bundles_available || 0) + ' bdls)</span></div>' +
+          '</div></td>' +
+          '<td class="col-status col-center">' + statusBadge + '</td>' +
+          '<td class="col-actions text-right actions-cell">' +
+          '<div class="action-buttons-group">' +
+          '<button type="button" class="btn-icon" data-edit="' + p.id + '" title="Edit product" aria-label="Edit product"><i class="fas fa-pen"></i></button>' +
+          (!p.is_archived ? '<button type="button" class="btn-icon" data-adjust="' + p.id + '" title="Quick Stock Adjust" aria-label="Quick Stock Adjust"><i class="fas fa-sliders-h"></i></button>' : '') +
+          '<button type="button" class="btn-icon" data-duplicate="' + p.id + '" title="Duplicate product" aria-label="Duplicate product"><i class="fas fa-copy"></i></button>' +
+          (p.is_archived
+            ? '<button type="button" class="btn-icon btn-icon-restore" data-restore="' + p.id + '" title="Restore to catalog" aria-label="Restore product"><i class="fas fa-rotate-left"></i></button>'
+            : '<button type="button" class="btn-icon btn-icon-archive" data-archive="' + p.id + '" title="Archive product" aria-label="Archive product"><i class="fas fa-box-archive"></i></button>') +
+          '</div>' +
           '</td></tr>';
       }).join('');
 
@@ -130,17 +261,147 @@
       }
     }
 
-    // Filter pills click handling
-    document.querySelectorAll('#catalog-filters [data-filter]').forEach((pill) => {
-      pill.addEventListener('click', () => {
-        document.querySelectorAll('#catalog-filters [data-filter]').forEach((p) => p.classList.remove('active'));
-        pill.classList.add('active');
-        currentFilter = pill.dataset.filter;
-        renderTable();
+    // Bind Stat Cards Click & Keyboard
+    document.querySelectorAll('#product-kpi-cards .stat-card').forEach((card) => {
+      card.addEventListener('click', () => setFilter(card.dataset.filter));
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          setFilter(card.dataset.filter);
+        }
       });
     });
 
-    if (search) search.addEventListener('input', renderTable);
+    // Bind Filter Pills Click
+    document.querySelectorAll('#catalog-filters [data-filter]').forEach((pill) => {
+      pill.addEventListener('click', () => setFilter(pill.dataset.filter));
+    });
+
+    // Debounced Search Input
+    if (search) {
+      search.addEventListener('input', () => {
+        updateResetVisibility();
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => {
+          currentPage = 1;
+          renderTable();
+        }, 250);
+      });
+    }
+
+    // Clear Search Button
+    if (clearSearchBtn) {
+      clearSearchBtn.addEventListener('click', () => {
+        if (search) search.value = '';
+        currentPage = 1;
+        updateResetVisibility();
+        renderTable();
+        if (search) search.focus();
+      });
+    }
+
+    // Sort Dropdown
+    if (sortSelect) {
+      sortSelect.addEventListener('change', () => {
+        currentPage = 1;
+        updateResetVisibility();
+        renderTable();
+      });
+    }
+
+    // Rows Per Page Dropdown
+    if (rowsPerPageSelect) {
+      rowsPerPageSelect.addEventListener('change', () => {
+        currentPage = 1;
+        renderTable();
+      });
+    }
+
+    // Pagination Prev / Next Buttons
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderTable();
+        }
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        currentPage++;
+        renderTable();
+      });
+    }
+
+    // Reset Filters Link
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        currentFilter = 'all';
+        if (search) search.value = '';
+        if (sortSelect) sortSelect.value = 'name_asc';
+        currentPage = 1;
+        syncFilterUI();
+        updateResetVisibility();
+        renderTable();
+      });
+    }
+
+    // Export CSV
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => {
+        if (!cachedProducts || !cachedProducts.length) {
+          ui.alert('No products available to export.', 'Export CSV');
+          return;
+        }
+        const headers = [
+          'ID',
+          'Name',
+          'Description',
+          'Pieces Per Bundle',
+          'Bundle Price (PHP)',
+          'Piece Price (PHP)',
+          'Stock Pieces',
+          'Bundles Available',
+          'Low Stock Threshold',
+          'Stock Status',
+          'Archived'
+        ];
+
+        const escapeCsv = (val) => {
+          if (val === null || val === undefined) return '""';
+          const str = String(val).replace(/"/g, '""');
+          return `"${str}"`;
+        };
+
+        const rows = cachedProducts.map((p) => [
+          p.id,
+          escapeCsv(p.name),
+          escapeCsv(p.description || ''),
+          p.pieces_per_bundle,
+          (p.price_bundle_centavos / 100).toFixed(2),
+          (p.piece_price_centavos / 100).toFixed(2),
+          p.stock_pieces,
+          p.bundles_available || 0,
+          p.low_stock_threshold_pieces,
+          p.stock_status,
+          p.is_archived ? 'Yes' : 'No'
+        ].join(','));
+
+        const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\r\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const today = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = `webake-products-${today}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        ui.toast('Exported ' + cachedProducts.length + ' products to CSV.', 'success');
+      });
+    }
 
     // Image file selection & preview in modal
     const prodImgInput = document.getElementById('prod-image');
@@ -265,6 +526,7 @@
       const arch = e.target.closest('[data-archive]');
       const rest = e.target.closest('[data-restore]');
       const adj = e.target.closest('[data-adjust]');
+      const dup = e.target.closest('[data-duplicate]');
       try {
         if (edit) { await openForEdit(edit.dataset.edit); return; }
         if (adj) {
@@ -272,6 +534,27 @@
           if (prodSelect) prodSelect.value = adj.dataset.adjust;
           const section = document.getElementById('section-stock-adjustment');
           if (section) section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const qtyInput = document.getElementById('adjust-qty');
+          if (qtyInput) { setTimeout(() => qtyInput.focus(), 300); }
+          return;
+        }
+        if (dup) {
+          const p = cachedProducts.find((x) => String(x.id) === String(dup.dataset.duplicate));
+          if (p) {
+            openForCreate();
+            document.getElementById('prod-name').value = p.name + ' (Copy)';
+            document.getElementById('prod-desc').value = p.description || '';
+            document.getElementById('prod-price').value = (p.price_bundle_centavos / 100).toFixed(2);
+            document.getElementById('prod-pieces').value = p.pieces_per_bundle;
+            document.getElementById('prod-piece-price').value = (p.piece_price_centavos / 100).toFixed(2);
+            document.getElementById('prod-threshold').value = p.low_stock_threshold_pieces;
+            if (prodImgInput) prodImgInput.value = p.image_url || '';
+            if (p.image_url && prodImgPreview) {
+              prodImgPreview.src = p.image_url;
+              if (prodImgWrap) prodImgWrap.style.display = 'flex';
+            }
+            ui.toast('Duplicating product "' + p.name + '". Review and save.', 'info');
+          }
           return;
         }
         if (arch && ui.confirmAsk('Archive this product? It will be hidden from the customer storefront and Walk-In register, but past order history remains preserved.')) {

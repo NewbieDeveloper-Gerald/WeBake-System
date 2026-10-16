@@ -6,6 +6,7 @@
   <title>WeBake Admin — Product Inventory</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../css/admin-globals.css">
+  <link rel="stylesheet" href="../css/admin-tables.css">
   <link rel="stylesheet" href="../css/admin-catalog.css">
   <link rel="stylesheet" href="../css/admin-sidebar.css">
 </head>
@@ -122,9 +123,9 @@
             <i class="fas fa-external-link-alt" aria-hidden="true"></i>
             <span>Store</span>
           </a>
-          <button type="button" class="sb-btn-action" id="btn-logout" title="Sign out">
+          <button type="button" class="sb-btn-action" id="btn-logout" title="Sign out of WeBake">
             <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
-            <span>Out</span>
+            <span>Log out</span>
           </button>
         </div>
       </footer>
@@ -132,45 +133,66 @@
 
     <!-- Main Wrapper -->
     <div class="main-wrapper">
-      <header class="admin-topbar">
+      <header class="admin-topbar sticky-topbar">
         <div class="topbar-left">
           <button type="button" class="mobile-menu-toggle" aria-label="Toggle Navigation"><i class="fas fa-bars"></i></button>
           <div class="page-headline">
+            <div class="breadcrumb-trail">Bakery Management / Products</div>
             <h1>Product Inventory</h1>
-            <p>New products appear on the shop and Walk-In register immediately</p>
+            <p class="topbar-sub">New products appear on the shop and Walk-In register immediately</p>
           </div>
         </div>
         <div class="topbar-right">
+          <button type="button" class="btn btn-outline" id="btn-export-products-csv"><i class="fas fa-file-csv"></i> Export CSV</button>
           <button type="button" class="btn btn-primary" id="btn-add-product"><i class="fas fa-plus"></i> Add Product</button>
         </div>
       </header>
 
       <main class="content-area">
-        <!-- Summary Stats Cards -->
-        <div class="stats-grid" style="margin-bottom: 1.25rem;">
-          <div class="stat-card">
-            <div class="stat-label"><i class="fas fa-bread-slice text-primary"></i> Total Products</div>
+        <!-- Summary Stats Cards (5-Column Desktop Grid, Clickable Filters) -->
+        <div class="stats-grid-5" id="product-kpi-cards" style="margin-bottom: 1.25rem;">
+          <div class="stat-card active" data-filter="all" role="button" tabindex="0" title="Click to view all products">
+            <div class="stat-card-header">
+              <span class="stat-label"><i class="fas fa-bread-slice text-primary"></i> Total Products</span>
+              <span class="active-indicator" title="Current Filter"><i class="fas fa-check"></i></span>
+            </div>
             <div class="stat-value" id="stat-total-products">—</div>
             <div class="stat-sub">in bakery catalog</div>
           </div>
-          <div class="stat-card highlight">
-            <div class="stat-label"><i class="fas fa-circle-check"></i> In Stock</div>
-            <div class="stat-value" id="stat-instock-products">—</div>
+
+          <div class="stat-card" data-filter="active" role="button" tabindex="0" title="Click to view products in stock">
+            <div class="stat-card-header">
+              <span class="stat-label"><i class="fas fa-circle-check" style="color:var(--success, #16a34a);"></i> In Stock</span>
+              <span class="active-indicator" title="Current Filter"><i class="fas fa-check"></i></span>
+            </div>
+            <div class="stat-value" id="stat-instock-products" style="color:var(--success, #16a34a);">—</div>
             <div class="stat-sub">ready for sale</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label"><i class="fas fa-triangle-exclamation" style="color:var(--warning, #e65100);"></i> Low Stock</div>
+
+          <div class="stat-card" data-filter="low_stock" role="button" tabindex="0" title="Click to view products needing production">
+            <div class="stat-card-header">
+              <span class="stat-label"><i class="fas fa-triangle-exclamation" style="color:var(--warning, #e65100);"></i> Low Stock</span>
+              <span class="active-indicator" title="Current Filter"><i class="fas fa-check"></i></span>
+            </div>
             <div class="stat-value" id="stat-lowstock-products" style="color:var(--warning, #e65100);">—</div>
-            <div class="stat-sub">&le; reorder threshold</div>
+            <div class="stat-sub">&le; reorder threshold <span class="stat-help" title="Configurable threshold (pieces) per product to trigger reorder alert"><i class="fas fa-circle-info"></i></span></div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label"><i class="fas fa-circle-xmark" style="color:var(--danger, #dc3545);"></i> Out of Stock</div>
+
+          <div class="stat-card" data-filter="out_of_stock" role="button" tabindex="0" title="Click to view depleted products">
+            <div class="stat-card-header">
+              <span class="stat-label"><i class="fas fa-circle-xmark" style="color:var(--danger, #dc3545);"></i> Out of Stock</span>
+              <span class="active-indicator" title="Current Filter"><i class="fas fa-check"></i></span>
+            </div>
             <div class="stat-value" id="stat-outofstock-products" style="color:var(--danger, #dc3545);">—</div>
             <div class="stat-sub">depleted inventory</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label"><i class="fas fa-box-archive text-muted"></i> Archived</div>
-            <div class="stat-value" id="stat-archived-products">—</div>
+
+          <div class="stat-card" data-filter="archived" role="button" tabindex="0" title="Click to view archived products">
+            <div class="stat-card-header">
+              <span class="stat-label"><i class="fas fa-box-archive text-muted"></i> Archived</span>
+              <span class="active-indicator" title="Current Filter"><i class="fas fa-check"></i></span>
+            </div>
+            <div class="stat-value" id="stat-archived-products" style="color:var(--text-muted);">—</div>
             <div class="stat-sub">hidden from storefront</div>
           </div>
         </div>
@@ -178,45 +200,71 @@
         <!-- Catalog Surface -->
         <section class="catalog-surface">
           <div class="catalog-toolbar">
-            <div class="catalog-heading">
-              <h2>Bakery Products</h2>
-              <p>Manage items, bundle configurations, and pricing.</p>
-            </div>
-            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+            <div class="catalog-toolbar-left">
+              <h2 class="catalog-heading-title" style="margin:0; font-size:1.1rem; color:var(--text-main, #4E261F); font-weight:700; white-space:nowrap;">Bakery Products</h2>
               <div class="pos-category-filters" id="catalog-filters">
-                <button type="button" class="pos-filter-pill active" data-filter="all">All</button>
-                <button type="button" class="pos-filter-pill" data-filter="active">Active</button>
-                <button type="button" class="pos-filter-pill" data-filter="low_stock">Low Stock</button>
-                <button type="button" class="pos-filter-pill" data-filter="out_of_stock">Out of Stock</button>
-                <button type="button" class="pos-filter-pill" data-filter="archived">Archived</button>
+                <button type="button" class="pos-filter-pill active" data-filter="all">All <span class="pill-badge" id="badge-count-all">0</span></button>
+                <button type="button" class="pos-filter-pill" data-filter="active">In Stock <span class="pill-badge" id="badge-count-active">0</span></button>
+                <button type="button" class="pos-filter-pill" data-filter="low_stock">Low Stock <span class="pill-badge" id="badge-count-lowstock">0</span></button>
+                <button type="button" class="pos-filter-pill" data-filter="out_of_stock">Out of Stock <span class="pill-badge" id="badge-count-outofstock">0</span></button>
+                <button type="button" class="pos-filter-pill" data-filter="archived">Archived <span class="pill-badge" id="badge-count-archived">0</span></button>
               </div>
-              <label class="catalog-search" for="catalog-search">
-                <i class="fas fa-search" aria-hidden="true"></i>
-                <input id="catalog-search" type="search" placeholder="Search products..." aria-label="Search products" autocomplete="off">
-              </label>
+            </div>
+            <div class="catalog-toolbar-right">
+              <div class="catalog-search-wrap">
+                <i class="fas fa-search search-icon" aria-hidden="true"></i>
+                <input id="catalog-search" type="search" placeholder="Search product name..." aria-label="Search products" autocomplete="off">
+                <button type="button" id="btn-clear-search" class="search-clear-btn" aria-label="Clear search" style="display:none;"><i class="fas fa-times"></i></button>
+              </div>
+              <select id="catalog-sort" class="form-select catalog-sort-select" aria-label="Sort products">
+                <option value="name_asc">Sort: Name (A &rarr; Z)</option>
+                <option value="name_desc">Sort: Name (Z &rarr; A)</option>
+                <option value="price_asc">Sort: Price (Low &rarr; High)</option>
+                <option value="price_desc">Sort: Price (High &rarr; Low)</option>
+                <option value="stock_asc">Sort: Stock (Low &rarr; High)</option>
+                <option value="stock_desc">Sort: Stock (High &rarr; Low)</option>
+              </select>
+              <button type="button" id="btn-reset-filters" class="btn-link-reset" style="display:none;"><i class="fas fa-rotate-left"></i> Reset</button>
             </div>
           </div>
           <div class="catalog-meta">
             <span id="catalog-count">Loading products…</span>
-            <span>All wholesale prices in Philippine Pesos (PHP)</span>
+            <div class="pagination-controls-top" id="pagination-controls-top">
+              <label for="rows-per-page" style="font-size:0.75rem; color:var(--text-muted); margin-right:4px;">Rows per page:</label>
+              <select id="rows-per-page" class="form-select form-select-sm" style="padding:2px 8px; font-size:0.75rem; width:auto; display:inline-block;">
+                <option value="10">10</option>
+                <option value="25" selected>25</option>
+                <option value="50">50</option>
+                <option value="all">All</option>
+              </select>
+            </div>
           </div>
           <div class="table-responsive">
-            <table class="dash-table catalog-table">
+            <table class="dash-table catalog-table admin-table" id="table-products">
               <thead>
                 <tr>
-                  <th>Product</th>
-                  <th>Bundle Price</th>
-                  <th>Pcs/Bundle</th>
-                  <th>Piece Price</th>
-                  <th>Stock Available</th>
-                  <th>Status</th>
-                  <th style="text-align:right;">Actions</th>
+                  <th class="col-product">Product</th>
+                  <th class="col-bundle-price text-right">Bundle Price</th>
+                  <th class="col-pcs-bundle col-center">Pcs/Bundle</th>
+                  <th class="col-piece-price text-right">Piece Price</th>
+                  <th class="col-stock">Stock Available</th>
+                  <th class="col-status col-center">Status</th>
+                  <th class="col-actions text-right">Actions</th>
                 </tr>
               </thead>
               <tbody id="products-tbody">
                 <tr><td colspan="7" class="muted">Loading products…</td></tr>
               </tbody>
             </table>
+          </div>
+          <!-- Pagination Bottom Bar -->
+          <div class="catalog-pagination-bar" id="catalog-pagination-bar">
+            <span id="pagination-info" class="pagination-info">Showing 0–0 of 0 products</span>
+            <div class="pagination-buttons">
+              <button type="button" class="btn btn-outline btn-sm" id="btn-page-prev" disabled><i class="fas fa-chevron-left"></i> Previous</button>
+              <span id="pagination-current-page" class="pagination-page-number">Page 1</span>
+              <button type="button" class="btn btn-outline btn-sm" id="btn-page-next" disabled>Next <i class="fas fa-chevron-right"></i></button>
+            </div>
           </div>
         </section>
 
