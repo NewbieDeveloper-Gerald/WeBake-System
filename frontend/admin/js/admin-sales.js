@@ -28,10 +28,6 @@
 
     let productSort = { col: 'total_centavos', dir: 'desc' };
 
-    let transSearch = '';
-    let transPage = 1;
-    const transPageSize = 10;
-
     let paySearch = '';
     let payPage = 1;
     const payPageSize = 10;
@@ -243,7 +239,7 @@
       const toggleBtn = document.getElementById('btn-export-dropdown');
       const menu = document.getElementById('export-menu');
       const btnPdf = document.getElementById('btn-export-pdf');
-      const btnCsvTrans = document.getElementById('btn-export-csv-transactions');
+      const btnCsvPay = document.getElementById('btn-export-csv-payments');
       const btnCsvProd = document.getElementById('btn-export-csv-products');
 
       if (!toggleBtn || !menu) return;
@@ -299,17 +295,17 @@
         });
       }
 
-      // CSV Transactions Export
-      if (btnCsvTrans) {
-        btnCsvTrans.addEventListener('click', () => {
+      // CSV Payments Export
+      if (btnCsvPay) {
+        btnCsvPay.addEventListener('click', () => {
           menu.classList.remove('is-open');
-          if (!cachedReport || !cachedReport.transactions || cachedReport.transactions.length === 0) {
-            showToast('No transactions to export for this period.', 'info');
+          if (!cachedReport || !cachedReport.payments || cachedReport.payments.length === 0) {
+            showToast('No payments to export for this period.', 'info');
             return;
           }
           try {
-            exportTransactionsCsv(cachedReport.transactions, cachedReport.label);
-            showToast('Transactions CSV exported.', 'success');
+            exportPaymentsCsv(cachedReport.payments, cachedReport.label);
+            showToast('Payments CSV exported.', 'success');
           } catch (err) {
             showToast('CSV export failed: ' + err.message, 'error');
           }
@@ -347,27 +343,25 @@
       setTimeout(() => URL.revokeObjectURL(url), 5000);
     }
 
-    function exportTransactionsCsv(transactions, periodLabel) {
-      const headers = ['Date', 'Time (Manila)', 'Reference', 'Customer', 'Channel', 'Status', 'Payment Method', 'Amount (PHP)', 'Downpayment Paid (PHP)', 'Balance Due (PHP)'];
-      const rows = transactions.map((t) => {
-        const d = new Date(t.created_at);
+    function exportPaymentsCsv(payments, periodLabel) {
+      const headers = ['Date', 'Time (Manila)', 'Order Code', 'Customer', 'Payment Stage', 'Method', 'Reference No.', 'Amount Received (PHP)'];
+      const rows = payments.map((p) => {
+        const d = new Date(p.created_at);
         const dateStr = d.toLocaleDateString('en-US', { timeZone: 'Asia/Manila' });
         const timeStr = d.toLocaleTimeString('en-US', { timeZone: 'Asia/Manila' });
         return [
           `"${dateStr}"`,
           `"${timeStr}"`,
-          `"${t.code || ''}"`,
-          `"${(t.customer || '').replace(/"/g, '""')}"`,
-          `"${t.channel}"`,
-          `"${t.status}"`,
-          `"${t.payment_method || 'CASH'}"`,
-          (t.amount_centavos / 100).toFixed(2),
-          (t.downpayment_paid_centavos / 100).toFixed(2),
-          (t.balance_centavos / 100).toFixed(2),
+          `"${p.order_code || ''}"`,
+          `"${(p.customer_name || '').replace(/"/g, '""')}"`,
+          `"${p.stage || ''}"`,
+          `"${p.channel || ''}"`,
+          `"${p.reference_number || ''}"`,
+          (p.amount_centavos / 100).toFixed(2),
         ].join(',');
       });
       const csv = [headers.join(','), ...rows].join('\r\n');
-      const filename = `webake-transactions-${currentPeriod}-${getManilaToday()}.csv`;
+      const filename = `webake-payments-${currentPeriod}-${getManilaToday()}.csv`;
       triggerCsvDownload(csv, filename);
     }
 
@@ -414,13 +408,10 @@
         const rangeTextEl = document.getElementById('period-human-text');
         if (rangeTextEl) rangeTextEl.textContent = report.label || 'Selected Period';
 
-        // 2. Render Primary KPI Cards
+        // 2. Render 4 Summary Cards
         renderKpiCards(report);
 
-        // 3. Render Secondary Metrics Strip
-        renderSecondaryMetrics(report);
-
-        // 4. Update Sidebar Badges dynamically
+        // 3. Update Sidebar Badges dynamically
         if (window.CRBAdminSidebar && typeof window.CRBAdminSidebar.setBadge === 'function') {
           api.dashboardStats().then((res) => {
             if (res && res.stats) {
@@ -433,12 +424,11 @@
           }).catch(() => {});
         }
 
-        // 5. Render Charts
+        // 4. Render Charts
         renderCharts(report);
 
-        // 6. Render Tabbed Tables
+        // 5. Render Tabbed Tables
         renderByProductTable(report);
-        renderTransactionsTable(report);
         renderPaymentsTable(report);
 
         if (isManual) {
@@ -457,7 +447,7 @@
       }
     }
 
-    // --- Render Primary KPI Cards ---
+    // --- Render 4 Summary Cards ---
     function renderKpiCards(r) {
       const m = r.metrics || {};
       const deltas = r.deltas || {};
@@ -470,7 +460,7 @@
         return `<span class="delta-badge is-neutral">0% ${compLabel}</span>`;
       }
 
-      // Net Revenue
+      // Card 1: Net Sales (Hero)
       const netValEl = document.getElementById('kpi-net-revenue');
       const netSubEl = document.getElementById('kpi-net-revenue-sub');
       const netDeltaEl = document.getElementById('kpi-net-revenue-delta');
@@ -483,23 +473,15 @@
       }
       if (netDeltaEl) netDeltaEl.innerHTML = renderDelta(deltas.net_revenue_pct);
 
-      // Cash Collected
+      // Card 2: Cash Collected
       const cashValEl = document.getElementById('kpi-cash-collected');
       const cashSubEl = document.getElementById('kpi-cash-collected-sub');
       const cashDeltaEl = document.getElementById('kpi-cash-collected-delta');
       if (cashValEl) cashValEl.textContent = formatPesos(m.cash_collected_centavos);
-      if (cashSubEl) cashSubEl.textContent = `${formatNumber(m.payments_count || 0)} payment(s) collected`;
+      if (cashSubEl) cashSubEl.textContent = `${formatNumber(m.payments_count || 0)} payment(s) received`;
       if (cashDeltaEl) cashDeltaEl.innerHTML = renderDelta(deltas.cash_collected_pct);
 
-      // Booked Sales
-      const bookedValEl = document.getElementById('kpi-booked-sales');
-      const bookedSubEl = document.getElementById('kpi-booked-sales-sub');
-      const bookedDeltaEl = document.getElementById('kpi-booked-sales-delta');
-      if (bookedValEl) bookedValEl.textContent = formatPesos(m.booked_sales_centavos);
-      if (bookedSubEl) bookedSubEl.textContent = `${formatNumber(m.total_orders || 0)} total order(s)`;
-      if (bookedDeltaEl) bookedDeltaEl.innerHTML = renderDelta(deltas.booked_sales_pct);
-
-      // Outstanding Balance
+      // Card 3: Unpaid Balance
       const outValEl = document.getElementById('kpi-outstanding-balance');
       const outSubEl = document.getElementById('kpi-outstanding-sub');
       const outDeltaEl = document.getElementById('kpi-outstanding-delta');
@@ -507,33 +489,24 @@
       if (outValEl) outValEl.textContent = formatPesos(outBal);
       if (outSubEl) {
         outSubEl.textContent = outBal > 0
-          ? 'Unpaid balance · Click to review'
-          : 'All orders in period paid in full';
+          ? `${formatNumber(m.total_orders || 0)} order(s) with balance`
+          : 'All orders paid in full';
       }
       if (outDeltaEl) outDeltaEl.innerHTML = renderDelta(deltas.outstanding_balance_pct);
-    }
 
-    // --- Render Secondary Metrics ---
-    function renderSecondaryMetrics(r) {
-      const m = r.metrics || {};
-      const onEl = document.getElementById('sec-online-sales');
-      const onSubEl = document.getElementById('sec-online-sub');
-      const wkEl = document.getElementById('sec-walkin-sales');
-      const wkSubEl = document.getElementById('sec-walkin-sub');
-      const refEl = document.getElementById('sec-refunds');
-      const refSubEl = document.getElementById('sec-refunds-sub');
-      const aovEl = document.getElementById('sec-aov');
-
-      if (onEl) onEl.textContent = formatPesos(m.online_booked_centavos);
-      if (onSubEl) onSubEl.textContent = `${formatNumber(m.online_orders || 0)} online order(s)`;
-
-      if (wkEl) wkEl.textContent = formatPesos(m.walkin_booked_centavos);
-      if (wkSubEl) wkSubEl.textContent = `${formatNumber(m.walkin_sales || 0)} counter sale(s)`;
-
-      if (refEl) refEl.textContent = formatPesos(m.refunds_centavos);
-      if (refSubEl) refSubEl.textContent = `${formatNumber(m.refunds_count || 0)} request(s) refunded`;
-
-      if (aovEl) aovEl.textContent = formatPesos(m.aov_centavos);
+      // Card 4: Refunds
+      const refValEl = document.getElementById('kpi-refunds');
+      const refSubEl = document.getElementById('kpi-refunds-sub');
+      const refDeltaEl = document.getElementById('kpi-refunds-delta');
+      const refCentavos = m.refunds_centavos || 0;
+      if (refValEl) refValEl.textContent = formatPesos(refCentavos);
+      if (refSubEl) {
+        const refCount = m.refunds_count || 0;
+        refSubEl.textContent = refCount > 0
+          ? `${formatNumber(refCount)} approved refund(s)`
+          : 'No refunds this period';
+      }
+      if (refDeltaEl) refDeltaEl.innerHTML = renderDelta(deltas.refunds_pct);
     }
 
     // Dynamic fallback loader for Chart.js across local and CDN sources
@@ -865,92 +838,7 @@
       }
     }
 
-    // --- Tab 2: Render Transactions Table ---
-    function renderTransactionsTable(r) {
-      const tbody = document.getElementById('transactions-tbody');
-      const countBadge = document.getElementById('count-transactions');
-      const countLabel = document.getElementById('transactions-count-label');
-      const pageInfo = document.getElementById('trans-page-info');
-      const btnPrev = document.getElementById('trans-btn-prev');
-      const btnNext = document.getElementById('trans-btn-next');
-      if (!tbody) return;
-
-      const rawItems = r.transactions || [];
-      if (countBadge) countBadge.textContent = String(rawItems.length);
-
-      // Filter by search
-      const q = transSearch.trim().toLowerCase();
-      const filtered = q
-        ? rawItems.filter((t) => (t.code || '').toLowerCase().includes(q) || (t.customer || '').toLowerCase().includes(q))
-        : rawItems;
-
-      if (countLabel) countLabel.textContent = `${filtered.length} transaction(s)`;
-
-      if (filtered.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="7">
-              <div class="friendly-empty-state">
-                <i class="fas fa-receipt" aria-hidden="true"></i>
-                <h4>No transactions found</h4>
-                <p>${q ? 'No orders match your search query.' : 'No orders or sales were booked in this period.'}</p>
-              </div>
-            </td>
-          </tr>
-        `;
-        if (pageInfo) pageInfo.textContent = 'Showing 0-0 of 0';
-        if (btnPrev) btnPrev.disabled = true;
-        if (btnNext) btnNext.disabled = true;
-        return;
-      }
-
-      // Pagination
-      const totalPages = Math.ceil(filtered.length / transPageSize);
-      if (transPage > totalPages) transPage = totalPages;
-      if (transPage < 1) transPage = 1;
-
-      const startIdx = (transPage - 1) * transPageSize;
-      const endIdx = Math.min(startIdx + transPageSize, filtered.length);
-      const pageItems = filtered.slice(startIdx, endIdx);
-
-      if (pageInfo) pageInfo.textContent = `Showing ${startIdx + 1}–${endIdx} of ${filtered.length}`;
-      if (btnPrev) btnPrev.disabled = (transPage <= 1);
-      if (btnNext) btnNext.disabled = (transPage >= totalPages);
-
-      tbody.innerHTML = pageItems.map((t) => {
-        const d = new Date(t.created_at);
-        const dateStr = d.toLocaleDateString('en-US', { timeZone: 'Asia/Manila', month: 'short', day: 'numeric', year: 'numeric' });
-        const timeStr = d.toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit' });
-        const channelBadge = t.channel === 'ONLINE'
-          ? '<span class="badge-channel badge-channel--online"><i class="fas fa-globe"></i> Online</span>'
-          : '<span class="badge-channel badge-channel--walkin"><i class="fas fa-store"></i> Walk-In</span>';
-
-        const linkUrl = t.channel === 'ONLINE' ? `orders.html?search=${encodeURIComponent(t.code)}` : '#';
-
-        return `
-          <tr>
-            <td>
-              <div><strong>${dateStr}</strong></div>
-              <small class="text-muted">${timeStr}</small>
-            </td>
-            <td>
-              ${t.channel === 'ONLINE' ? `<a href="${linkUrl}" class="order-id-link"><strong>${esc(t.code)}</strong></a>` : `<strong>${esc(t.code)}</strong>`}
-            </td>
-            <td><span class="truncate-cell" title="${esc(t.customer)}">${esc(t.customer)}</span></td>
-            <td>${channelBadge}</td>
-            <td><span class="badge-status badge-${(t.status || '').toLowerCase().replace(/_/g, '-')}">${esc(t.status)}</span></td>
-            <td style="text-align:right;"><strong>${formatPesos(t.amount_centavos)}</strong></td>
-            <td style="text-align:right;">
-              ${t.balance_centavos > 0
-                ? `<span style="color:#B91C1C; font-weight:700;">${formatPesos(t.balance_centavos)}</span>`
-                : '<span class="text-success"><i class="fas fa-check"></i> Paid</span>'}
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    // --- Tab 3: Render Payments Table ---
+    // --- Tab 2: Render Payments Received Table ---
     function renderPaymentsTable(r) {
       const tbody = document.getElementById('payments-tbody');
       const countBadge = document.getElementById('count-payments');
@@ -1085,33 +973,6 @@
           if (cachedReport) renderByProductTable(cachedReport);
         });
       });
-
-      // Search Transactions
-      const transInput = document.getElementById('search-transactions');
-      if (transInput) {
-        transInput.addEventListener('input', (e) => {
-          transSearch = e.target.value;
-          transPage = 1;
-          if (cachedReport) renderTransactionsTable(cachedReport);
-        });
-      }
-
-      const transPrev = document.getElementById('trans-btn-prev');
-      const transNext = document.getElementById('trans-btn-next');
-      if (transPrev) {
-        transPrev.addEventListener('click', () => {
-          if (transPage > 1) {
-            transPage--;
-            if (cachedReport) renderTransactionsTable(cachedReport);
-          }
-        });
-      }
-      if (transNext) {
-        transNext.addEventListener('click', () => {
-          transPage++;
-          if (cachedReport) renderTransactionsTable(cachedReport);
-        });
-      }
 
       // Search Payments
       const payInput = document.getElementById('search-payments');

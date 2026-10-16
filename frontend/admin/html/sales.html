@@ -196,13 +196,13 @@
                   <i class="fas fa-file-pdf text-danger" aria-hidden="true"></i>
                   <span>PDF Report</span>
                 </button>
-                <button type="button" class="export-menu-item" id="btn-export-csv-transactions" role="menuitem">
-                  <i class="fas fa-file-csv text-success" aria-hidden="true"></i>
-                  <span>CSV (Transactions)</span>
-                </button>
                 <button type="button" class="export-menu-item" id="btn-export-csv-products" role="menuitem">
                   <i class="fas fa-file-csv text-primary" aria-hidden="true"></i>
-                  <span>CSV (By Product)</span>
+                  <span>CSV (Sales by Product)</span>
+                </button>
+                <button type="button" class="export-menu-item" id="btn-export-csv-payments" role="menuitem">
+                  <i class="fas fa-file-csv text-success" aria-hidden="true"></i>
+                  <span>CSV (Payments)</span>
                 </button>
               </div>
             </div>
@@ -225,14 +225,14 @@
           </div>
         </section>
 
-        <!-- Primary KPI Cards Row -->
-        <section class="kpi-grid" aria-label="Key Performance Indicators">
-          <!-- Card 1: Net Revenue (Hero) -->
+        <!-- Summary Cards Row -->
+        <section class="kpi-grid" aria-label="Sales Summary">
+          <!-- Card 1: Net Sales (Hero) -->
           <div class="kpi-card kpi-card--hero" id="card-net-revenue">
             <div class="kpi-header">
               <span class="kpi-label">
-                Net Revenue
-                <span class="kpi-tooltip-trigger" data-tooltip="Formula: Net Revenue = Cash Collected - Refunds" aria-label="Info about Net Revenue">ⓘ</span>
+                Net Sales
+                <span class="kpi-tooltip-trigger" data-tooltip="Total cash collected minus refunds" aria-label="About Net Sales">ⓘ</span>
               </span>
               <div class="kpi-icon-wrap" aria-hidden="true">
                 <i class="fas fa-wallet"></i>
@@ -250,7 +250,7 @@
             <div class="kpi-header">
               <span class="kpi-label">
                 Cash Collected
-                <span class="kpi-tooltip-trigger" data-tooltip="All verified payments actually received in this period (downpayments + balances + walk-in cash)" aria-label="Info about Cash Collected">ⓘ</span>
+                <span class="kpi-tooltip-trigger" data-tooltip="Total money received from walk-in sales and online order deposits" aria-label="About Cash Collected">ⓘ</span>
               </span>
               <div class="kpi-icon-wrap" style="background:#E8F5E9; color:#2D6A4F;" aria-hidden="true">
                 <i class="fas fa-hand-holding-dollar"></i>
@@ -258,35 +258,17 @@
             </div>
             <div class="kpi-value" id="kpi-cash-collected">₱0.00</div>
             <div class="kpi-footer">
-              <span id="kpi-cash-collected-sub">0 payments collected</span>
+              <span id="kpi-cash-collected-sub">0 payments received</span>
               <span class="delta-badge is-neutral" id="kpi-cash-collected-delta">—</span>
             </div>
           </div>
 
-          <!-- Card 3: Booked Sales -->
-          <div class="kpi-card" id="card-booked-sales">
+          <!-- Card 3: Unpaid Balance -->
+          <a href="orders.html" class="kpi-card kpi-card--outstanding kpi-card--clickable" id="card-outstanding" title="Click to view orders">
             <div class="kpi-header">
               <span class="kpi-label">
-                Booked Sales
-                <span class="kpi-tooltip-trigger" data-tooltip="Total gross order value of orders placed in this period (online orders + walk-in sales)" aria-label="Info about Booked Sales">ⓘ</span>
-              </span>
-              <div class="kpi-icon-wrap" style="background:#FBF3E8; color:#6B352A;" aria-hidden="true">
-                <i class="fas fa-file-invoice-dollar"></i>
-              </div>
-            </div>
-            <div class="kpi-value" id="kpi-booked-sales">₱0.00</div>
-            <div class="kpi-footer">
-              <span id="kpi-booked-sales-sub">0 orders placed</span>
-              <span class="delta-badge is-neutral" id="kpi-booked-sales-delta">—</span>
-            </div>
-          </div>
-
-          <!-- Card 4: Outstanding Balance -->
-          <a href="orders.html" class="kpi-card kpi-card--outstanding kpi-card--clickable" id="card-outstanding" title="Click to view orders queue">
-            <div class="kpi-header">
-              <span class="kpi-label">
-                Outstanding Balance
-                <span class="kpi-tooltip-trigger" data-tooltip="Total unpaid balance due on orders placed in this period. Click to view orders." aria-label="Info about Outstanding Balance">ⓘ</span>
+                Unpaid Balance
+                <span class="kpi-tooltip-trigger" data-tooltip="Remaining balance to be collected from customers. Click to view orders." aria-label="About Unpaid Balance">ⓘ</span>
               </span>
               <div class="kpi-icon-wrap" style="background:#FEF3C7; color:#D97706;" aria-hidden="true">
                 <i class="fas fa-clock-rotate-left"></i>
@@ -298,90 +280,69 @@
               <span class="delta-badge is-neutral" id="kpi-outstanding-delta">—</span>
             </div>
           </a>
-        </section>
 
-        <!-- Secondary Metrics Grid -->
-        <section class="secondary-grid" aria-label="Secondary Sales Metrics">
-          <div class="secondary-card">
-            <div class="sec-icon sec-icon--online" aria-hidden="true"><i class="fas fa-globe"></i></div>
-            <div class="sec-content">
-              <div class="sec-label">Online Sales (Booked)</div>
-              <div class="sec-value" id="sec-online-sales">₱0.00</div>
-              <div class="sec-sub" id="sec-online-sub">0 order(s)</div>
+          <!-- Card 4: Refunds -->
+          <a href="refunds.html" class="kpi-card kpi-card--clickable" id="card-refunds" title="Click to view refunds queue" style="border-left: 4px solid var(--sales-red);">
+            <div class="kpi-header">
+              <span class="kpi-label">
+                Refunds
+                <span class="kpi-tooltip-trigger" data-tooltip="Total money returned for approved refunds. Click to view refunds." aria-label="About Refunds">ⓘ</span>
+              </span>
+              <div class="kpi-icon-wrap" style="background:#FEE2E2; color:#B91C1C;" aria-hidden="true">
+                <i class="fas fa-undo-alt"></i>
+              </div>
             </div>
-          </div>
-
-          <div class="secondary-card">
-            <div class="sec-icon sec-icon--walkin" aria-hidden="true"><i class="fas fa-store"></i></div>
-            <div class="sec-content">
-              <div class="sec-label">Walk-In Sales (POS)</div>
-              <div class="sec-value" id="sec-walkin-sales">₱0.00</div>
-              <div class="sec-sub" id="sec-walkin-sub">0 counter sale(s)</div>
-            </div>
-          </div>
-
-          <a href="refunds.html" class="secondary-card" style="text-decoration:none;" title="Open Refunds Queue">
-            <div class="sec-icon sec-icon--refunds" aria-hidden="true"><i class="fas fa-undo-alt"></i></div>
-            <div class="sec-content">
-              <div class="sec-label">Refunds Processed</div>
-              <div class="sec-value" id="sec-refunds" style="color:var(--sales-red);">₱0.00</div>
-              <div class="sec-sub" id="sec-refunds-sub">0 refund request(s)</div>
+            <div class="kpi-value" id="kpi-refunds" style="color:var(--sales-red);">₱0.00</div>
+            <div class="kpi-footer">
+              <span id="kpi-refunds-sub">0 refund request(s)</span>
+              <span class="delta-badge is-neutral" id="kpi-refunds-delta">—</span>
             </div>
           </a>
-
-          <div class="secondary-card">
-            <div class="sec-icon sec-icon--aov" aria-hidden="true"><i class="fas fa-calculator"></i></div>
-            <div class="sec-content">
-              <div class="sec-label">Average Order Value</div>
-              <div class="sec-value" id="sec-aov">₱0.00</div>
-              <div class="sec-sub" id="sec-aov-sub">per transaction</div>
-            </div>
-          </div>
         </section>
 
         <!-- Charts Section -->
-        <section class="charts-grid" aria-label="Sales Charts and Insights">
-          <!-- Left: Revenue Trend Chart -->
+        <section class="charts-grid" aria-label="Sales Charts">
+          <!-- Left: Daily Sales Chart -->
           <div class="chart-card">
             <div class="chart-card-header">
               <div class="chart-title-group">
-                <h3><i class="fas fa-chart-line text-primary" aria-hidden="true"></i> Revenue Trend</h3>
-                <p id="chart-trend-subtitle">Net collections over the selected period</p>
+                <h3><i class="fas fa-chart-line text-primary" aria-hidden="true"></i> Daily Sales</h3>
+                <p id="chart-trend-subtitle">Cash received per day</p>
               </div>
             </div>
             <div class="chart-canvas-wrap">
-              <canvas id="chart-revenue-trend-canvas" aria-label="Revenue Trend Chart" role="img"></canvas>
+              <canvas id="chart-revenue-trend-canvas" aria-label="Daily Sales Chart" role="img"></canvas>
               <div class="chart-empty-state" id="chart-trend-empty">
                 <i class="fas fa-chart-line" aria-hidden="true"></i>
-                <p>No revenue data recorded in this period yet</p>
+                <p>No sales recorded for this period yet</p>
               </div>
             </div>
           </div>
 
-          <!-- Right: Channel Split Donut & Top Products -->
+          <!-- Right: Sales by Source & Best Sellers -->
           <div class="chart-card">
             <div class="chart-card-header">
               <div class="chart-title-group">
-                <h3><i class="fas fa-chart-pie text-warning" aria-hidden="true"></i> Sales Channel Split</h3>
-                <p>Online Orders vs Counter Walk-In</p>
+                <h3><i class="fas fa-chart-pie text-warning" aria-hidden="true"></i> Sales by Source</h3>
+                <p>Online Orders vs Walk-In Cash</p>
               </div>
             </div>
             <div class="chart-canvas-wrap" style="height:200px;">
-              <canvas id="chart-channel-donut-canvas" aria-label="Channel Split Donut Chart" role="img"></canvas>
+              <canvas id="chart-channel-donut-canvas" aria-label="Sales by Source Chart" role="img"></canvas>
               <div class="chart-empty-state" id="chart-donut-empty">
                 <i class="fas fa-chart-pie" aria-hidden="true"></i>
-                <p>No sales transactions in this period</p>
+                <p>No sales recorded for this period</p>
               </div>
             </div>
 
-            <!-- Top Products Mini Summary Inside Card -->
+            <!-- Best Sellers Mini Summary Inside Card -->
             <div style="margin-top:1.25rem; border-top:1px solid #F0E6DD; padding-top:0.85rem;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                <strong style="font-size:0.84rem; color:var(--sales-primary-brown);"><i class="fas fa-crown text-warning"></i> Top Products</strong>
-                <a href="#tab-by-product" id="link-view-all-products" style="font-size:0.75rem; font-weight:700; color:var(--sales-accent-gold); text-decoration:none;">View full breakdown →</a>
+                <strong style="font-size:0.84rem; color:var(--sales-primary-brown);"><i class="fas fa-crown text-warning"></i> Best Sellers</strong>
+                <a href="#tab-by-product" id="link-view-all-products" style="font-size:0.75rem; font-weight:700; color:var(--sales-accent-gold); text-decoration:none;">View all products →</a>
               </div>
               <div id="top-products-container">
-                <p class="text-muted" style="font-size:0.78rem;">Loading top items…</p>
+                <p class="text-muted" style="font-size:0.78rem;">Loading best sellers…</p>
               </div>
             </div>
           </div>
@@ -393,14 +354,10 @@
           <div class="tab-nav-header">
             <div class="tab-pills" role="tablist">
               <button type="button" class="tab-pill active" id="tab-btn-by-product" data-tab="tab-by-product" role="tab" aria-selected="true" aria-controls="tab-by-product">
-                <i class="fas fa-bread-slice" aria-hidden="true"></i> By Product
-              </button>
-              <button type="button" class="tab-pill" id="tab-btn-transactions" data-tab="tab-transactions" role="tab" aria-selected="false" aria-controls="tab-transactions">
-                <i class="fas fa-list-check" aria-hidden="true"></i> Transactions
-                <span class="badge-count" id="count-transactions">0</span>
+                <i class="fas fa-bread-slice" aria-hidden="true"></i> Sales by Product
               </button>
               <button type="button" class="tab-pill" id="tab-btn-payments" data-tab="tab-payments" role="tab" aria-selected="false" aria-controls="tab-payments">
-                <i class="fas fa-money-bill-wave" aria-hidden="true"></i> Payments Collected
+                <i class="fas fa-money-bill-wave" aria-hidden="true"></i> Payments Received
                 <span class="badge-count" id="count-payments">0</span>
               </button>
             </div>
@@ -429,48 +386,12 @@
             </div>
           </div>
 
-          <!-- TAB 2: Transactions -->
-          <div class="tab-pane" id="tab-transactions" role="tabpanel" aria-labelledby="tab-btn-transactions">
-            <div class="tab-table-toolbar">
-              <div class="tab-search-box">
-                <i class="fas fa-search" aria-hidden="true"></i>
-                <input type="text" id="search-transactions" placeholder="Search orders or customer…">
-              </div>
-              <div class="text-muted" style="font-size:0.8rem;" id="transactions-count-label">0 transactions</div>
-            </div>
-            <div class="table-responsive">
-              <table class="admin-table" id="table-transactions">
-                <thead>
-                  <tr>
-                    <th scope="col">Date / Time</th>
-                    <th scope="col">Reference</th>
-                    <th scope="col">Customer</th>
-                    <th scope="col">Channel</th>
-                    <th scope="col">Status</th>
-                    <th scope="col" style="text-align:right;">Order Amount</th>
-                    <th scope="col" style="text-align:right;">Balance Due</th>
-                  </tr>
-                </thead>
-                <tbody id="transactions-tbody">
-                  <tr><td colspan="7" class="text-center text-muted" style="padding:2rem;">Loading transactions…</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="tab-pagination" id="transactions-pagination">
-              <span id="trans-page-info">Showing 0-0 of 0</span>
-              <div class="pagination-controls">
-                <button type="button" class="btn-page" id="trans-btn-prev" disabled>Previous</button>
-                <button type="button" class="btn-page" id="trans-btn-next" disabled>Next</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- TAB 3: Payments Collected -->
+          <!-- TAB 2: Payments Received -->
           <div class="tab-pane" id="tab-payments" role="tabpanel" aria-labelledby="tab-btn-payments">
             <div class="tab-table-toolbar">
               <div class="tab-search-box">
                 <i class="fas fa-search" aria-hidden="true"></i>
-                <input type="text" id="search-payments" placeholder="Search reference or customer…">
+                <input type="text" id="search-payments" placeholder="Search order code or customer…">
               </div>
               <div class="text-muted" style="font-size:0.8rem;" id="payments-count-label">0 payments</div>
             </div>
@@ -478,13 +399,13 @@
               <table class="admin-table" id="table-payments">
                 <thead>
                   <tr>
-                    <th scope="col">Collected At</th>
-                    <th scope="col">Order / Sale</th>
+                    <th scope="col">Date & Time</th>
+                    <th scope="col">Order Code</th>
                     <th scope="col">Customer</th>
                     <th scope="col">Payment Stage</th>
                     <th scope="col">Method</th>
-                    <th scope="col">Ref Number</th>
-                    <th scope="col" style="text-align:right;">Amount Collected</th>
+                    <th scope="col">Reference No.</th>
+                    <th scope="col" style="text-align:right;">Amount Received</th>
                   </tr>
                 </thead>
                 <tbody id="payments-tbody">
