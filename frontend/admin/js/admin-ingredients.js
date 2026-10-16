@@ -145,10 +145,7 @@
     const q = searchQuery.toLowerCase().trim();
     const filtered = ingredients.filter((ing) => {
       // Search filter
-      const matchSearch = !q ||
-        ing.name.toLowerCase().includes(q) ||
-        (ing.supplier && ing.supplier.toLowerCase().includes(q)) ||
-        (ing.storage_location && ing.storage_location.toLowerCase().includes(q));
+      const matchSearch = !q || ing.name.toLowerCase().includes(q);
       if (!matchSearch) return false;
 
       // Status pill filter
@@ -164,7 +161,7 @@
     if (filtered.length === 0) {
       const tr = document.createElement('tr');
       const td = document.createElement('td');
-      td.colSpan = 10;
+      td.colSpan = 8;
       td.style.textAlign = 'center';
       td.style.padding = '2.5rem 1rem';
       td.className = 'muted';
@@ -228,12 +225,7 @@
       tdCost.textContent = formatPesos(ing.cost_per_unit);
       tr.appendChild(tdCost);
 
-      // 6. Supplier
-      const tdSupplier = document.createElement('td');
-      tdSupplier.textContent = ing.supplier || '—';
-      tr.appendChild(tdSupplier);
-
-      // 7. Expiry Date
+      // 6. Expiry Date
       const tdExpiry = document.createElement('td');
       tdExpiry.textContent = formatDate(ing.expiry_date);
       if (ing.is_expiring_soon) {
@@ -242,12 +234,7 @@
       }
       tr.appendChild(tdExpiry);
 
-      // 8. Location
-      const tdLoc = document.createElement('td');
-      tdLoc.textContent = ing.storage_location || '—';
-      tr.appendChild(tdLoc);
-
-      // 9. Status Badge
+      // 7. Status Badge
       const tdStatus = document.createElement('td');
       let badgeClass = 'status-ok';
       let badgeText = 'In Stock';
@@ -356,12 +343,10 @@
     document.getElementById('ingredient-id').value = ing.id;
     ingModalTitle.innerHTML = `<i class="fas fa-pencil text-primary"></i> Edit: ${AdminUI.esc(ing.name)}`;
     document.getElementById('ing-name').value = ing.name || '';
-    document.getElementById('ing-unit').value = ing.unit || 'pcs';
+    document.getElementById('ing-unit').value = ing.unit || 'sack';
     document.getElementById('ing-reorder').value = ing.reorder_level != null ? ing.reorder_level : 0;
     document.getElementById('ing-cost').value = ing.cost_per_unit != null ? ing.cost_per_unit : '';
-    document.getElementById('ing-supplier').value = ing.supplier || '';
     document.getElementById('ing-expiry').value = ing.expiry_date || '';
-    document.getElementById('ing-location').value = ing.storage_location || '';
 
     // Per rules: cannot edit stock_quantity here! Changes must go through adjust_stock RPC
     wrapInitialStock.style.display = 'none';
@@ -383,9 +368,7 @@
       unit: document.getElementById('ing-unit').value.trim() || 'pcs',
       reorder_level: Number(document.getElementById('ing-reorder').value) || 0,
       cost_per_unit: document.getElementById('ing-cost').value !== '' ? Number(document.getElementById('ing-cost').value) : null,
-      supplier: document.getElementById('ing-supplier').value.trim() || null,
       expiry_date: document.getElementById('ing-expiry').value || null,
-      storage_location: document.getElementById('ing-location').value.trim() || null,
     };
 
     if (!isEdit) {
@@ -421,7 +404,6 @@
     document.getElementById('restock-current-stock').textContent = formatNumber(ing.stock_quantity);
     document.getElementById('restock-unit-label').textContent = ing.unit || 'pcs';
     if (ing.cost_per_unit) document.getElementById('restock-unit-cost').value = ing.cost_per_unit;
-    if (ing.supplier) document.getElementById('restock-supplier').value = ing.supplier;
     openModal(modalRestock);
     document.getElementById('restock-qty').focus();
   }
@@ -443,7 +425,6 @@
       type: 'restock',
       quantity: qty,
       unit_cost: document.getElementById('restock-unit-cost').value !== '' ? Number(document.getElementById('restock-unit-cost').value) : null,
-      supplier: document.getElementById('restock-supplier').value.trim() || null,
       reason: document.getElementById('restock-note').value.trim() || 'Restock delivery',
     };
 
@@ -578,13 +559,9 @@
         tdBal.textContent = `${formatNumber(m.quantity_before)} → ${formatNumber(m.quantity_after)}`;
         tr.appendChild(tdBal);
 
-        // Supplier / Cost
+        // Cost
         const tdCost = document.createElement('td');
-        const costStr = m.unit_cost ? formatPesos(m.unit_cost) : '';
-        const supStr = m.supplier ? AdminUI.esc(m.supplier) : '';
-        tdCost.innerHTML = costStr || supStr
-          ? `<span>${costStr}</span> ${supStr ? `<small style="display:block; color:var(--text-muted);">${supStr}</small>` : ''}`
-          : '—';
+        tdCost.textContent = m.unit_cost ? formatPesos(m.unit_cost) : '—';
         tr.appendChild(tdCost);
 
         // Reason / Note
@@ -643,8 +620,8 @@
     }
 
     const headers = [
-      'ID', 'Name', 'Stock Quantity', 'Unit', 'Reorder Level',
-      'Cost Per Unit (PHP)', 'Supplier', 'Expiry Date', 'Storage Location', 'Stock Status'
+      'ID', 'Name', 'Stock Quantity', 'Unit', 'Reorder Threshold',
+      'Cost Per Unit (PHP)', 'Expiry Date', 'Stock Status'
     ];
 
     const rows = ingredients.map((i) => [
@@ -654,9 +631,7 @@
       `"${String(i.unit || '').replace(/"/g, '""')}"`,
       i.reorder_level,
       i.cost_per_unit || '',
-      `"${String(i.supplier || '').replace(/"/g, '""')}"`,
       i.expiry_date || '',
-      `"${String(i.storage_location || '').replace(/"/g, '""')}"`,
       i.stock_status || ''
     ]);
 
