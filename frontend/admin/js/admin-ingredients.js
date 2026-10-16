@@ -325,6 +325,25 @@
     });
   });
 
+  // Support URL query param filter pre-selection (e.g. ?filter=low-stock or ?filter=out-of-stock)
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const filterParam = urlParams.get('filter');
+    if (filterParam) {
+      const normalized = filterParam.replace(/-/g, '_').toLowerCase();
+      if (['all', 'in_stock', 'low_stock', 'out_of_stock', 'expiring_soon'].includes(normalized)) {
+        currentFilter = normalized;
+        filterPills.forEach((p) => {
+          if (p.getAttribute('data-filter') === currentFilter) {
+            p.classList.add('active');
+          } else {
+            p.classList.remove('active');
+          }
+        });
+      }
+    }
+  } catch (_) {}
+
   searchInput.addEventListener('input', (e) => {
     searchQuery = e.target.value;
     renderTable();

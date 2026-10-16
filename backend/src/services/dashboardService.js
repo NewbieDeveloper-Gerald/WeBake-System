@@ -11,6 +11,7 @@
 
 const { query, getClient } = require('../config/db');
 const inventoryService = require('./inventoryService');
+const alertService = require('./alertService');
 
 async function stats() {
   const client = await getClient();
@@ -50,22 +51,36 @@ async function stats() {
     const recent = await client.query(`SELECT order_code, customer_name, total_centavos, status, created_at
              FROM orders ORDER BY created_at DESC LIMIT 10;`);
 
+    // Refund metrics: counts, total pending amount, oldest pending request, and recent pending list
+    const refundStats = await client.query(`
+      SELECT
+        COUNT(*) FILTER (WHERE status = 'PENDING')::int AS pending_count,
+        COUNT(*) FILTER (WHERE status = 'AWAITING_DETAILS')::int AS awaiting_count,
+        COALESCE(SUM(refund_amount_centavos) FILTER (WHERE status IN ('PENDING', 'AWAITING_DETAILS')), 0)::bigint AS pending_amount_centavos,
+        MIN(requested_at) FILTER (WHERE status IN ('PENDING', 'AWAITING_DETAILS')) AS oldest_pending_requested_at
+      FROM refund_requests;
+    `);
+
+    const recentPendingRefunds = await client.query(`
+      SELECT r.id, r.order_id, o.order_code, o.customer_name, r.refund_amount_centavos,
+             r.status, r.requested_at
+        FROM refund_requests r
+        JOIN orders o ON o.id = r.order_id
+       WHERE r.status IN ('PENDING', 'AWAITING_DETAILS')
+       ORDER BY r.requested_at ASC
+       LIMIT 3;
+    `);
+
     const refunds = await client.query(`SELECT status, COUNT(*)::int AS n FROM refund_requests GROUP BY status;`);
+    const refundCounts = Object.fromEntries(refunds.rows.map((r) => [r.status, r.n]));
+    const refRow = refundStats.rows[0] || {};
+    const pendingRefundsCount = (refRow.pending_count || 0) + (refRow.awaiting_count || 0);
 
     const outstanding = await client.query(`SELECT COALESCE(SUM(GREATEST(0, o.downpayment_centavos - o.downpayment_paid_centavos)), 0)::int AS total
              FROM orders o WHERE o.status NOT IN ('CANCELLED', 'COMPLETED');`);
 
-    let lowStockIngredients = { rows: [] };
-    try {
-      lowStockIngredients = await client.query(`SELECT id, name, stock_quantity, unit, reorder_level, stock_status
-             FROM public.ingredient_stock_status
-            WHERE stock_status IN ('low_stock', 'out_of_stock')
-            ORDER BY stock_quantity ASC;`);
-    } catch (_) {}
-
-    const refundCounts = Object.fromEntries(refunds.rows.map((r) => [r.status, r.n]));
-    const alertCount = (refundCounts.AWAITING_DETAILS || 0) + (refundCounts.PENDING || 0);
-    const lowStock = await inventoryService.lowStock();
+    // Unified stock alerts (single source of truth for both products & ingredients)
+    const stockAlerts = await alertService.getStockAlerts(client);
 
     const onlineDownpayment = todayDownpayments.rows[0].collected;
     const balanceCollected = todayBalances.rows[0].collected;
@@ -89,11 +104,19 @@ async function stats() {
       pending_verification: pending.rows[0].n,
       orders_by_status: Object.fromEntries(byStatus.rows.map((r) => [r.status, r.n])),
       recent_orders: recent.rows,
-      refunds: { alert_count: alertCount, by_status: refundCounts },
+      refunds: {
+        alert_count: pendingRefundsCount,
+        pending_count: pendingRefundsCount,
+        pending_amount_centavos: Number(refRow.pending_amount_centavos || 0),
+        oldest_pending_requested_at: refRow.oldest_pending_requested_at,
+        recent_pending: recentPendingRefunds.rows,
+        by_status: refundCounts,
+      },
       outstanding_balances_centavos: outstanding.rows[0].total,
       possible_collection_centavos: outstanding.rows[0].total,
-      low_stock: lowStock,
-      low_stock_ingredients: lowStockIngredients ? lowStockIngredients.rows : [],
+      alerts: stockAlerts,
+      low_stock: stockAlerts.products,
+      low_stock_ingredients: stockAlerts.ingredients,
     };
   } finally {
     client.release();

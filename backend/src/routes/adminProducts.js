@@ -59,6 +59,12 @@ router.post('/upload-image', (req, res, next) => {
   });
 });
 
+const alertService = require('../services/alertService');
+
+router.get('/alerts', asyncHandler(async (req, res) => {
+  const alerts = await alertService.getStockAlerts();
+  return res.json({ success: true, alerts });
+}));
 router.get('/movements', asyncHandler(productsController.movements));
 router.get('/low-stock', asyncHandler(productsController.lowStock));
 router.get('/', asyncHandler(productsController.listAdmin));

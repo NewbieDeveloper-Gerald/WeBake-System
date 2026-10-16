@@ -125,7 +125,7 @@
           </a>
           <button type="button" class="sb-btn-action" id="btn-logout" title="Sign out">
             <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
-            <span>Out</span>
+            <span>Log out</span>
           </button>
         </div>
       </footer>
@@ -158,10 +158,10 @@
           </div>
 
           <!-- Card B: Awaiting Verification -->
-          <a href="orders.html" class="stat-card stat-card--clickable" title="Review payment proofs">
+          <a href="orders.html" class="stat-card stat-card--clickable" title="Review payment proofs" aria-label="Awaiting verification: orders requiring payment review">
             <div class="stat-label">AWAITING VERIFICATION</div>
             <div class="stat-value" id="stat-pending">0</div>
-            <div class="stat-sub">Orders requiring payment review <span class="arrow-indicator">&rarr;</span></div>
+            <div class="stat-sub">Orders requiring review <span class="arrow-indicator">&rarr;</span></div>
           </a>
 
           <!-- Card C: Possible Collection -->
@@ -170,11 +170,24 @@
             <div class="stat-value" id="stat-outstanding">₱0.00</div>
             <div class="stat-sub">Remaining downpayment to collect</div>
           </div>
+
+          <!-- Card D: Refund Requests -->
+          <a href="refunds.html" class="stat-card stat-card--clickable stat-card--refunds" id="stat-card-refunds" title="Open Refunds Queue" aria-label="Refund requests queue">
+            <div class="stat-card-header-line">
+              <span class="stat-label">REFUND REQUESTS</span>
+              <span class="refund-urgency-dot" id="refund-urgency-dot" aria-hidden="true"></span>
+            </div>
+            <div class="stat-value" id="stat-refunds-pending">0</div>
+            <div class="stat-sub">
+              <span id="stat-refunds-sub">awaiting review</span>
+              <span class="stat-sub-meta" id="stat-refunds-oldest"></span>
+            </div>
+          </a>
         </section>
 
-        <!-- Middle Row: Orders by Status + Low Stock Alerts -->
+        <!-- Middle Row: Orders by Status & Needs Attention + Stock Alerts -->
         <div class="dashboard-middle-grid">
-          <!-- 5. Orders by Status -->
+          <!-- 5. Orders by Status & Needs Attention -->
           <section class="dash-card orders-status-card" aria-labelledby="heading-orders-status">
             <div class="dash-card-header">
               <h2 id="heading-orders-status"><i class="fas fa-clipboard-list"></i> Orders by Status</h2>
@@ -183,52 +196,89 @@
               <div id="status-breakdown" class="status-list">
                 <p class="muted">Loading status counts…</p>
               </div>
+
+              <!-- Needs Attention: Pending Refunds (displays top 3 when refunds exist) -->
+              <div class="needs-attention-box" id="needs-attention-refunds" style="display:none;">
+                <div class="needs-attention-header">
+                  <span><i class="fas fa-triangle-exclamation"></i> Action Required: Pending Refunds</span>
+                  <a href="refunds.html" class="view-all-link">Queue &rarr;</a>
+                </div>
+                <div id="needs-attention-refunds-list"></div>
+              </div>
             </div>
           </section>
 
-          <!-- 6. Low Stock Alerts for Products and Ingredients -->
-          <section class="dash-card low-stock-card" aria-labelledby="heading-low-stock">
+          <!-- 6. Stock Alerts for Products and Ingredients (Tabs, Out-of-Stock First, Refresh) -->
+          <section class="dash-card stock-alerts-card" aria-labelledby="heading-stock-alerts">
             <div class="dash-card-header">
-              <h2 id="heading-low-stock"><i class="fas fa-triangle-exclamation"></i> Low Stock Alerts</h2>
+              <h2 id="heading-stock-alerts"><i class="fas fa-triangle-exclamation"></i> Stock Alerts</h2>
+              <div class="card-header-actions">
+                <span class="alerts-timestamp" id="alerts-timestamp" title="Last updated timestamp">Updated just now</span>
+                <button type="button" class="btn-refresh-icon" id="btn-refresh-dashboard" aria-label="Refresh alerts and stats" title="Refresh data">
+                  <i class="fas fa-rotate-right" id="refresh-icon"></i>
+                </button>
+              </div>
             </div>
-            <div class="dash-card-body low-stock-body">
-              <!-- Group A: Products -->
-              <div class="lowstock-group">
-                <h3 class="lowstock-group-title"><i class="fas fa-boxes-stacked"></i> Products</h3>
+            <div class="dash-card-body">
+              <!-- Summary Strip -->
+              <div class="alerts-summary-strip" id="alerts-summary-strip">
+                <span id="alerts-summary-text">Checking stock levels…</span>
+                <div class="alerts-summary-pills" id="alerts-summary-pills"></div>
+              </div>
+
+              <!-- Segmented Category Tabs -->
+              <div class="stock-alert-tabs" role="tablist" aria-label="Stock Alert Categories">
+                <button type="button" class="stock-tab-btn active" role="tab" aria-selected="true" aria-controls="panel-alert-products" id="tab-btn-products" data-tab="products">
+                  <i class="fas fa-boxes-stacked"></i> Products <span class="tab-badge" id="badge-products-alerts">0</span>
+                </button>
+                <button type="button" class="stock-tab-btn" role="tab" aria-selected="false" aria-controls="panel-alert-ingredients" id="tab-btn-ingredients" data-tab="ingredients">
+                  <i class="fas fa-wheat-awn"></i> Ingredients <span class="tab-badge" id="badge-ingredients-alerts">0</span>
+                </button>
+              </div>
+
+              <!-- Tab Panel 1: Products Alerts -->
+              <div class="stock-tab-panel" id="panel-alert-products" role="tabpanel" aria-labelledby="tab-btn-products">
                 <div class="table-scroll-container">
-                  <table class="dash-table">
+                  <table class="dash-table admin-table" id="table-alert-products">
                     <thead>
                       <tr>
-                        <th>Item</th>
+                        <th>Product</th>
                         <th>Current Stock</th>
-                        <th>Minimum Stock</th>
+                        <th>Threshold</th>
                         <th>Status</th>
+                        <th style="text-align:right;">Action</th>
                       </tr>
                     </thead>
                     <tbody id="lowstock-products-tbody">
-                      <tr><td colspan="4" class="muted">Loading products…</td></tr>
+                      <tr><td colspan="5" class="muted">Loading products…</td></tr>
                     </tbody>
                   </table>
                 </div>
+                <div class="alerts-tab-footer" id="footer-alert-products">
+                  <a href="products.html?filter=out_of_stock" class="view-all-link" id="link-view-all-products">View all in Product Inventory &rarr;</a>
+                </div>
               </div>
 
-              <!-- Group B: Ingredients -->
-              <div class="lowstock-group">
-                <h3 class="lowstock-group-title"><i class="fas fa-wheat-awn"></i> Ingredients</h3>
+              <!-- Tab Panel 2: Ingredients Alerts -->
+              <div class="stock-tab-panel" id="panel-alert-ingredients" role="tabpanel" aria-labelledby="tab-btn-ingredients" style="display:none;">
                 <div class="table-scroll-container">
-                  <table class="dash-table">
+                  <table class="dash-table admin-table" id="table-alert-ingredients">
                     <thead>
                       <tr>
-                        <th>Item</th>
+                        <th>Ingredient</th>
                         <th>Current Stock</th>
-                        <th>Minimum Stock</th>
+                        <th>Reorder Level</th>
                         <th>Status</th>
+                        <th style="text-align:right;">Action</th>
                       </tr>
                     </thead>
                     <tbody id="lowstock-ingredients-tbody">
-                      <tr><td colspan="4" class="muted">Loading ingredients…</td></tr>
+                      <tr><td colspan="5" class="muted">Loading ingredients…</td></tr>
                     </tbody>
                   </table>
+                </div>
+                <div class="alerts-tab-footer" id="footer-alert-ingredients">
+                  <a href="ingredients.html?filter=out_of_stock" class="view-all-link" id="link-view-all-ingredients">View all in Ingredients &rarr;</a>
                 </div>
               </div>
             </div>
@@ -242,7 +292,7 @@
           </div>
           <div class="dash-card-body">
             <div class="table-scroll-container">
-              <table class="dash-table">
+              <table class="dash-table admin-table">
                 <thead>
                   <tr>
                     <th>Order ID</th>

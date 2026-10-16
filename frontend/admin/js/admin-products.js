@@ -16,6 +16,19 @@
     let editingId = null;
     let cachedProducts = [];
     let currentFilter = 'all';
+
+    // Support deep link filter pre-selection (e.g., ?filter=out-of-stock or ?filter=low-stock)
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const filterParam = urlParams.get('filter');
+      if (filterParam) {
+        const normalized = filterParam.replace(/-/g, '_').toLowerCase();
+        if (['all', 'active', 'low_stock', 'out_of_stock', 'archived'].includes(normalized)) {
+          currentFilter = normalized;
+        }
+      }
+    } catch (_) {}
+
     let currentPage = 1;
     let searchDebounceTimer = null;
 
@@ -112,6 +125,8 @@
         const { products } = await api.products(true);
         cachedProducts = products || [];
         updateKpiCards(cachedProducts);
+        syncFilterUI();
+        updateResetVisibility();
         renderTable();
         populateProductDropdowns(cachedProducts);
         const filterVal = document.getElementById('filter-history-product') ? document.getElementById('filter-history-product').value : null;

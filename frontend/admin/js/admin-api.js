@@ -52,7 +52,7 @@
       const token = getToken();
       if (token) headers.Authorization = 'Bearer ' + token;
     }
-    const res = await fetch(baseUrl() + path, { method, headers, body });
+    const res = await fetch(baseUrl() + path, { method, headers, body, cache: 'no-store' });
 
     if (opts.download) {
       if (!res.ok) {
@@ -146,6 +146,7 @@
     productUploadImage: (formData) => request('POST', '/api/admin/products/upload-image', { body: formData }),
 
     // --- inventory (adjust reasons: RESTOCK adds, ADJUSTMENT corrects) ---
+    stockAlerts: () => get('/api/inventory/alerts'),
     lowStock: () => get('/api/admin/products/low-stock'),
     movements: (productId, limit) => {
       const q = new URLSearchParams();
