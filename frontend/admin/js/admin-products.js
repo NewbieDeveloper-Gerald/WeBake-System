@@ -33,8 +33,9 @@
 
     function updateKpiCards(products) {
       const total = products.length;
-      const inStock = products.filter((p) => !p.is_archived && p.stock_pieces > 0).length;
-      const lowOrOut = products.filter((p) => !p.is_archived && (p.stock_pieces <= p.low_stock_threshold_pieces || p.stock_pieces === 0)).length;
+      const inStock = products.filter((p) => !p.is_archived && p.stock_status === 'IN_STOCK').length;
+      const lowStock = products.filter((p) => !p.is_archived && p.stock_status === 'LOW_STOCK').length;
+      const outOfStock = products.filter((p) => !p.is_archived && (p.stock_status === 'OUT_OF_STOCK' || Number(p.stock_pieces) <= 0)).length;
       const archived = products.filter((p) => p.is_archived).length;
 
       const setEl = (id, val) => {
@@ -43,7 +44,8 @@
       };
       setEl('stat-total-products', total);
       setEl('stat-instock-products', inStock);
-      setEl('stat-lowstock-products', lowOrOut);
+      setEl('stat-lowstock-products', lowStock);
+      setEl('stat-outofstock-products', outOfStock);
       setEl('stat-archived-products', archived);
     }
 
@@ -71,7 +73,8 @@
         // Category filter
         if (currentFilter === 'active' && p.is_archived) return false;
         if (currentFilter === 'archived' && !p.is_archived) return false;
-        if (currentFilter === 'low_stock' && (p.is_archived || p.stock_pieces > p.low_stock_threshold_pieces)) return false;
+        if (currentFilter === 'low_stock' && (p.is_archived || p.stock_status !== 'LOW_STOCK')) return false;
+        if (currentFilter === 'out_of_stock' && (p.is_archived || (p.stock_status !== 'OUT_OF_STOCK' && Number(p.stock_pieces) > 0))) return false;
 
         // Search text filter
         if (term) {

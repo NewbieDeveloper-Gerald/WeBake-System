@@ -154,14 +154,19 @@
             <div class="stat-sub">in bakery catalog</div>
           </div>
           <div class="stat-card highlight">
-            <div class="stat-label"><i class="fas fa-circle-check"></i> Active &amp; In Stock</div>
+            <div class="stat-label"><i class="fas fa-circle-check"></i> In Stock</div>
             <div class="stat-value" id="stat-instock-products">—</div>
             <div class="stat-sub">ready for sale</div>
           </div>
           <div class="stat-card">
-            <div class="stat-label"><i class="fas fa-triangle-exclamation" style="color:var(--danger, #dc3545);"></i> Low / Out of Stock</div>
-            <div class="stat-value" id="stat-lowstock-products" style="color:var(--danger, #dc3545);">—</div>
-            <div class="stat-sub">needs production</div>
+            <div class="stat-label"><i class="fas fa-triangle-exclamation" style="color:var(--warning, #e65100);"></i> Low Stock</div>
+            <div class="stat-value" id="stat-lowstock-products" style="color:var(--warning, #e65100);">—</div>
+            <div class="stat-sub">&le; reorder threshold</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label"><i class="fas fa-circle-xmark" style="color:var(--danger, #dc3545);"></i> Out of Stock</div>
+            <div class="stat-value" id="stat-outofstock-products" style="color:var(--danger, #dc3545);">—</div>
+            <div class="stat-sub">depleted inventory</div>
           </div>
           <div class="stat-card">
             <div class="stat-label"><i class="fas fa-box-archive text-muted"></i> Archived</div>
@@ -182,6 +187,7 @@
                 <button type="button" class="pos-filter-pill active" data-filter="all">All</button>
                 <button type="button" class="pos-filter-pill" data-filter="active">Active</button>
                 <button type="button" class="pos-filter-pill" data-filter="low_stock">Low Stock</button>
+                <button type="button" class="pos-filter-pill" data-filter="out_of_stock">Out of Stock</button>
                 <button type="button" class="pos-filter-pill" data-filter="archived">Archived</button>
               </div>
               <label class="catalog-search" for="catalog-search">
