@@ -164,5 +164,19 @@
     // --- settings ---
     settingsGet: () => get('/api/admin/settings'),
     settingsUpdate: (data) => put('/api/admin/settings', data),
+
+    // --- raw ingredients & inventory ---
+    ingredients: () => get('/api/admin/ingredients'),
+    ingredientGet: (id) => get('/api/admin/ingredients/' + encodeURIComponent(id)),
+    ingredientCreate: (data) => post('/api/admin/ingredients', data),
+    ingredientUpdate: (id, data) => put('/api/admin/ingredients/' + encodeURIComponent(id), data),
+    ingredientDelete: (id) => request('DELETE', '/api/admin/ingredients/' + encodeURIComponent(id)),
+    ingredientAdjustStock: (id, data) => post('/api/admin/ingredients/' + encodeURIComponent(id) + '/adjust', data),
+    ingredientMovements: (id, limit, offset) => {
+      const q = new URLSearchParams();
+      if (limit) q.set('limit', limit);
+      if (offset) q.set('offset', offset);
+      return get('/api/admin/ingredients/' + encodeURIComponent(id) + '/movements?' + q.toString());
+    },
   };
 })();

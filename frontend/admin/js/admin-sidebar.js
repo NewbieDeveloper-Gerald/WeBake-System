@@ -74,6 +74,13 @@
           badgeType: null
         },
         {
+          id: 'ingredients',
+          label: 'Ingredients',
+          route: 'ingredients.html',
+          icon: 'fas fa-wheat-awn',
+          badgeType: null
+        },
+        {
           id: 'settings',
           label: 'Bakery Settings',
           route: 'settings.html',

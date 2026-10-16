@@ -35,6 +35,7 @@ const adminReportsRoutes = require('./routes/adminReports');
 const adminPosRoutes = require('./routes/adminPos');
 const adminSettingsRoutes = require('./routes/adminSettings');
 const adminVerificationRoutes = require('./routes/adminVerification');
+const adminIngredientsRoutes = require('./routes/adminIngredients');
 
 function createApp() {
   const app = express();
@@ -93,6 +94,7 @@ function createApp() {
   app.use('/api/admin/pos', adminPosRoutes);
   app.use('/api/admin/settings', adminSettingsRoutes);
   app.use('/api/admin/verification', adminVerificationRoutes);
+  app.use('/api/admin/ingredients', adminIngredientsRoutes);
 
   // --- Final handlers (order is critical: 404 first, then error catcher) ---
   app.use(notFound);

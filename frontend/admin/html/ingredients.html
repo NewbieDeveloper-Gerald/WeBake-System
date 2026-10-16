@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WeBake Admin — Ingredients &amp; Raw Inventory</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/admin-globals.css">
+  <link rel="stylesheet" href="../css/admin-catalog.css">
+  <link rel="stylesheet" href="../css/admin-sidebar.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <nav id="admin-sidebar" class="sb admin-sidebar" aria-label="Main navigation">
+      <div class="sb-brand">
+        <div class="sb-brand-icon" aria-hidden="true"><i class="fas fa-bread-slice"></i></div>
+        <div class="sb-brand-info">
+          <h2 class="sb-brand-title">WeBake</h2>
+          <span class="sb-brand-sub">Admin Portal</span>
+        </div>
+      </div>
+
+      <div class="sb-nav-scroll">
+        <!-- Section 1: OPERATIONS -->
+        <section class="sb-section" aria-labelledby="sb-sec-ops">
+          <div id="sb-sec-ops" class="sb-section-label">OPERATIONS</div>
+          <ul class="sb-list" role="group" aria-labelledby="sb-sec-ops">
+            <li class="sb-item">
+              <a href="dashboard.html" class="sb-link" title="Dashboard">
+                <span class="sb-icon" aria-hidden="true"><i class="fas fa-chart-pie"></i></span>
+                <span class="sb-label">Dashboard</span>
+                <span class="sb-tooltip" role="tooltip">Dashboard</span>
+              </a>
+            </li>
+            <li class="sb-item">
+              <a href="walkin-pos.html" class="sb-link" title="Walk-In">
+                <span class="sb-icon" aria-hidden="true"><i class="fas fa-cash-register"></i></span>
+                <span class="sb-label">Walk-In</span>
+                <span class="sb-tooltip" role="tooltip">Walk-In</span>
+              </a>
+            </li>
+            <li class="sb-item">
+              <a href="orders.html" class="sb-link" title="Orders &amp; Verify">
+                <span class="sb-icon" aria-hidden="true"><i class="fas fa-clipboard-list"></i></span>
+                <span class="sb-label">Orders &amp; Verify</span>
+                <span class="sb-badge sb-badge--orders" data-sb-badge="orders">
+                  <span class="sb-badge-count" id="sidebar-orders-badge">0</span>
+                  <span class="sb-sr-only">pending orders</span>
+                </span>
+                <span class="sb-tooltip" role="tooltip">Orders &amp; Verify</span>
+              </a>
+            </li>
+            <li class="sb-item">
+              <a href="sales.html" class="sb-link" title="Sales">
+                <span class="sb-icon" aria-hidden="true"><i class="fas fa-chart-line"></i></span>
+                <span class="sb-label">Sales</span>
+                <span class="sb-tooltip" role="tooltip">Sales</span>
+              </a>
+            </li>
+            <li class="sb-item">
+              <a href="refunds.html" class="sb-link" title="Refunds Queue">
+                <span class="sb-icon" aria-hidden="true"><i class="fas fa-undo-alt"></i></span>
+                <span class="sb-label">Refunds Queue</span>
+                <span class="sb-badge sb-badge--refunds" data-sb-badge="refunds">
+                  <span class="sb-badge-count" id="sidebar-refunds-badge">0</span>
+                  <span class="sb-sr-only">pending refunds</span>
+                </span>
+                <span class="sb-tooltip" role="tooltip">Refunds Queue</span>
+              </a>
+            </li>
+          </ul>
+        </section>
+
+        <hr class="sb-divider" aria-hidden="true">
+
+        <!-- Section 2: BAKERY MANAGEMENT -->
+        <section class="sb-section" aria-labelledby="sb-sec-mgmt">
+          <div id="sb-sec-mgmt" class="sb-section-label">BAKERY MANAGEMENT</div>
+          <ul class="sb-list" role="group" aria-labelledby="sb-sec-mgmt">
+            <li class="sb-item">
+              <a href="products.html" class="sb-link" title="Product Inventory">
+                <span class="sb-icon" aria-hidden="true"><i class="fas fa-boxes-stacked"></i></span>
+                <span class="sb-label">Product Inventory</span>
+                <span class="sb-tooltip" role="tooltip">Product Inventory</span>
+              </a>
+            </li>
+            <li class="sb-item">
+              <a href="ingredients.html" class="sb-link" aria-current="page" title="Ingredients">
+                <span class="sb-icon" aria-hidden="true"><i class="fas fa-wheat-awn"></i></span>
+                <span class="sb-label">Ingredients</span>
+                <span class="sb-tooltip" role="tooltip">Ingredients</span>
+              </a>
+            </li>
+            <li class="sb-item">
+              <a href="settings.html" class="sb-link" title="Bakery Settings">
+                <span class="sb-icon" aria-hidden="true"><i class="fas fa-cog"></i></span>
+                <span class="sb-label">Bakery Settings</span>
+                <span class="sb-tooltip" role="tooltip">Bakery Settings</span>
+              </a>
+            </li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- Staff Profile & Quick Actions Footer -->
+      <footer class="sb-footer">
+        <div class="sb-profile">
+          <div class="sb-avatar" id="staff-initials" aria-hidden="true">OW</div>
+          <div class="sb-profile-text">
+            <div class="sb-profile-name" id="staff-email">Owner</div>
+            <div class="sb-profile-role">Store Manager</div>
+          </div>
+        </div>
+        <div class="sb-actions">
+          <a href="../../customer/html/home.html" target="_blank" class="sb-btn-action" title="Open Customer Storefront">
+            <i class="fas fa-external-link-alt" aria-hidden="true"></i>
+            <span>Store</span>
+          </a>
+          <button type="button" class="sb-btn-action" id="btn-logout" title="Sign out">
+            <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+            <span>Out</span>
+          </button>
+        </div>
+      </footer>
+    </nav>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-toggle" aria-label="Toggle Navigation"><i class="fas fa-bars"></i></button>
+          <div class="page-headline">
+            <h1>Ingredients &amp; Raw Inventory</h1>
+            <p>Track baking supplies, reorder thresholds, and atomic stock movements</p>
+          </div>
+        </div>
+        <div class="topbar-right" style="display:flex; gap:0.5rem; align-items:center;">
+          <button type="button" class="btn btn-outline" id="btn-export-csv" title="Export current stock to CSV">
+            <i class="fas fa-file-csv"></i> Export CSV
+          </button>
+          <button type="button" class="btn btn-primary" id="btn-add-ingredient">
+            <i class="fas fa-plus"></i> Add Ingredient
+          </button>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <!-- Summary Cards -->
+        <div class="stats-grid" style="margin-bottom: 1.25rem;">
+          <div class="stat-card">
+            <div class="stat-label"><i class="fas fa-wheat-awn text-primary"></i> Total Ingredients</div>
+            <div class="stat-value" id="stat-total-ingredients">—</div>
+            <div class="stat-sub">in pantry inventory</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label"><i class="fas fa-triangle-exclamation" style="color:var(--warning, #e65100);"></i> Low Stock</div>
+            <div class="stat-value" id="stat-lowstock-ingredients" style="color:var(--warning, #e65100);">—</div>
+            <div class="stat-sub">&le; reorder threshold</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label"><i class="fas fa-circle-xmark" style="color:var(--danger, #dc3545);"></i> Out of Stock</div>
+            <div class="stat-value" id="stat-outofstock-ingredients" style="color:var(--danger, #dc3545);">—</div>
+            <div class="stat-sub">depleted stock</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label"><i class="fas fa-clock text-primary"></i> Expiring Soon</div>
+            <div class="stat-value" id="stat-expiring-ingredients" style="color:#b23c00;">—</div>
+            <div class="stat-sub">within next 7 days</div>
+          </div>
+        </div>
+
+        <!-- Catalog / Inventory Surface -->
+        <section class="catalog-surface">
+          <div class="catalog-toolbar">
+            <div class="catalog-heading">
+              <h2>Pantry &amp; Supplies</h2>
+              <p>Real-time balances with row-level transaction safety.</p>
+            </div>
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+              <div class="pos-category-filters" id="ingredient-filters">
+                <button type="button" class="pos-filter-pill active" data-filter="all">All</button>
+                <button type="button" class="pos-filter-pill" data-filter="in_stock">In Stock</button>
+                <button type="button" class="pos-filter-pill" data-filter="low_stock">Low Stock</button>
+                <button type="button" class="pos-filter-pill" data-filter="out_of_stock">Out of Stock</button>
+                <button type="button" class="pos-filter-pill" data-filter="expiring_soon">Expiring Soon</button>
+              </div>
+              <label class="catalog-search" for="ingredient-search">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <input id="ingredient-search" type="search" placeholder="Search by name, supplier..." aria-label="Search ingredients" autocomplete="off">
+              </label>
+            </div>
+          </div>
+
+          <div class="catalog-meta">
+            <span id="catalog-count">Loading ingredients…</span>
+            <span>Cost per unit in Philippine Pesos (₱)</span>
+          </div>
+
+          <div class="table-responsive">
+            <table class="dash-table catalog-table">
+              <thead>
+                <tr>
+                  <th>Ingredient</th>
+                  <th>Current Stock</th>
+                  <th>Unit</th>
+                  <th>Reorder Level</th>
+                  <th>Cost / Unit</th>
+                  <th>Supplier</th>
+                  <th>Expiry Date</th>
+                  <th>Location</th>
+                  <th>Status</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="ingredients-tbody">
+                <tr>
+                  <td colspan="10" class="muted" style="text-align:center; padding: 2rem;">Loading ingredients…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <p class="catalog-note" style="margin-top: 1.5rem;">
+          <i class="fas fa-shield-alt text-primary"></i> <strong>Safe Stock Operations:</strong> All stock additions and deductions execute via transactional database RPC with row locks and zero negative balance enforcement. Direct client-side stock overrides are blocked.
+        </p>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal: Add / Edit Ingredient Info -->
+  <div class="modal-backdrop" id="modal-ingredient" role="dialog" aria-modal="true" aria-labelledby="ingredient-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="ingredient-modal-title"><i class="fas fa-wheat-awn text-primary"></i> Add Ingredient</h3>
+        <button type="button" class="modal-close-btn" id="btn-close-ingredient" aria-label="Close">&times;</button>
+      </div>
+      <form id="ingredient-form">
+        <input type="hidden" id="ingredient-id" value="">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="ing-name">Ingredient Name *</label>
+            <input type="text" id="ing-name" class="form-input" required minlength="2" maxlength="120" placeholder="e.g. All-Purpose Flour">
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="ing-unit">Measurement Unit *</label>
+              <input type="text" id="ing-unit" class="form-input" required list="unit-suggestions" placeholder="e.g. kg, g, pcs, liters, bags">
+              <datalist id="unit-suggestions">
+                <option value="kg">
+                <option value="g">
+                <option value="pcs">
+                <option value="liters">
+                <option value="ml">
+                <option value="bags">
+                <option value="cans">
+                <option value="boxes">
+              </datalist>
+            </div>
+            <div class="form-group" id="wrap-initial-stock">
+              <label class="form-label" for="ing-initial-stock">Initial Stock</label>
+              <input type="number" id="ing-initial-stock" class="form-input" min="0" step="any" value="0" placeholder="0">
+            </div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="ing-reorder">Reorder Threshold *</label>
+              <input type="number" id="ing-reorder" class="form-input" required min="0" step="any" value="10" placeholder="10">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ing-cost">Cost per Unit (₱)</label>
+              <input type="number" id="ing-cost" class="form-input" min="0" step="0.01" placeholder="e.g. 52.50">
+            </div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="ing-supplier">Supplier</label>
+              <input type="text" id="ing-supplier" class="form-input" maxlength="120" placeholder="e.g. Universal Robina / San Miguel">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ing-expiry">Expiry Date</label>
+              <input type="date" id="ing-expiry" class="form-input">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ing-location">Storage Location</label>
+            <input type="text" id="ing-location" class="form-input" maxlength="120" placeholder="e.g. Dry Pantry Shelf A-2, Walk-in Chiller">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btn-cancel-ingredient">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-ingredient"><i class="fas fa-save"></i> Save Ingredient</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Stock (Restock) -->
+  <div class="modal-backdrop" id="modal-restock" role="dialog" aria-modal="true" aria-labelledby="restock-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="restock-modal-title"><i class="fas fa-boxes-packing text-primary"></i> Restock Ingredient</h3>
+        <button type="button" class="modal-close-btn" id="btn-close-restock" aria-label="Close">&times;</button>
+      </div>
+      <form id="restock-form">
+        <input type="hidden" id="restock-ing-id">
+        <div class="modal-body">
+          <div style="background:#FBF8F4; border:1px solid #EADBCE; border-radius:10px; padding:0.85rem 1rem; margin-bottom:1.25rem;">
+            <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Target Ingredient</div>
+            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:2px;">
+              <strong id="restock-ing-name" style="font-size:1rem; color:#4F2A22;">—</strong>
+              <span style="font-size:0.85rem; color:#6B352A;">Current: <strong id="restock-current-stock">0</strong> <span id="restock-unit-label">pcs</span></span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="restock-qty">Quantity to Add *</label>
+            <input type="number" id="restock-qty" class="form-input" required min="0.001" step="any" placeholder="e.g. 25 or 0.5">
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="restock-unit-cost">Unit Cost (₱, optional)</label>
+              <input type="number" id="restock-unit-cost" class="form-input" min="0" step="0.01" placeholder="Updates latest cost">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="restock-supplier">Supplier (optional)</label>
+              <input type="text" id="restock-supplier" class="form-input" placeholder="Updates supplier">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="restock-note">Delivery / Batch Note (optional)</label>
+            <input type="text" id="restock-note" class="form-input" maxlength="250" placeholder="e.g. Invoice #9042 from bakery depot">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btn-cancel-restock">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-restock"><i class="fas fa-check"></i> Confirm Restock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Remove / Adjust Stock -->
+  <div class="modal-backdrop" id="modal-adjust" role="dialog" aria-modal="true" aria-labelledby="adjust-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="adjust-modal-title"><i class="fas fa-sliders text-primary"></i> Remove / Adjust Stock</h3>
+        <button type="button" class="modal-close-btn" id="btn-close-adjust" aria-label="Close">&times;</button>
+      </div>
+      <form id="adjust-form">
+        <input type="hidden" id="adjust-ing-id">
+        <div class="modal-body">
+          <div style="background:#FBF8F4; border:1px solid #EADBCE; border-radius:10px; padding:0.85rem 1rem; margin-bottom:1.25rem;">
+            <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Target Ingredient</div>
+            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:2px;">
+              <strong id="adjust-ing-name" style="font-size:1rem; color:#4F2A22;">—</strong>
+              <span style="font-size:0.85rem; color:#6B352A;">Available: <strong id="adjust-current-stock">0</strong> <span id="adjust-unit-label">pcs</span></span>
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="adjust-type">Movement Type *</label>
+              <select id="adjust-type" class="form-select" required>
+                <option value="usage">USAGE (Daily baking production)</option>
+                <option value="waste">WASTE (Spoilage / damage / expired)</option>
+                <option value="adjustment">ADJUSTMENT (Recount correction)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="adjust-qty">Quantity to Remove *</label>
+              <input type="number" id="adjust-qty" class="form-input" required min="0.001" step="any" placeholder="e.g. 5 or 0.25">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="adjust-reason">Reason * (Mandatory)</label>
+            <input type="text" id="adjust-reason" class="form-input" required minlength="3" maxlength="250" placeholder="e.g. Used for 100 bundles Spanish Bread batch #12">
+            <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:4px;">Audit trail requires a clear reason for inventory removals.</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btn-cancel-adjust">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-adjust"><i class="fas fa-check"></i> Apply Removal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: History / Audit Log -->
+  <div class="modal-backdrop" id="modal-history" role="dialog" aria-modal="true" aria-labelledby="history-modal-title">
+    <div class="modal-dialog modal-dialog-lg">
+      <div class="modal-header">
+        <h3 class="modal-title" id="history-modal-title"><i class="fas fa-history text-primary"></i> Stock Movement History</h3>
+        <button type="button" class="modal-close-btn" id="btn-close-history" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="background:#FBF8F4; border:1px solid #EADBCE; border-radius:10px; padding:0.85rem 1rem; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+          <div>
+            <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Ingredient</div>
+            <strong id="history-ing-name" style="font-size:1rem; color:#4F2A22;">—</strong>
+          </div>
+          <div>
+            <span style="font-size:0.85rem; color:#6B352A;">Current Stock: <strong id="history-current-stock">0</strong> <span id="history-unit-label">pcs</span></span>
+          </div>
+        </div>
+
+        <div class="table-responsive" style="max-height: 380px; overflow-y:auto; border:1px solid #EDE4DC; border-radius:8px;">
+          <table class="dash-table catalog-table" style="font-size:0.78rem;">
+            <thead>
+              <tr>
+                <th>Date &amp; Time</th>
+                <th>Type</th>
+                <th>Change</th>
+                <th>Before &rarr; After</th>
+                <th>Supplier / Cost</th>
+                <th>Reason / Note</th>
+                <th>User</th>
+              </tr>
+            </thead>
+            <tbody id="history-tbody">
+              <tr><td colspan="7" class="muted" style="text-align:center; padding:1.5rem;">Loading audit records…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem; font-size:0.8rem;">
+          <span id="history-page-info" style="color:var(--text-muted);">Page 1</span>
+          <div style="display:flex; gap:0.5rem;">
+            <button type="button" class="btn btn-outline btn-sm" id="btn-history-prev" disabled>
+              <i class="fas fa-chevron-left"></i> Previous
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" id="btn-history-next" disabled>
+              Next <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" id="btn-dismiss-history">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../../customer/js/config.js"></script>
+  <script src="../js/admin-api.js"></script>
+  <script src="../js/admin-main.js"></script>
+  <script src="../js/admin-sidebar.js"></script>
+  <script src="../js/admin-auth.js"></script>
+  <script src="../js/admin-ingredients.js"></script>
+</body>
+</html>
+

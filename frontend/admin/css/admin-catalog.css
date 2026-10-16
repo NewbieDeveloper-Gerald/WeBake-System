@@ -79,3 +79,20 @@
   .catalog-table { min-width: 720px; }
   .catalog-note { margin-top: .7rem; }
 }
+
+/* Ingredients inventory helpers */
+.catalog-table tr.row-danger { background-color: #fff6f6; }
+.catalog-table tr.row-warning { background-color: #fffcf0; }
+.catalog-table tr.row-danger:hover { background-color: #ffefef; }
+.catalog-table tr.row-warning:hover { background-color: #fff9e6; }
+.catalog-table tr.row-expiring { border-left: 3px solid #E65100; }
+
+.badge-movement { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 9999px; font-size: 0.72rem; font-weight: 600; text-transform: capitalize; }
+.badge-movement.badge-restock { background: #E8F5E9; color: #1B5E20; border: 1px solid #C8E6C9; }
+.badge-movement.badge-usage { background: #E3F2FD; color: #0D47A1; border: 1px solid #BBDEFB; }
+.badge-movement.badge-adjustment { background: #FFF8E1; color: #E65100; border: 1px solid #FFE082; }
+.badge-movement.badge-waste { background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; }
+
+.btn-icon { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 0.82rem; }
+.tag-expiring { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; background: #FFE0B2; color: #B23C00; margin-left: 4px; }
+

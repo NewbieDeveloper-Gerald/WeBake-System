@@ -84,10 +84,17 @@
           <div id="sb-sec-mgmt" class="sb-section-label">BAKERY MANAGEMENT</div>
           <ul class="sb-list" role="group" aria-labelledby="sb-sec-mgmt">
             <li class="sb-item">
-              <a href="products.html" class="sb-link" aria-current="page" title="Product Inventory">
+              <a href="products.html" class="sb-link" title="Product Inventory">
                 <span class="sb-icon" aria-hidden="true"><i class="fas fa-boxes-stacked"></i></span>
                 <span class="sb-label">Product Inventory</span>
                 <span class="sb-tooltip" role="tooltip">Product Inventory</span>
+              </a>
+            </li>
+            <li class="sb-item">
+              <a href="ingredients.html" class="sb-link" title="Ingredients">
+                <span class="sb-icon" aria-hidden="true"><i class="fas fa-wheat-awn"></i></span>
+                <span class="sb-label">Ingredients</span>
+                <span class="sb-tooltip" role="tooltip">Ingredients</span>
               </a>
             </li>
             <li class="sb-item">
@@ -146,11 +153,16 @@
           </div>
           <h2 style="color: #542d24; margin-bottom: 0.5rem;">Daily Inventory Moved to Product Inventory</h2>
           <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem;">
-            Stock monitoring, manual stock adjustments, and the production &amp; loss audit history have been consolidated directly into <strong>Product Inventory</strong>.
+            Stock monitoring, manual stock adjustments, and the production &amp; loss audit history have been consolidated directly into <strong>Product Inventory</strong>. For baking supplies, see <strong>Ingredients</strong>.
           </p>
-          <a href="products.html#section-stock-adjustment" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem;">
-            <i class="fas fa-boxes-stacked"></i> Open Product Inventory &amp; Stock Adjustment
-          </a>
+          <div style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
+            <a href="products.html#section-stock-adjustment" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem;">
+              <i class="fas fa-boxes-stacked"></i> Open Product Inventory
+            </a>
+            <a href="ingredients.html" class="btn btn-outline" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem;">
+              <i class="fas fa-wheat-awn"></i> Open Ingredients
+            </a>
+          </div>
         </div>
       </main>
     </div>
