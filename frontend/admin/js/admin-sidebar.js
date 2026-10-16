@@ -60,6 +60,13 @@
       sectionId: 'sb-sec-mgmt',
       items: [
         {
+          id: 'sales',
+          label: 'Sales',
+          route: 'sales.html',
+          icon: 'fas fa-chart-line',
+          badgeType: null
+        },
+        {
           id: 'inventory',
           label: 'Product Inventory',
           route: 'products.html',
@@ -68,16 +75,9 @@
         },
         {
           id: 'ingredients',
-          label: 'Ingredients',
+          label: 'Ingredients Inventory',
           route: 'ingredients.html',
           icon: 'fas fa-wheat-awn',
-          badgeType: null
-        },
-        {
-          id: 'sales',
-          label: 'Sales',
-          route: 'sales.html',
-          icon: 'fas fa-chart-line',
           badgeType: null
         },
         {
