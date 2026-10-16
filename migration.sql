@@ -114,10 +114,12 @@ BEGIN
 END;
 $$;
 
--- 4) Ingredient stock status view
+-- 4) Ingredient stock status view (with NULL aliases for backwards compatibility)
 CREATE OR REPLACE VIEW public.ingredient_stock_status
 WITH (security_invoker = true) AS
 SELECT i.*,
+  NULL::text AS supplier,
+  NULL::text AS storage_location,
   CASE
     WHEN i.stock_quantity <= 0               THEN 'out_of_stock'
     WHEN i.stock_quantity <= i.reorder_level THEN 'low_stock'
