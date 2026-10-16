@@ -509,7 +509,17 @@
   <div id="sales-toast-container" class="sales-toast-container" aria-live="polite"></div>
 
   <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="../js/vendor/chart.umd.min.js"></script>
+  <script>
+    if (typeof Chart === 'undefined') {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>');
+    }
+  </script>
+  <script>
+    if (typeof Chart === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"><\/script>');
+    }
+  </script>
   <script src="../../customer/js/config.js"></script>
   <script src="../js/admin-api.js"></script>
   <script src="../js/admin-main.js"></script>

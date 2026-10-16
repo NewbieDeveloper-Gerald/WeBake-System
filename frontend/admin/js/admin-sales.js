@@ -536,17 +536,73 @@
       if (aovEl) aovEl.textContent = formatPesos(m.aov_centavos);
     }
 
-    // --- Render Charts with Chart.js ---
-    function renderCharts(r) {
-      if (typeof Chart === 'undefined') {
-        console.warn('Chart.js not loaded');
+    // Dynamic fallback loader for Chart.js across local and CDN sources
+    function ensureChartJs(callback) {
+      if (typeof Chart !== 'undefined') {
+        if (callback) callback();
         return;
       }
+      if (window._chartJsLoading) {
+        window._chartJsWaiters = window._chartJsWaiters || [];
+        if (callback) window._chartJsWaiters.push(callback);
+        return;
+      }
+      window._chartJsLoading = true;
+      window._chartJsWaiters = callback ? [callback] : [];
 
+      function fireAll() {
+        window._chartJsLoading = false;
+        const list = window._chartJsWaiters || [];
+        window._chartJsWaiters = [];
+        list.forEach((fn) => {
+          try { fn(); } catch (_) {}
+        });
+      }
+
+      const sources = [
+        '../js/vendor/chart.umd.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js',
+        'https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js',
+      ];
+
+      function trySource(idx) {
+        if (idx >= sources.length) {
+          console.warn('Chart.js could not be loaded from any source');
+          window._chartJsLoading = false;
+          return;
+        }
+        const s = document.createElement('script');
+        s.src = sources[idx];
+        s.onload = () => {
+          if (typeof Chart !== 'undefined') {
+            fireAll();
+          } else {
+            trySource(idx + 1);
+          }
+        };
+        s.onerror = () => trySource(idx + 1);
+        document.head.appendChild(s);
+      }
+
+      trySource(0);
+    }
+
+    // --- Render Charts with Chart.js ---
+    function renderCharts(r) {
       const chartsData = r.charts || {};
       const trendData = chartsData.trend || [];
       const channelData = chartsData.channel_split || { online_centavos: 0, walkin_centavos: 0, online_pct: 0, walkin_pct: 0 };
       const topProducts = chartsData.top_products || [];
+
+      // Render Top Products Widget (pure HTML/CSS, independent of Chart.js)
+      renderTopProductsWidget(topProducts);
+
+      if (typeof Chart === 'undefined') {
+        ensureChartJs(() => {
+          if (cachedReport) renderCharts(cachedReport);
+        });
+        return;
+      }
 
       // 1. Trend Chart
       const trendCanvas = document.getElementById('chart-revenue-trend-canvas');
@@ -688,32 +744,36 @@
         });
       }
 
-      // 3. Top Products Mini Widget
+    }
+
+    // --- Render Top Products Widget (Pure HTML/CSS) ---
+    function renderTopProductsWidget(topProducts) {
       const topContainer = document.getElementById('top-products-container');
-      if (topContainer) {
-        if (!topProducts || topProducts.length === 0) {
-          topContainer.innerHTML = '<p class="text-muted" style="font-size:0.78rem; padding:0.5rem 0;">No product sales recorded in this period.</p>';
-        } else {
-          const maxRev = topProducts[0].total_centavos || 1;
-          topContainer.innerHTML = topProducts.map((p) => {
-            const pct = Math.min(100, Math.round(((p.total_centavos || 0) / maxRev) * 100));
-            return `
-              <div class="top-product-item">
-                <div class="top-prod-info">
-                  <div class="top-prod-name" title="${esc(p.product_name)}">${esc(p.product_name)}</div>
-                  <div class="top-prod-bar-wrap">
-                    <div class="top-prod-bar-fill" style="width:${pct}%"></div>
-                  </div>
-                </div>
-                <div class="top-prod-numbers">
-                  <div class="top-prod-rev">${formatPesos(p.total_centavos)}</div>
-                  <div class="top-prod-bundles">${formatNumber(p.bundles_sold)} bdls</div>
-                </div>
-              </div>
-            `;
-          }).join('');
-        }
+      if (!topContainer) return;
+
+      if (!topProducts || topProducts.length === 0) {
+        topContainer.innerHTML = '<p class="text-muted" style="font-size:0.78rem; padding:0.5rem 0;">No product sales recorded in this period.</p>';
+        return;
       }
+
+      const maxRev = topProducts[0].total_centavos || 1;
+      topContainer.innerHTML = topProducts.map((p) => {
+        const pct = Math.min(100, Math.round(((p.total_centavos || 0) / maxRev) * 100));
+        return `
+          <div class="top-product-item">
+            <div class="top-prod-info">
+              <div class="top-prod-name" title="${esc(p.product_name)}">${esc(p.product_name)}</div>
+              <div class="top-prod-bar-wrap">
+                <div class="top-prod-bar-fill" style="width:${pct}%"></div>
+              </div>
+            </div>
+            <div class="top-prod-numbers">
+              <div class="top-prod-rev">${formatPesos(p.total_centavos)}</div>
+              <div class="top-prod-bundles">${formatNumber(p.bundles_sold)} bdls</div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     // --- Tab 1: Render By Product Table ---
