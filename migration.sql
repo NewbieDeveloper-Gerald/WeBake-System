@@ -2,6 +2,7 @@
 -- Migration: Add Ingredients & Inventory Movements (WeBake)
 -- Compatible with PostgreSQL / Supabase
 -- Idempotent: safe to run multiple times
+-- Clean schema: only active columns (supplier & storage_location removed)
 -- =====================================================================
 
 -- 1) Ingredients catalog table
@@ -12,9 +13,7 @@ CREATE TABLE IF NOT EXISTS public.ingredients (
   unit              TEXT NOT NULL DEFAULT 'pcs',
   reorder_level     NUMERIC(12,3) NOT NULL DEFAULT 0 CHECK (reorder_level >= 0),
   cost_per_unit     NUMERIC(12,2),
-  supplier          TEXT,
   expiry_date       DATE,
-  storage_location  TEXT,
   stock_updated_at  TIMESTAMPTZ,
   created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -37,7 +36,6 @@ CREATE TABLE IF NOT EXISTS public.inventory_movements (
   quantity_before NUMERIC(12,3) NOT NULL,
   quantity_after  NUMERIC(12,3) NOT NULL,
   unit_cost       NUMERIC(12,2),
-  supplier        TEXT,
   reason          TEXT,
   created_by      TEXT NOT NULL DEFAULT 'admin',
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -46,6 +44,9 @@ CREATE TABLE IF NOT EXISTS public.inventory_movements (
 CREATE INDEX IF NOT EXISTS idx_movements_ingredient
   ON public.inventory_movements (ingredient_id, created_at DESC);
 
+-- Drop old 7-argument adjust_stock function if exists
+DROP FUNCTION IF EXISTS public.adjust_stock(BIGINT, TEXT, NUMERIC, TEXT, NUMERIC, TEXT, TEXT);
+
 -- 3) Safe stock adjustment RPC: row lock + audit log + negative stock prevention in one transaction
 CREATE OR REPLACE FUNCTION public.adjust_stock(
   p_ingredient_id BIGINT,
@@ -53,7 +54,6 @@ CREATE OR REPLACE FUNCTION public.adjust_stock(
   p_quantity      NUMERIC,
   p_reason        TEXT    DEFAULT NULL,
   p_unit_cost     NUMERIC DEFAULT NULL,
-  p_supplier      TEXT    DEFAULT NULL,
   p_actor         TEXT    DEFAULT 'admin'
 )
 RETURNS public.inventory_movements
@@ -98,17 +98,16 @@ BEGIN
   UPDATE public.ingredients
   SET stock_quantity   = v_after,
       stock_updated_at = NOW(),
-      cost_per_unit    = COALESCE(p_unit_cost, cost_per_unit),
-      supplier         = COALESCE(p_supplier, supplier)
+      cost_per_unit    = COALESCE(p_unit_cost, cost_per_unit)
   WHERE id = p_ingredient_id;
 
   -- Record audit trail
   INSERT INTO public.inventory_movements
     (ingredient_id, movement_type, quantity_change, quantity_before,
-     quantity_after, unit_cost, supplier, reason, created_by)
+     quantity_after, unit_cost, reason, created_by)
   VALUES
     (p_ingredient_id, p_type, v_change, v_before,
-     v_after, p_unit_cost, p_supplier, p_reason, COALESCE(p_actor, 'admin'))
+     v_after, p_unit_cost, p_reason, COALESCE(p_actor, 'admin'))
   RETURNING * INTO v_row;
 
   RETURN v_row;
@@ -132,4 +131,3 @@ ALTER TABLE public.inventory_movements ENABLE ROW LEVEL SECURITY;
 
 REVOKE INSERT, UPDATE, DELETE ON public.ingredients FROM anon;
 REVOKE ALL ON public.inventory_movements FROM anon;
-

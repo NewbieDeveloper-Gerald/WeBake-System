@@ -16,7 +16,7 @@ async function list() {
       query(`
         SELECT
           id, name, stock_quantity, unit, reorder_level, cost_per_unit,
-          supplier, expiry_date::text AS expiry_date, storage_location, stock_updated_at,
+          expiry_date::text AS expiry_date, stock_updated_at,
           created_at, updated_at, stock_status,
           CASE
             WHEN expiry_date IS NOT NULL
@@ -61,7 +61,7 @@ async function getById(id) {
   const res = await query(`
     SELECT
       id, name, stock_quantity, unit, reorder_level, cost_per_unit,
-      supplier, expiry_date::text AS expiry_date, storage_location, stock_updated_at,
+      expiry_date::text AS expiry_date, stock_updated_at,
       created_at, updated_at, stock_status,
       CASE
         WHEN expiry_date IS NOT NULL
@@ -83,25 +83,23 @@ async function create(data, actor = 'admin') {
   const unit = String(data.unit || 'pcs').trim();
   const reorderLevel = Math.max(0, Number(data.reorder_level) || 0);
   const costPerUnit = data.cost_per_unit != null && data.cost_per_unit !== '' ? Number(data.cost_per_unit) : null;
-  const supplier = data.supplier ? String(data.supplier).trim() : null;
   const expiryDate = data.expiry_date || null;
-  const storageLocation = data.storage_location ? String(data.storage_location).trim() : null;
   const initialStock = Math.max(0, Number(data.stock_quantity) || 0);
 
   const insertRes = await query(
     `INSERT INTO public.ingredients
-      (name, stock_quantity, unit, reorder_level, cost_per_unit, supplier, expiry_date, storage_location, stock_updated_at)
-     VALUES ($1, 0, $2, $3, $4, $5, $6, $7, NOW())
+      (name, stock_quantity, unit, reorder_level, cost_per_unit, expiry_date, stock_updated_at)
+     VALUES ($1, 0, $2, $3, $4, $5, NOW())
      RETURNING *;`,
-    [name, unit, reorderLevel, costPerUnit, supplier, expiryDate, storageLocation]
+    [name, unit, reorderLevel, costPerUnit, expiryDate]
   );
   const ingredient = insertRes.rows[0];
 
   // If initial stock was provided, adjust via the RPC to record opening balance
   if (initialStock > 0) {
     await query(
-      `SELECT * FROM public.adjust_stock($1, 'restock', $2, 'Initial opening stock', $3, $4, $5);`,
-      [ingredient.id, initialStock, costPerUnit, supplier, actor]
+      `SELECT * FROM public.adjust_stock($1, 'restock', $2, 'Initial opening stock', $3, $4);`,
+      [ingredient.id, initialStock, costPerUnit, actor]
     );
   }
 
@@ -118,17 +116,14 @@ async function update(id, data) {
   const costPerUnit = data.cost_per_unit !== undefined
     ? (data.cost_per_unit != null && data.cost_per_unit !== '' ? Number(data.cost_per_unit) : null)
     : existing.cost_per_unit;
-  const supplier = data.supplier !== undefined ? (data.supplier ? String(data.supplier).trim() : null) : existing.supplier;
   const expiryDate = data.expiry_date !== undefined ? (data.expiry_date || null) : existing.expiry_date;
-  const storageLocation = data.storage_location !== undefined ? (data.storage_location ? String(data.storage_location).trim() : null) : existing.storage_location;
 
   // Never update stock_quantity directly here
   await query(
     `UPDATE public.ingredients
-     SET name = $1, unit = $2, reorder_level = $3, cost_per_unit = $4,
-         supplier = $5, expiry_date = $6, storage_location = $7
-     WHERE id = $8;`,
-    [name, unit, reorderLevel, costPerUnit, supplier, expiryDate, storageLocation, id]
+     SET name = $1, unit = $2, reorder_level = $3, cost_per_unit = $4, expiry_date = $5
+     WHERE id = $6;`,
+    [name, unit, reorderLevel, costPerUnit, expiryDate, id]
   );
 
   return getById(id);
@@ -140,7 +135,7 @@ async function remove(id) {
   return { success: true, message: 'Ingredient deleted.' };
 }
 
-async function adjustStock(id, { type, quantity, reason, unitCost, supplier }, actor = 'admin') {
+async function adjustStock(id, { type, quantity, reason, unitCost }, actor = 'admin') {
   const parsedQty = Number(quantity);
   if (!parsedQty || parsedQty <= 0 || isNaN(parsedQty)) {
     throw fail(400, 'VALIDATION_ERROR', 'Quantity must be a positive number.');
@@ -157,14 +152,13 @@ async function adjustStock(id, { type, quantity, reason, unitCost, supplier }, a
 
   try {
     const res = await query(
-      `SELECT * FROM public.adjust_stock($1, $2, $3, $4, $5, $6, $7);`,
+      `SELECT * FROM public.adjust_stock($1, $2, $3, $4, $5, $6);`,
       [
         id,
         type,
         parsedQty,
         reason ? reason.trim() : null,
         unitCost != null && unitCost !== '' ? Number(unitCost) : null,
-        supplier ? supplier.trim() : null,
         actor,
       ]
     );

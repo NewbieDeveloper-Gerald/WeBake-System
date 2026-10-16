@@ -293,7 +293,7 @@
       btnEdit.className = 'btn btn-outline btn-icon';
       btnEdit.style.marginRight = '4px';
       btnEdit.innerHTML = '<i class="fas fa-pencil"></i>';
-      btnEdit.title = 'Edit details (reorder level, supplier, cost)';
+      btnEdit.title = 'Edit details (reorder level, cost, expiry)';
       btnEdit.addEventListener('click', () => openEditModal(ing));
 
       // Delete button

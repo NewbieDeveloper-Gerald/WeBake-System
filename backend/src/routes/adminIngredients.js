@@ -48,7 +48,7 @@ router.delete('/:id', asyncHandler(async (req, res) => {
 // POST /api/admin/ingredients/:id/adjust - adjust stock through the PostgreSQL RPC function
 router.post('/:id/adjust', asyncHandler(async (req, res) => {
   const actor = req.admin?.email || 'admin';
-  const { type, quantity, reason, unit_cost, supplier } = req.body;
+  const { type, quantity, reason, unit_cost } = req.body;
   const result = await ingredientService.adjustStock(
     req.params.id,
     {
@@ -56,7 +56,6 @@ router.post('/:id/adjust', asyncHandler(async (req, res) => {
       quantity,
       reason,
       unitCost: unit_cost,
-      supplier,
     },
     actor
   );
