@@ -55,7 +55,7 @@ async function applyFile(client, filename) {
 async function main() {
   const files = fs
     .readdirSync(MIGRATIONS_DIR)
-    .filter((f) => f.endsWith('.sql'))
+    .filter((f) => f.endsWith('.sql') && !f.toLowerCase().includes('rollback'))
     .sort(); // 001_... before 002_... - filename order IS version order.
 
   if (files.length === 0) {

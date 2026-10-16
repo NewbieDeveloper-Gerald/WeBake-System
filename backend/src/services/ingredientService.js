@@ -11,39 +11,50 @@ const { query } = require('../config/db');
 const { notFound, fail } = require('../utils/serviceError');
 
 async function list() {
-  const [ingredientsRes, summaryRes] = await Promise.all([
-    query(`
-      SELECT
-        id, name, stock_quantity, unit, reorder_level, cost_per_unit,
-        supplier, expiry_date, storage_location, stock_updated_at,
-        created_at, updated_at, stock_status,
-        CASE
-          WHEN expiry_date IS NOT NULL
-            AND expiry_date <= (CURRENT_DATE + INTERVAL '7 days')
-            AND expiry_date >= CURRENT_DATE
-          THEN true ELSE false
-        END AS is_expiring_soon
-      FROM public.ingredient_stock_status
-      ORDER BY name ASC;
-    `),
-    query(`
-      SELECT
-        COUNT(*)::int AS total,
-        COUNT(*) FILTER (WHERE stock_status = 'low_stock')::int AS low_stock,
-        COUNT(*) FILTER (WHERE stock_status = 'out_of_stock')::int AS out_of_stock,
-        COUNT(*) FILTER (
-          WHERE expiry_date IS NOT NULL
-            AND expiry_date <= (CURRENT_DATE + INTERVAL '7 days')
-            AND expiry_date >= CURRENT_DATE
-        )::int AS expiring_soon
-      FROM public.ingredient_stock_status;
-    `),
-  ]);
+  try {
+    const [ingredientsRes, summaryRes] = await Promise.all([
+      query(`
+        SELECT
+          id, name, stock_quantity, unit, reorder_level, cost_per_unit,
+          supplier, expiry_date, storage_location, stock_updated_at,
+          created_at, updated_at, stock_status,
+          CASE
+            WHEN expiry_date IS NOT NULL
+              AND expiry_date <= (CURRENT_DATE + INTERVAL '7 days')
+              AND expiry_date >= CURRENT_DATE
+            THEN true ELSE false
+          END AS is_expiring_soon
+        FROM public.ingredient_stock_status
+        ORDER BY name ASC;
+      `),
+      query(`
+        SELECT
+          COUNT(*)::int AS total,
+          COUNT(*) FILTER (WHERE stock_status = 'low_stock')::int AS low_stock,
+          COUNT(*) FILTER (WHERE stock_status = 'out_of_stock')::int AS out_of_stock,
+          COUNT(*) FILTER (
+            WHERE expiry_date IS NOT NULL
+              AND expiry_date <= (CURRENT_DATE + INTERVAL '7 days')
+              AND expiry_date >= CURRENT_DATE
+          )::int AS expiring_soon
+        FROM public.ingredient_stock_status;
+      `),
+    ]);
 
-  return {
-    ingredients: ingredientsRes.rows,
-    summary: summaryRes.rows[0] || { total: 0, low_stock: 0, out_of_stock: 0, expiring_soon: 0 },
-  };
+    return {
+      ingredients: ingredientsRes.rows,
+      summary: summaryRes.rows[0] || { total: 0, low_stock: 0, out_of_stock: 0, expiring_soon: 0 },
+    };
+  } catch (err) {
+    if (err.code === '42P01') {
+      console.warn('[ingredients] ingredient_stock_status relation missing (migration pending)');
+      return {
+        ingredients: [],
+        summary: { total: 0, low_stock: 0, out_of_stock: 0, expiring_soon: 0 },
+      };
+    }
+    throw err;
+  }
 }
 
 async function getById(id) {
