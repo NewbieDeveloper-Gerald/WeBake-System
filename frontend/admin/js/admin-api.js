@@ -102,14 +102,39 @@
     // --- dashboard + reports ---
     dashboardStats: () => get('/api/admin/reports/dashboard'),
     settingsPublic: () => get('/api/settings/public', { auth: false }),
-    salesReport: (period, anchor) => {
-      const q = new URLSearchParams({ period });
-      if (anchor) q.set('anchor', anchor);
+    salesReport: (periodOrOpts, anchor) => {
+      let q;
+      if (typeof periodOrOpts === 'object' && periodOrOpts !== null) {
+        q = new URLSearchParams();
+        Object.entries(periodOrOpts).forEach(([k, v]) => {
+          if (v !== undefined && v !== null && v !== '') q.set(k, String(v));
+        });
+      } else {
+        q = new URLSearchParams({ period: periodOrOpts || 'today' });
+        if (anchor) q.set('anchor', anchor);
+      }
       return get('/api/admin/reports/sales?' + q.toString());
     },
-    salesPdf: (period, anchor) => {
-      const q = new URLSearchParams({ period });
-      if (anchor) q.set('anchor', anchor);
+    salesSummary: (opts) => {
+      const q = new URLSearchParams();
+      if (opts) {
+        Object.entries(opts).forEach(([k, v]) => {
+          if (v !== undefined && v !== null && v !== '') q.set(k, String(v));
+        });
+      }
+      return get('/api/sales/summary?' + q.toString());
+    },
+    salesPdf: (periodOrOpts, anchor) => {
+      let q;
+      if (typeof periodOrOpts === 'object' && periodOrOpts !== null) {
+        q = new URLSearchParams();
+        Object.entries(periodOrOpts).forEach(([k, v]) => {
+          if (v !== undefined && v !== null && v !== '') q.set(k, String(v));
+        });
+      } else {
+        q = new URLSearchParams({ period: periodOrOpts || 'today' });
+        if (anchor) q.set('anchor', anchor);
+      }
       return get('/api/admin/reports/sales.pdf?' + q.toString(), { download: true });
     },
 

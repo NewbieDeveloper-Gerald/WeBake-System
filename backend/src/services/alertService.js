@@ -126,3 +126,4 @@ async function getStockAlerts(customClient) {
 module.exports = {
   getStockAlerts,
 };
+

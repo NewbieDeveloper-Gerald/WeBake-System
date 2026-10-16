@@ -9,12 +9,22 @@ const reportService = require('../services/reportService');
 const dashboardService = require('../services/dashboardService');
 
 async function sales(req, res) {
-  const report = await reportService.getSales(req.query.period, req.query.anchor);
+  const options = {
+    from: req.query.from,
+    to: req.query.to,
+    compare: req.query.compare,
+  };
+  const report = await reportService.getSales(req.query.period, req.query.anchor, options);
   return res.json({ success: true, report });
 }
 
 async function salesPdf(req, res) {
-  const report = await reportService.getSales(req.query.period, req.query.anchor);
+  const options = {
+    from: req.query.from,
+    to: req.query.to,
+    compare: req.query.compare,
+  };
+  const report = await reportService.getSales(req.query.period, req.query.anchor, options);
   const pdf = await reportService.renderPdf(report);
   const filename = `webake-sales-${report.period}-${report.from}.pdf`;
   res.setHeader('Content-Type', 'application/pdf');

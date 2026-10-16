@@ -324,12 +324,14 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .sb .sb-profile {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
 }
 
 .sb .sb-avatar {
@@ -345,11 +347,13 @@
   justify-content: center;
   font-size: 0.8rem;
   font-weight: 700;
+  flex-shrink: 0;
 }
 
 .sb .sb-profile-text {
   overflow: hidden;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .sb .sb-profile-name {
@@ -357,11 +361,18 @@
   font-weight: 600;
   color: #FFFFFF;
   line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 140px;
 }
 
 .sb .sb-profile-role {
   font-size: 0.7rem;
   color: var(--sb-section-label);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sb .sb-actions {

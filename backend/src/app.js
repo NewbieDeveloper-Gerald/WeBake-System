@@ -98,6 +98,7 @@ function createApp() {
 
   // Single shared source of truth for stock alerts across Products, Ingredients & Dashboard
   const alertService = require('./services/alertService');
+  const reportsController = require('./controllers/reportsController');
   const requireAdmin = require('./middleware/requireAdmin');
   const asyncHandler = require('./middleware/asyncHandler');
   app.get('/api/inventory/alerts', requireAdmin, asyncHandler(async (req, res) => {
@@ -108,6 +109,7 @@ function createApp() {
     const alerts = await alertService.getStockAlerts();
     return res.json({ success: true, alerts });
   }));
+  app.get('/api/sales/summary', requireAdmin, asyncHandler(reportsController.sales));
 
   // --- Final handlers (order is critical: 404 first, then error catcher) ---
   app.use(notFound);
