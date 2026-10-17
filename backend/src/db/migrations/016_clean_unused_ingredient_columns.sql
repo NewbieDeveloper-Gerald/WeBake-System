@@ -86,12 +86,10 @@ BEGIN
 END;
 $$;
 
--- 6) Recreate ingredient_stock_status view over cleaned columns (with NULL aliases for backwards compatibility)
+-- 6) Recreate ingredient_stock_status view strictly with active columns + stock_status
 CREATE OR REPLACE VIEW public.ingredient_stock_status
 WITH (security_invoker = true) AS
 SELECT i.*,
-  NULL::text AS supplier,
-  NULL::text AS storage_location,
   CASE
     WHEN i.stock_quantity <= 0               THEN 'out_of_stock'
     WHEN i.stock_quantity <= i.reorder_level THEN 'low_stock'

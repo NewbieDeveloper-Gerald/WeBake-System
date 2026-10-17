@@ -15,9 +15,7 @@ const ingredientService = require('../backend/src/services/ingredientService');
       stock_quantity: 25.5,
       reorder_level: 10,
       cost_per_unit: 55.0,
-      supplier: 'San Miguel Mills',
       expiry_date: new Date(Date.now() + 5 * 24 * 3600 * 1000).toISOString().slice(0, 10), // Expiring in 5 days
-      storage_location: 'Shelf B-1',
     }, 'test-admin@webake.com');
 
     console.log('Created ingredient:', {
@@ -34,7 +32,6 @@ const ingredientService = require('../backend/src/services/ingredientService');
       type: 'restock',
       quantity: 10,
       unitCost: 54.0,
-      supplier: 'San Miguel Mills',
       reason: 'Batch delivery receipt #1234',
     }, 'test-admin@webake.com');
     console.log('After restock balance:', restocked.ingredient.stock_quantity, 'Movement:', restocked.movement.movement_type);
