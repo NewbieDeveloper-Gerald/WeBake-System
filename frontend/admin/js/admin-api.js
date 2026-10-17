@@ -137,6 +137,9 @@
       }
       return get('/api/admin/reports/sales.pdf?' + q.toString(), { download: true });
     },
+    unpaidOrders: () => get('/api/admin/reports/unpaid-orders'),
+    recordPartnerPayment: (payload) => post('/api/admin/reports/record-payment', payload),
+    voidPartnerPayment: (id, payload) => post('/api/admin/reports/payments/' + encodeURIComponent(id) + '/void', payload),
 
     // --- orders + verification ---
     adminOrders: (params) => get('/api/admin/orders' + (params ? '?' + params : '')),

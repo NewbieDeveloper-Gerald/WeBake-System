@@ -164,15 +164,15 @@
               <i class="far fa-calendar-alt" aria-hidden="true"></i>
               <span id="period-human-text">Loading range…</span>
             </span>
-
-            <!-- Compare Toggle -->
-            <label class="compare-toggle-wrap" for="toggle-compare">
-              <input type="checkbox" id="toggle-compare" checked>
-              <span>Compare to previous period</span>
-            </label>
           </div>
 
           <div class="toolbar-right">
+            <!-- Record Payment Button -->
+            <button type="button" class="btn btn-primary btn-sm" id="btn-open-record-payment" title="Record payment for existing customer/partner">
+              <i class="fas fa-hand-holding-dollar" aria-hidden="true"></i>
+              <span>Record Payment</span>
+            </button>
+
             <!-- Timestamp -->
             <span class="sales-timestamp" id="sales-timestamp">
               <i class="far fa-clock" aria-hidden="true"></i>
@@ -241,7 +241,6 @@
             <div class="kpi-value" id="kpi-net-revenue">₱0.00</div>
             <div class="kpi-footer">
               <span id="kpi-net-revenue-sub">₱0.00 refunded</span>
-              <span class="delta-badge is-neutral" id="kpi-net-revenue-delta">—</span>
             </div>
           </div>
 
@@ -250,7 +249,7 @@
             <div class="kpi-header">
               <span class="kpi-label">
                 Cash Collected
-                <span class="kpi-tooltip-trigger" data-tooltip="Total money received from walk-in sales and online order deposits" aria-label="About Cash Collected">ⓘ</span>
+                <span class="kpi-tooltip-trigger" data-tooltip="Total money received from walk-in sales, partner payments, and online deposits" aria-label="About Cash Collected">ⓘ</span>
               </span>
               <div class="kpi-icon-wrap" style="background:#E8F5E9; color:#2D6A4F;" aria-hidden="true">
                 <i class="fas fa-hand-holding-dollar"></i>
@@ -259,7 +258,6 @@
             <div class="kpi-value" id="kpi-cash-collected">₱0.00</div>
             <div class="kpi-footer">
               <span id="kpi-cash-collected-sub">0 payments received</span>
-              <span class="delta-badge is-neutral" id="kpi-cash-collected-delta">—</span>
             </div>
           </div>
 
@@ -276,8 +274,7 @@
             </div>
             <div class="kpi-value" id="kpi-outstanding-balance">₱0.00</div>
             <div class="kpi-footer">
-              <span id="kpi-outstanding-sub">Click to review orders</span>
-              <span class="delta-badge is-neutral" id="kpi-outstanding-delta">—</span>
+              <span id="kpi-outstanding-sub">All orders paid in full</span>
             </div>
           </a>
 
@@ -295,7 +292,6 @@
             <div class="kpi-value" id="kpi-refunds" style="color:var(--sales-red);">₱0.00</div>
             <div class="kpi-footer">
               <span id="kpi-refunds-sub">0 refund request(s)</span>
-              <span class="delta-badge is-neutral" id="kpi-refunds-delta">—</span>
             </div>
           </a>
         </section>
@@ -345,6 +341,38 @@
                 <p class="text-muted" style="font-size:0.78rem;">Loading best sellers…</p>
               </div>
             </div>
+          </div>
+        </section>
+
+        <!-- Recent Customer Payments Section (Partner & Delivered Orders) -->
+        <section class="breakdown-card" aria-label="Recent Customer Payments" style="margin-bottom: 1.5rem;">
+          <div class="tab-nav-header" style="justify-content: space-between; align-items: center; padding: 0.85rem 1.25rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <h3 style="margin: 0; font-size: 1rem; color: var(--sales-primary-brown); font-weight: 700;">
+                <i class="fas fa-hand-holding-dollar text-primary" aria-hidden="true"></i> Recent Customer Payments
+              </h3>
+              <span class="badge-count" id="count-partner-payments">0</span>
+            </div>
+            <div class="text-muted" style="font-size: 0.8rem;" id="partner-payments-period-label">For selected period</div>
+          </div>
+          <div class="table-responsive">
+            <table class="admin-table" id="table-partner-payments">
+              <thead>
+                <tr>
+                  <th scope="col">Date Received</th>
+                  <th scope="col">Customer / Partner</th>
+                  <th scope="col">Order No.</th>
+                  <th scope="col">Method</th>
+                  <th scope="col" style="text-align:right;">Amount Received</th>
+                  <th scope="col">Recorded By</th>
+                  <th scope="col">Notes / Ref</th>
+                  <th scope="col" style="text-align:center;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="partner-payments-tbody">
+                <tr><td colspan="8" class="text-center text-muted" style="padding:2rem;">Loading customer payments…</td></tr>
+              </tbody>
+            </table>
           </div>
         </section>
 
@@ -423,6 +451,145 @@
           </div>
         </section>
       </main>
+    </div>
+  </div>
+
+  <!-- Modal: Record Payment for Existing Customers / Partners -->
+  <div class="modal-backdrop" id="modal-record-payment" role="dialog" aria-modal="true" aria-labelledby="modal-record-payment-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-record-payment-title">
+          <i class="fas fa-hand-holding-dollar text-primary"></i> Record Customer Payment
+        </h3>
+        <button type="button" class="modal-close-btn" id="btn-close-record-payment" aria-label="Close">&times;</button>
+      </div>
+      <form id="record-payment-form">
+        <div class="modal-body">
+          <!-- Customer Dropdown -->
+          <div class="form-group">
+            <label class="form-label" for="pay-customer-select">Customer / Partner *</label>
+            <select id="pay-customer-select" class="form-input" required>
+              <option value="" disabled selected>Loading customers with balance…</option>
+            </select>
+            <span id="cust-hint" style="font-size:0.75rem; color:var(--text-muted); display:block; margin-top:3px;">
+              Only customers with active unpaid orders are listed.
+            </span>
+          </div>
+
+          <!-- Order Dropdown -->
+          <div class="form-group">
+            <label class="form-label" for="pay-order-select">Order with Unpaid Balance *</label>
+            <select id="pay-order-select" class="form-input" required disabled>
+              <option value="" disabled selected>Choose a customer first…</option>
+            </select>
+            <div id="order-balance-details" style="display:none; margin-top:0.4rem; padding:0.6rem 0.8rem; background:#FAF3E8; border-radius:8px; font-size:0.8rem; color:#4A3B32;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                <span>Order Total:</span>
+                <strong id="dtl-order-total">₱0.00</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                <span>Already Paid:</span>
+                <span id="dtl-order-paid">₱0.00</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-weight:700; color:#B5523A;">
+                <span>Remaining Balance:</span>
+                <span id="dtl-order-remaining">₱0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Amount Received -->
+          <div class="form-group">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
+              <label class="form-label" for="pay-amount-input" style="margin:0;">Amount Received (₱) *</label>
+              <button type="button" class="btn btn-outline btn-sm" id="btn-pay-full-balance" style="padding:2px 8px; font-size:0.75rem;" disabled>
+                Pay full balance
+              </button>
+            </div>
+            <input type="number" id="pay-amount-input" class="form-input" min="0.01" step="0.01" required placeholder="0.00" disabled>
+            <!-- Live preview -->
+            <div id="balance-live-preview" style="margin-top:0.35rem; font-size:0.82rem; font-weight:600; color:#2D6A4F;">
+              Balance after payment: <span id="preview-balance-text">₱0.00</span>
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <!-- Payment Method -->
+            <div class="form-group">
+              <label class="form-label" for="pay-method-select">Payment Method *</label>
+              <select id="pay-method-select" class="form-input" required>
+                <option value="CASH">Cash</option>
+                <option value="GCASH">GCash</option>
+                <option value="BANK_TRANSFER">Bank Transfer</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+
+            <!-- Date Received -->
+            <div class="form-group">
+              <label class="form-label" for="pay-date-input">Date Received *</label>
+              <input type="date" id="pay-date-input" class="form-input" required>
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <!-- Reference No. -->
+            <div class="form-group">
+              <label class="form-label" for="pay-ref-input">Reference No. (optional)</label>
+              <input type="text" id="pay-ref-input" class="form-input" placeholder="e.g. GCash/Bank Ref">
+            </div>
+
+            <!-- Notes -->
+            <div class="form-group">
+              <label class="form-label" for="pay-notes-input">Notes (optional)</label>
+              <input type="text" id="pay-notes-input" class="form-input" placeholder="e.g. Delivered Oct 15">
+            </div>
+          </div>
+
+          <!-- Error Alert Box -->
+          <div id="record-payment-error" style="display:none; margin-top:0.5rem; padding:0.6rem 0.8rem; background:#FEE2E2; border:1px solid #FCA5A5; border-radius:6px; color:#991B1B; font-size:0.8rem;"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btn-cancel-record-payment">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-record-payment">
+            <i class="fas fa-save"></i> Save Payment
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Void Payment Confirmation -->
+  <div class="modal-backdrop" id="modal-void-payment" role="dialog" aria-modal="true" aria-labelledby="modal-void-payment-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-void-payment-title">
+          <i class="fas fa-exclamation-triangle text-danger"></i> Void Customer Payment
+        </h3>
+        <button type="button" class="modal-close-btn" id="btn-close-void-payment" aria-label="Close">&times;</button>
+      </div>
+      <form id="void-payment-form">
+        <input type="hidden" id="void-payment-id" value="">
+        <div class="modal-body">
+          <p style="font-size:0.9rem; margin-bottom:1rem; color:#4A3B32;">
+            Are you sure you want to void this payment? Voiding will mark the payment inactive and <strong>restore the order's unpaid balance</strong>.
+          </p>
+          <div id="void-payment-summary" style="padding:0.75rem; background:#FAF3E8; border-radius:8px; font-size:0.82rem; margin-bottom:1rem; color:#4A3B32;">
+            <!-- Injected via JS -->
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="void-reason-input">Reason for Voiding *</label>
+            <input type="text" id="void-reason-input" class="form-input" required placeholder="e.g. Wrong amount entered / check bounced">
+          </div>
+          <div id="void-payment-error" style="display:none; padding:0.6rem 0.8rem; background:#FEE2E2; border-radius:6px; color:#991B1B; font-size:0.8rem;"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btn-cancel-void-payment">Cancel</button>
+          <button type="submit" class="btn btn-danger" id="btn-confirm-void-payment" style="background:#B91C1C; color:#fff; border:none; padding:0.55rem 1.1rem; border-radius:8px; font-weight:600; cursor:pointer;">
+            <i class="fas fa-ban"></i> Void Payment
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 

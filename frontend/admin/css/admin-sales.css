@@ -171,22 +171,6 @@
   border-color: #C5B0A2;
 }
 
-.compare-toggle-wrap {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--sales-text-muted);
-  cursor: pointer;
-  user-select: none;
-}
-
-.compare-toggle-wrap input[type="checkbox"] {
-  accent-color: var(--sales-primary-brown);
-  cursor: pointer;
-}
-
 /* Toolbar right items */
 .sales-timestamp {
   font-size: 0.76rem;
@@ -376,7 +360,7 @@
 .kpi-footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   flex-wrap: wrap;
   gap: 0.35rem;
   font-size: 0.76rem;
@@ -416,43 +400,6 @@
 /* Card Outstanding Amber Accent */
 .kpi-card--outstanding {
   border-left: 4px solid var(--sales-amber);
-}
-
-/* Delta Badges */
-.delta-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 0.15rem 0.45rem;
-  border-radius: 6px;
-  line-height: 1.2;
-}
-
-.delta-badge.is-positive {
-  background: var(--sales-green-light);
-  color: var(--sales-green);
-}
-
-.delta-badge.is-negative {
-  background: var(--sales-red-light);
-  color: var(--sales-red);
-}
-
-.delta-badge.is-neutral {
-  background: #EFE8DE;
-  color: var(--sales-text-muted);
-}
-
-.kpi-card--hero .delta-badge.is-positive {
-  background: rgba(45, 106, 79, 0.35);
-  color: #95D5B2;
-}
-
-.kpi-card--hero .delta-badge.is-negative {
-  background: rgba(185, 28, 28, 0.35);
-  color: #FCA5A5;
 }
 
 /* --- Section 2: Secondary Metrics Strip --- */
@@ -908,6 +855,40 @@
 .badge-pay-stage--walkin {
   background: #E0F2FE;
   color: #0369A1;
+}
+
+.badge-pay-stage--partner {
+  background: var(--sales-amber-light);
+  color: var(--sales-amber);
+}
+
+.badge-voided {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 6px;
+  background: #FEE2E2;
+  color: #B91C1C;
+}
+
+.btn-void-payment {
+  color: #B91C1C;
+  border-color: #FCA5A5;
+  background: #FEF2F2;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-void-payment:hover {
+  background: #B91C1C;
+  color: #FFFFFF;
+  border-color: #B91C1C;
 }
 
 /* Toast Notifications */

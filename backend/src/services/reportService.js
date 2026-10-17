@@ -5,11 +5,12 @@
  * - Booked Sales: total gross value of all orders placed in the period (online orders
  *   with status != 'CANCELLED' + walk-in sales placed in the period).
  * - Cash Collected: all payments actually received in the period (verified downpayments
- *   + verified balance payments + walk-in cash sales received in the period).
+ *   + verified balance payments + partner payments + walk-in cash sales received in the period).
  * - Outstanding Balance: unpaid balance due on orders placed in the period (booked sales
  *   minus payments made on those orders).
  * - Refunds: total approved and processed refund amount in the period (status = 'REFUNDED').
- * - Net Revenue: Cash Collected minus Refunds (formula: Net Revenue = Cash Collected - Refunds).
+ * - Net Revenue / Net Sales: Cash Collected minus Refunds (formula: Net Revenue = Cash Collected - Refunds).
+ *   (Strictly cash-basis: each peso is counted only once on the date received).
  *
  * DATE BOUNDARIES:
  * - All date boundaries use Asia/Manila timezone (UTC+8).
@@ -20,7 +21,7 @@
 'use strict';
 
 const PDFDocument = require('pdfkit');
-const { query } = require('../config/db');
+const { query, getClient } = require('../config/db');
 const { formatPesos } = require('../utils/money');
 
 const TZ = 'Asia/Manila';
@@ -59,7 +60,7 @@ function formatHumanMonth(d) {
 }
 
 /**
- * Period -> { from, to, display_from, display_to, label, prevFrom, prevTo, comparison_label }
+ * Period -> { from, to, display_from, display_to, label }
  */
 function rangeFor(period = 'today', anchorStr, customOptions = {}) {
   const normPeriod = (period || 'today').toLowerCase();
@@ -70,7 +71,6 @@ function rangeFor(period = 'today', anchorStr, customOptions = {}) {
   if (normPeriod === 'today' || normPeriod === 'daily') {
     const from = formatUtcYmd(anchorDate);
     const to = formatUtcYmd(addDaysUtc(anchorDate, 1));
-    const prevDate = addDaysUtc(anchorDate, -1);
     const dayName = anchorDate.toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short' });
     return {
       period: 'today',
@@ -79,9 +79,6 @@ function rangeFor(period = 'today', anchorStr, customOptions = {}) {
       display_from: from,
       display_to: from,
       label: `${dayName}, ${formatHumanDate(anchorDate)}`,
-      prevFrom: formatUtcYmd(prevDate),
-      prevTo: from,
-      comparison_label: 'vs yesterday',
     };
   }
 
@@ -89,7 +86,6 @@ function rangeFor(period = 'today', anchorStr, customOptions = {}) {
     const yesterday = addDaysUtc(anchorDate, -1);
     const from = formatUtcYmd(yesterday);
     const to = formatUtcYmd(anchorDate);
-    const dayBefore = addDaysUtc(yesterday, -1);
     const dayName = yesterday.toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short' });
     return {
       period: 'yesterday',
@@ -98,9 +94,6 @@ function rangeFor(period = 'today', anchorStr, customOptions = {}) {
       display_from: from,
       display_to: from,
       label: `${dayName}, ${formatHumanDate(yesterday)}`,
-      prevFrom: formatUtcYmd(dayBefore),
-      prevTo: from,
-      comparison_label: 'vs previous day',
     };
   }
 
@@ -110,7 +103,6 @@ function rangeFor(period = 'today', anchorStr, customOptions = {}) {
     const monday = addDaysUtc(anchorDate, -dayOfWeek);
     const sunday = addDaysUtc(monday, 6);
     const nextMonday = addDaysUtc(monday, 7);
-    const prevMonday = addDaysUtc(monday, -7);
     return {
       period: 'weekly',
       from: formatUtcYmd(monday),
@@ -118,9 +110,6 @@ function rangeFor(period = 'today', anchorStr, customOptions = {}) {
       display_from: formatUtcYmd(monday),
       display_to: formatUtcYmd(sunday),
       label: `${formatHumanDate(monday)} – ${formatHumanDate(sunday)}`,
-      prevFrom: formatUtcYmd(prevMonday),
-      prevTo: formatUtcYmd(monday),
-      comparison_label: 'vs previous week',
     };
   }
 
@@ -128,7 +117,6 @@ function rangeFor(period = 'today', anchorStr, customOptions = {}) {
     const first = new Date(Date.UTC(anchorDate.getUTCFullYear(), anchorDate.getUTCMonth(), 1));
     const nextMonth = new Date(Date.UTC(anchorDate.getUTCFullYear(), anchorDate.getUTCMonth() + 1, 1));
     const lastDay = addDaysUtc(nextMonth, -1);
-    const prevFirst = new Date(Date.UTC(anchorDate.getUTCFullYear(), anchorDate.getUTCMonth() - 1, 1));
     return {
       period: 'monthly',
       from: formatUtcYmd(first),
@@ -136,16 +124,12 @@ function rangeFor(period = 'today', anchorStr, customOptions = {}) {
       display_from: formatUtcYmd(first),
       display_to: formatUtcYmd(lastDay),
       label: formatHumanMonth(first),
-      prevFrom: formatUtcYmd(prevFirst),
-      prevTo: formatUtcYmd(first),
-      comparison_label: 'vs previous month',
     };
   }
 
   if (normPeriod === 'last7days') {
     const startDate = addDaysUtc(anchorDate, -6);
     const nextDay = addDaysUtc(anchorDate, 1);
-    const prevStart = addDaysUtc(startDate, -7);
     return {
       period: 'last7days',
       from: formatUtcYmd(startDate),
@@ -153,9 +137,6 @@ function rangeFor(period = 'today', anchorStr, customOptions = {}) {
       display_from: formatUtcYmd(startDate),
       display_to: formatUtcYmd(anchorDate),
       label: `${formatHumanDate(startDate)} – ${formatHumanDate(anchorDate)}`,
-      prevFrom: formatUtcYmd(prevStart),
-      prevTo: formatUtcYmd(startDate),
-      comparison_label: 'vs previous 7 days',
     };
   }
 
@@ -165,8 +146,6 @@ function rangeFor(period = 'today', anchorStr, customOptions = {}) {
     const start = customFrom <= customTo ? customFrom : customTo;
     const end = customFrom <= customTo ? customTo : customFrom;
     const nextDay = addDaysUtc(end, 1);
-    const durationDays = Math.max(1, Math.round((end.getTime() - start.getTime()) / 86400000) + 1);
-    const prevStart = addDaysUtc(start, -durationDays);
 
     const fromStr = formatUtcYmd(start);
     const toStr = formatUtcYmd(end);
@@ -181,9 +160,6 @@ function rangeFor(period = 'today', anchorStr, customOptions = {}) {
       display_from: fromStr,
       display_to: toStr,
       label,
-      prevFrom: formatUtcYmd(prevStart),
-      prevTo: fromStr,
-      comparison_label: `vs previous ${durationDays} days`,
     };
   }
 
@@ -219,12 +195,14 @@ async function queryPeriodMetrics(from, to) {
     query(`
       SELECT p.id, p.order_id, o.order_code, o.customer_name, p.stage, p.channel,
              p.amount_centavos, p.reference_number, p.verification_status,
-             COALESCE(p.verified_at, p.created_at) AS collected_at
+             COALESCE(p.payment_date, p.verified_at, p.created_at) AS collected_at,
+             p.notes, p.recorded_by, p.is_voided, p.voided_at, p.void_reason
         FROM payments p
         JOIN orders o ON o.id = p.order_id
        WHERE p.verification_status = 'VERIFIED'
-         AND (COALESCE(p.verified_at, p.created_at) AT TIME ZONE 'Asia/Manila')::date >= $1::date
-         AND (COALESCE(p.verified_at, p.created_at) AT TIME ZONE 'Asia/Manila')::date < $2::date
+         AND (p.is_voided IS NULL OR p.is_voided = FALSE)
+         AND (COALESCE(p.payment_date, p.verified_at, p.created_at) AT TIME ZONE 'Asia/Manila')::date >= $1::date
+         AND (COALESCE(p.payment_date, p.verified_at, p.created_at) AT TIME ZONE 'Asia/Manila')::date < $2::date
          AND o.status != 'CANCELLED'
        ORDER BY collected_at DESC;
     `, [from, to]),
@@ -255,14 +233,20 @@ async function queryPeriodMetrics(from, to) {
     .filter((p) => p.stage === 'BALANCE')
     .reduce((sum, p) => sum + (p.amount_centavos || 0), 0);
 
+  const partnerCollected = payments
+    .filter((p) => p.stage === 'PARTNER')
+    .reduce((sum, p) => sum + (p.amount_centavos || 0), 0);
+
   const onlineCollected = downpaymentsCollected + balancesCollected;
   const walkinCollected = walkinGross;
-  const cashCollected = onlineCollected + walkinCollected;
+  const cashCollected = onlineCollected + walkinCollected + partnerCollected;
 
   const refundsTotal = refunds.reduce((sum, r) => sum + (r.refund_amount_centavos || 0), 0);
   const netRevenue = Math.max(0, cashCollected - refundsTotal);
 
   const outstandingBalance = onlineOrders.reduce((sum, o) => sum + Math.max(0, o.balance_due_centavos || 0), 0);
+  const ordersWithBalance = onlineOrders.filter((o) => (o.balance_due_centavos || 0) > 0).length;
+
   const totalOrders = onlineOrders.length + walkinSales.length;
   const averageOrderValue = totalOrders > 0 ? Math.round(bookedSales / totalOrders) : 0;
 
@@ -276,12 +260,14 @@ async function queryPeriodMetrics(from, to) {
     bookedSales,
     downpaymentsCollected,
     balancesCollected,
+    partnerCollected,
     onlineCollected,
     walkinCollected,
     cashCollected,
     refundsTotal,
     netRevenue,
     outstandingBalance,
+    ordersWithBalance,
     totalOrders,
     averageOrderValue,
   };
@@ -292,7 +278,7 @@ async function queryPeriodMetrics(from, to) {
  */
 async function getSales(period = 'today', anchorStr, customOptions = {}) {
   const range = rangeFor(period, anchorStr, customOptions);
-  const { from, to, display_from, display_to, label, prevFrom, prevTo, comparison_label } = range;
+  const { from, to, display_from, display_to, label } = range;
 
   // 1. Current period metrics
   const curr = await queryPeriodMetrics(from, to);
@@ -407,7 +393,7 @@ async function getSales(period = 'today', anchorStr, customOptions = {}) {
     })),
   ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-  // 4. Payments list (Verified payments + Walk-in cash receipts)
+  // 4. Payments list (Verified payments + Walk-in cash receipts + Partner payments)
   const paymentsList = [
     ...curr.payments.map((p) => ({
       id: p.id,
@@ -415,10 +401,13 @@ async function getSales(period = 'today', anchorStr, customOptions = {}) {
       order_code: p.order_code,
       customer_name: p.customer_name,
       created_at: p.collected_at,
-      stage: p.stage, // DOWNPAYMENT or BALANCE
-      channel: p.channel, // GCASH, MAYA, CASH
+      stage: p.stage, // DOWNPAYMENT, BALANCE, or PARTNER
+      channel: p.channel, // GCASH, MAYA, CASH, BANK_TRANSFER, OTHER
       reference_number: p.reference_number || '—',
       amount_centavos: p.amount_centavos,
+      notes: p.notes || '',
+      recorded_by: p.recorded_by || 'Admin',
+      is_voided: !!p.is_voided,
     })),
     ...curr.walkinSales.map((w) => ({
       id: `walkin-pay-${w.id}`,
@@ -430,46 +419,32 @@ async function getSales(period = 'today', anchorStr, customOptions = {}) {
       channel: 'CASH',
       reference_number: w.sale_code,
       amount_centavos: w.total_centavos,
+      notes: '',
+      recorded_by: w.created_by || 'Cashier',
+      is_voided: false,
     })),
   ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-  // 5. Previous period comparison & deltas
-  let deltas = {
-    net_revenue_pct: null,
-    cash_collected_pct: null,
-    booked_sales_pct: null,
-    outstanding_balance_pct: null,
-    total_orders_pct: null,
-  };
-  let previous = null;
+  // Dedicated partner payments list for the "Recent Customer Payments" table
+  const partnerPaymentsList = curr.payments
+    .filter((p) => p.stage === 'PARTNER')
+    .map((p) => ({
+      id: p.id,
+      order_id: p.order_id,
+      order_code: p.order_code,
+      customer_name: p.customer_name,
+      created_at: p.collected_at,
+      payment_method: p.channel,
+      amount_centavos: p.amount_centavos,
+      reference_number: p.reference_number || '—',
+      notes: p.notes || '',
+      recorded_by: p.recorded_by || 'Store Manager',
+      is_voided: !!p.is_voided,
+      voided_at: p.voided_at,
+      void_reason: p.void_reason,
+    }));
 
-  try {
-    const prev = await queryPeriodMetrics(prevFrom, prevTo);
-    previous = {
-      net_revenue_centavos: prev.netRevenue,
-      cash_collected_centavos: prev.cashCollected,
-      booked_sales_centavos: prev.bookedSales,
-      outstanding_balance_centavos: prev.outstandingBalance,
-      total_orders: prev.totalOrders,
-    };
-
-    function calcDelta(currVal, prevVal) {
-      if (prevVal === 0) return currVal > 0 ? 100 : 0;
-      return Number((((currVal - prevVal) / prevVal) * 100).toFixed(1));
-    }
-
-    deltas = {
-      net_revenue_pct: calcDelta(curr.netRevenue, prev.netRevenue),
-      cash_collected_pct: calcDelta(curr.cashCollected, prev.cashCollected),
-      booked_sales_pct: calcDelta(curr.bookedSales, prev.bookedSales),
-      outstanding_balance_pct: calcDelta(curr.outstandingBalance, prev.outstandingBalance),
-      total_orders_pct: calcDelta(curr.totalOrders, prev.totalOrders),
-    };
-  } catch (err) {
-    console.error('Failed to calculate previous period comparison:', err);
-  }
-
-  // 6. Chart datasets
+  // 5. Chart datasets
   // Trend chart: Hourly for today/yesterday; Daily for weekly/monthly/custom
   const isHourly = (range.period === 'today' || range.period === 'yesterday');
   const trendBuckets = [];
@@ -481,6 +456,7 @@ async function getSales(period = 'today', anchorStr, customOptions = {}) {
         label: hStr,
         online_centavos: 0,
         walkin_centavos: 0,
+        partner_centavos: 0,
         net_centavos: 0,
       });
     }
@@ -491,7 +467,11 @@ async function getSales(period = 'today', anchorStr, customOptions = {}) {
       const hourNum = parseInt(manilaHours, 10);
       const bucket = trendBuckets.find((b) => b.label.startsWith(pad(hourNum)));
       if (bucket) {
-        bucket.online_centavos += p.amount_centavos;
+        if (p.stage === 'PARTNER') {
+          bucket.partner_centavos += p.amount_centavos;
+        } else {
+          bucket.online_centavos += p.amount_centavos;
+        }
         bucket.net_centavos += p.amount_centavos;
       }
     });
@@ -520,6 +500,7 @@ async function getSales(period = 'today', anchorStr, customOptions = {}) {
         label: dayLabel,
         online_centavos: 0,
         walkin_centavos: 0,
+        partner_centavos: 0,
         net_centavos: 0,
       });
       iter = addDaysUtc(iter, 1);
@@ -529,7 +510,11 @@ async function getSales(period = 'today', anchorStr, customOptions = {}) {
       const ymd = new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date(p.collected_at));
       const bucket = trendBuckets.find((b) => b.date === ymd);
       if (bucket) {
-        bucket.online_centavos += p.amount_centavos;
+        if (p.stage === 'PARTNER') {
+          bucket.partner_centavos += p.amount_centavos;
+        } else {
+          bucket.online_centavos += p.amount_centavos;
+        }
         bucket.net_centavos += p.amount_centavos;
       }
     });
@@ -544,13 +529,15 @@ async function getSales(period = 'today', anchorStr, customOptions = {}) {
     });
   }
 
-  // Channel split
-  const channelTotal = (curr.onlineCollected + curr.walkinCollected) || 1;
+  // Channel split: Online vs Walk-in vs Partner Payments
+  const channelTotal = (curr.onlineCollected + curr.walkinCollected + curr.partnerCollected) || 1;
   const channelSplit = {
     online_centavos: curr.onlineCollected,
     walkin_centavos: curr.walkinCollected,
+    partner_centavos: curr.partnerCollected,
     online_pct: curr.cashCollected > 0 ? Number(((curr.onlineCollected / channelTotal) * 100).toFixed(1)) : 0,
     walkin_pct: curr.cashCollected > 0 ? Number(((curr.walkinCollected / channelTotal) * 100).toFixed(1)) : 0,
+    partner_pct: curr.cashCollected > 0 ? Number(((curr.partnerCollected / channelTotal) * 100).toFixed(1)) : 0,
   };
 
   // Top 5 products
@@ -563,7 +550,6 @@ async function getSales(period = 'today', anchorStr, customOptions = {}) {
     display_from,
     display_to,
     label,
-    comparison_label,
     generated_at: new Date().toISOString(),
 
     // Backwards-compatible contract for dashboard.js and other callers
@@ -580,6 +566,10 @@ async function getSales(period = 'today', anchorStr, customOptions = {}) {
       gross_centavos: curr.walkinGross,
       collected_centavos: curr.walkinCollected,
     },
+    partner: {
+      collected_centavos: curr.partnerCollected,
+      payments_count: partnerPaymentsList.length,
+    },
     combined_gross_centavos: curr.bookedSales,
     collected_centavos: curr.cashCollected,
     refunded: {
@@ -592,8 +582,8 @@ async function getSales(period = 'today', anchorStr, customOptions = {}) {
       total_orders: curr.totalOrders,
       online_orders: curr.onlineOrders.length,
       walkin_sales: curr.walkinSales.length,
-      online_collected_centavos: curr.downpaymentsCollected,
-      balances_collected_centavos: curr.balancesCollected,
+      online_collected_centavos: curr.onlineCollected,
+      partner_collected_centavos: curr.partnerCollected,
       walkin_collected_centavos: curr.walkinCollected,
       collected_centavos: curr.cashCollected,
       net_collected_centavos: curr.netRevenue,
@@ -602,6 +592,7 @@ async function getSales(period = 'today', anchorStr, customOptions = {}) {
       total_pieces: totalPiecesSold,
       booked_sales_centavos: curr.bookedSales,
       outstanding_centavos: curr.outstandingBalance,
+      orders_with_balance: curr.ordersWithBalance,
       payments_count: paymentsList.length,
       aov_centavos: curr.averageOrderValue,
     },
@@ -612,11 +603,13 @@ async function getSales(period = 'today', anchorStr, customOptions = {}) {
       cash_collected_centavos: curr.cashCollected,
       booked_sales_centavos: curr.bookedSales,
       outstanding_balance_centavos: curr.outstandingBalance,
+      orders_with_balance: curr.ordersWithBalance,
       refunds_centavos: curr.refundsTotal,
       refunds_count: curr.refunds.length,
       online_booked_centavos: curr.onlineBookedGross,
       walkin_booked_centavos: curr.walkinGross,
       online_collected_centavos: curr.onlineCollected,
+      partner_collected_centavos: curr.partnerCollected,
       walkin_collected_centavos: curr.walkinCollected,
       total_orders: curr.totalOrders,
       online_orders: curr.onlineOrders.length,
@@ -626,9 +619,6 @@ async function getSales(period = 'today', anchorStr, customOptions = {}) {
       total_pieces: totalPiecesSold,
       aov_centavos: curr.averageOrderValue,
     },
-
-    previous,
-    deltas,
 
     charts: {
       is_hourly: isHourly,
@@ -641,7 +631,246 @@ async function getSales(period = 'today', anchorStr, customOptions = {}) {
     per_product: byProduct,
     transactions,
     payments: paymentsList,
+    partner_payments: partnerPaymentsList,
   };
+}
+
+/**
+ * Fetch list of customers who currently have active orders with unpaid balance.
+ */
+async function getUnpaidOrders() {
+  const { rows } = await query(`
+    SELECT o.id, o.order_code, o.customer_name, o.customer_email, o.customer_contact,
+           o.total_centavos,
+           COALESCE(o.amount_paid_centavos, GREATEST(0, o.total_centavos - o.balance_due_centavos)) AS amount_paid_centavos,
+           o.balance_due_centavos, o.status, o.payment_status, o.created_at
+      FROM orders o
+     WHERE o.balance_due_centavos > 0
+       AND o.status != 'CANCELLED'
+     ORDER BY o.created_at DESC;
+  `);
+
+  const customerMap = new Map();
+  for (const o of rows) {
+    const custKey = (o.customer_name || 'Unknown Customer').trim();
+    if (!customerMap.has(custKey)) {
+      customerMap.set(custKey, {
+        customer_name: custKey,
+        customer_email: o.customer_email || '',
+        customer_contact: o.customer_contact || '',
+        total_balance_centavos: 0,
+        orders: [],
+      });
+    }
+    const c = customerMap.get(custKey);
+    c.total_balance_centavos += o.balance_due_centavos;
+    c.orders.push({
+      id: o.id,
+      order_code: o.order_code,
+      created_at: o.created_at,
+      total_centavos: o.total_centavos,
+      amount_paid_centavos: o.amount_paid_centavos,
+      balance_due_centavos: o.balance_due_centavos,
+      status: o.status,
+    });
+  }
+
+  return Array.from(customerMap.values()).sort((a, b) => a.customer_name.localeCompare(b.customer_name));
+}
+
+/**
+ * Record a manual partner payment atomically.
+ */
+async function recordPartnerPayment({ customer_name, order_id, amount, payment_method, date_received, reference_number, notes, admin_email }) {
+  const client = await getClient();
+
+  const amountCentavos = Math.round(Number(amount) * 100);
+  if (!amountCentavos || amountCentavos <= 0) {
+    throw new Error('Payment amount must be greater than zero.');
+  }
+
+  // Validate date not in future (Asia/Manila)
+  const todayStr = getManilaToday();
+  if (date_received > todayStr) {
+    throw new Error('Payment date cannot be in the future.');
+  }
+
+  try {
+    await client.query('BEGIN');
+
+    // 1. Lock and check order
+    const orderRes = await client.query(
+      `SELECT * FROM orders WHERE id = $1 FOR UPDATE;`,
+      [order_id]
+    );
+
+    if (orderRes.rows.length === 0) {
+      throw new Error(`Order #${order_id} not found.`);
+    }
+
+    const order = orderRes.rows[0];
+    if (order.status === 'CANCELLED') {
+      throw new Error(`Cannot record payment on cancelled order #${order.order_code}.`);
+    }
+
+    // Customer match check
+    const reqCust = (customer_name || '').trim().toLowerCase();
+    const orderCust = (order.customer_name || '').trim().toLowerCase();
+    const orderEmail = (order.customer_email || '').trim().toLowerCase();
+    if (reqCust !== orderCust && (!orderEmail || reqCust !== orderEmail)) {
+      throw new Error(`Order #${order.order_code} does not belong to customer "${customer_name}".`);
+    }
+
+    // Overpayment check
+    if (amountCentavos > order.balance_due_centavos) {
+      const maxPesos = (order.balance_due_centavos / 100).toFixed(2);
+      throw new Error(`Payment of ₱${(amountCentavos / 100).toFixed(2)} exceeds remaining balance of ₱${maxPesos}.`);
+    }
+
+    // 2. Insert payment record
+    const payDate = `${date_received}T12:00:00+08:00`;
+    const insertRes = await client.query(
+      `INSERT INTO payments
+         (order_id, stage, channel, amount_centavos, reference_number,
+          proof_storage_path, verification_status, verified_at, payment_date,
+          notes, recorded_by, created_at)
+       VALUES ($1, 'PARTNER', $2, $3, $4, '', 'VERIFIED', $5, $5, $6, $7, NOW())
+       RETURNING *;`,
+      [
+        order.id,
+        payment_method,
+        amountCentavos,
+        (reference_number || '').trim(),
+        payDate,
+        (notes || '').trim(),
+        admin_email || 'Store Manager',
+      ]
+    );
+
+    const payment = insertRes.rows[0];
+
+    // 3. Update order balance and payment status
+    const newBalance = order.balance_due_centavos - amountCentavos;
+    const currentPaid = order.amount_paid_centavos || Math.max(0, order.total_centavos - order.balance_due_centavos);
+    const newPaid = currentPaid + amountCentavos;
+    const newPaymentStatus = newBalance <= 0 ? 'PAID' : 'PARTIAL';
+
+    await client.query(
+      `UPDATE orders
+          SET balance_due_centavos = $1,
+              amount_paid_centavos = $2,
+              payment_status = $3,
+              updated_at = NOW()
+        WHERE id = $4;`,
+      [newBalance, newPaid, newPaymentStatus, order.id]
+    );
+
+    // 4. Record history entry
+    await client.query(
+      `INSERT INTO order_status_history (order_id, old_status, new_status, changed_by, note)
+       VALUES ($1, $2, $2, 'ADMIN', $3);`,
+      [
+        order.id,
+        order.status,
+        `Partner payment of ₱${(amountCentavos / 100).toFixed(2)} recorded by ${admin_email || 'Store Manager'} (${payment_method}${reference_number ? ', Ref: ' + reference_number : ''}). Remaining balance: ₱${(newBalance / 100).toFixed(2)}.`,
+      ]
+    );
+
+    await client.query('COMMIT');
+    return { payment, newBalance, newPaid, newPaymentStatus };
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Void a manual partner payment and restore the order balance.
+ */
+async function voidPartnerPayment(paymentId, { reason, admin_email }) {
+  const client = await getClient();
+
+  try {
+    await client.query('BEGIN');
+
+    // 1. Lock payment
+    const payRes = await client.query(
+      `SELECT * FROM payments WHERE id = $1 FOR UPDATE;`,
+      [paymentId]
+    );
+
+    if (payRes.rows.length === 0) {
+      throw new Error(`Payment #${paymentId} not found.`);
+    }
+
+    const payment = payRes.rows[0];
+    if (payment.stage !== 'PARTNER') {
+      throw new Error('Only manual partner payments can be voided from the Sales page.');
+    }
+    if (payment.is_voided) {
+      throw new Error('This payment is already voided.');
+    }
+
+    // 2. Lock order
+    const orderRes = await client.query(
+      `SELECT * FROM orders WHERE id = $1 FOR UPDATE;`,
+      [payment.order_id]
+    );
+
+    if (orderRes.rows.length === 0) {
+      throw new Error(`Linked order #${payment.order_id} not found.`);
+    }
+
+    const order = orderRes.rows[0];
+
+    // 3. Mark payment as voided
+    await client.query(
+      `UPDATE payments
+          SET is_voided = TRUE,
+              voided_at = NOW(),
+              voided_by = $1,
+              void_reason = $2
+        WHERE id = $3;`,
+      [admin_email || 'Store Manager', (reason || '').trim(), payment.id]
+    );
+
+    // 4. Restore order balance
+    const restoredBalance = order.balance_due_centavos + payment.amount_centavos;
+    const currentPaid = order.amount_paid_centavos || Math.max(0, order.total_centavos - order.balance_due_centavos);
+    const restoredPaid = Math.max(0, currentPaid - payment.amount_centavos);
+    const restoredStatus = restoredPaid <= 0 ? 'UNPAID' : 'PARTIAL';
+
+    await client.query(
+      `UPDATE orders
+          SET balance_due_centavos = $1,
+              amount_paid_centavos = $2,
+              payment_status = $3,
+              updated_at = NOW()
+        WHERE id = $4;`,
+      [restoredBalance, restoredPaid, restoredStatus, order.id]
+    );
+
+    // 5. History entry
+    await client.query(
+      `INSERT INTO order_status_history (order_id, old_status, new_status, changed_by, note)
+       VALUES ($1, $2, $2, 'ADMIN', $3);`,
+      [
+        order.id,
+        order.status,
+        `Payment #${payment.id} of ₱${(payment.amount_centavos / 100).toFixed(2)} voided by ${admin_email || 'Store Manager'}. Reason: ${reason}. Restored balance: ₱${(restoredBalance / 100).toFixed(2)}.`,
+      ]
+    );
+
+    await client.query('COMMIT');
+    return { success: true, restoredBalance, restoredPaid, restoredStatus };
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
 /**
@@ -672,11 +901,12 @@ function renderPdf(report) {
     doc.moveDown(0.3);
     const rows = [
       ['Net Revenue (Cash - Refunds)', '', money(report.net_collected_centavos)],
-      ['Cash Collected (Payments)', `${report.summary.payments_count || 0} payments`, money(report.collected_centavos)],
+      ['Cash Collected (Total)', `${report.summary.payments_count || 0} payments`, money(report.collected_centavos)],
       ['Booked Sales (Orders Placed)', `${report.summary.total_orders} orders/sales`, money(report.combined_gross_centavos)],
       ['Outstanding Balance (Unpaid)', '', money(report.summary.outstanding_centavos || 0)],
       ['Online Downpayments Collected', '', money(report.online.downpayments_collected_centavos)],
       ['Online Balances Collected', '', money(report.online.balances_collected_centavos)],
+      ['Partner Payments Collected', '', money(report.summary.partner_collected_centavos || 0)],
       ['Walk-in Cash Sales', `${report.walkin.sales} sales`, money(report.walkin.gross_centavos)],
       [`Refunds Processed (${report.refunded.count})`, '', money(report.refunded.total_centavos)],
     ];
@@ -742,4 +972,11 @@ function renderPdf(report) {
   });
 }
 
-module.exports = { rangeFor, getSales, renderPdf };
+module.exports = {
+  rangeFor,
+  getSales,
+  renderPdf,
+  getUnpaidOrders,
+  recordPartnerPayment,
+  voidPartnerPayment,
+};

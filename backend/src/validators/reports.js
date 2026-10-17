@@ -29,4 +29,19 @@ const salesQuerySchema = z.object({
   ),
 }).passthrough();
 
-module.exports = { salesQuerySchema };
+const recordPaymentSchema = z.object({
+  customer_name: z.string().trim().min(1, 'Customer name is required'),
+  order_id: z.coerce.number().int().positive('Valid order ID is required'),
+  amount: z.coerce.number().positive('Payment amount must be greater than 0'),
+  payment_method: z.enum(['CASH', 'GCASH', 'BANK_TRANSFER', 'OTHER']),
+  date_received: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/, 'Valid date YYYY-MM-DD required'),
+  reference_number: z.string().trim().max(100).optional().default(''),
+  notes: z.string().trim().max(500).optional().default(''),
+});
+
+const voidPaymentSchema = z.object({
+  reason: z.string().trim().min(1, 'Void reason is required').max(255),
+});
+
+module.exports = { salesQuerySchema, recordPaymentSchema, voidPaymentSchema };
+
