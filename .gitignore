@@ -17,3 +17,7 @@ Thumbs.db
 .vscode/
 .idea/
 coverage/
+
+# Local backups and scratch scripts
+backups/
+scratch/
