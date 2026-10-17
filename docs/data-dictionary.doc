@@ -1,0 +1,1455 @@
+<html xmlns:o='urn:schemas-microsoft-com:office:office'
+      xmlns:w='urn:schemas-microsoft-com:office:word'
+      xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<meta charset='utf-8'>
+<title>WeBake Data Dictionary</title>
+<!--[if gte mso 9]>
+<xml>
+<w:WordDocument>
+<w:View>Print</w:View>
+<w:Zoom>100</w:Zoom>
+<w:DoNotOptimizeForBrowser/>
+</w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+@page Section1 {
+  size: 8.5in 11.0in;
+  margin: 1.0in 1.0in 1.0in 1.0in;
+  mso-header-margin: 0.5in;
+  mso-footer-margin: 0.5in;
+  mso-paper-source: 0;
+}
+div.Section1 {
+  page: Section1;
+}
+body {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12pt;
+  color: #000000;
+  line-height: 1.15;
+}
+.table-title {
+  text-align: center;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12pt;
+  font-weight: bold;
+  margin-top: 18pt;
+  margin-bottom: 6pt;
+  page-break-after: avoid;
+}
+.table-title:first-of-type {
+  margin-top: 0;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12pt;
+  margin-bottom: 18pt;
+  border: 1pt solid #000000;
+}
+tr {
+  page-break-inside: avoid;
+}
+th, td {
+  border: 1pt solid #000000;
+  padding: 4pt 6pt;
+  text-align: left;
+  vertical-align: top;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12pt;
+  color: #000000;
+}
+th {
+  font-weight: bold;
+  text-align: center;
+  background-color: #ffffff;
+}
+.center {
+  text-align: center;
+}
+</style>
+</head>
+<body>
+<div class='Section1'>
+
+
+  <!-- Table 1. Admins -->
+  <div class="table-title">Table 1. Admins</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Field</th>
+        <th style="width: 15%;">Data Type</th>
+        <th style="width: 12%;">Required</th>
+        <th style="width: 18%;">Key</th>
+        <th style="width: 35%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Primary Key</td>
+        <td>Unique identifier for the administrator account</td>
+      </tr>
+      <tr>
+        <td>email</td>
+        <td>VARCHAR(255)</td>
+        <td class="center">Yes</td>
+        <td class="center">Unique</td>
+        <td>Administrator’s email address used for system login</td>
+      </tr>
+      <tr>
+        <td>password_hash</td>
+        <td>VARCHAR(255)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Securely hashed administrator password</td>
+      </tr>
+      <tr>
+        <td>reset_token_hash</td>
+        <td>VARCHAR(255)</td>
+        <td class="center">No</td>
+        <td class="center">&mdash;</td>
+        <td>Hashed password-reset token</td>
+      </tr>
+      <tr>
+        <td>reset_expires_at</td>
+        <td>DATETIME</td>
+        <td class="center">No</td>
+        <td class="center">&mdash;</td>
+        <td>Expiration date and time of the reset token</td>
+      </tr>
+      <tr>
+        <td>created_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the account was created</td>
+      </tr>
+      <tr>
+        <td>updated_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the account was last updated</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 2. Members -->
+  <div class="table-title">Table 2. Members</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Field</th>
+        <th style="width: 15%;">Data Type</th>
+        <th style="width: 12%;">Required</th>
+        <th style="width: 18%;">Key</th>
+        <th style="width: 35%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Primary Key</td>
+        <td>Unique identifier for the customer member account</td>
+      </tr>
+      <tr>
+        <td>full_name</td>
+        <td>VARCHAR(255)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Full name of the customer</td>
+      </tr>
+      <tr>
+        <td>email</td>
+        <td>VARCHAR(255)</td>
+        <td class="center">Yes</td>
+        <td class="center">Unique</td>
+        <td>Customer’s email address used for authentication</td>
+      </tr>
+      <tr>
+        <td>email_verified_at</td>
+        <td>DATETIME</td>
+        <td class="center">No</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time when the customer verified their email via OTP</td>
+      </tr>
+      <tr>
+        <td>contact</td>
+        <td>VARCHAR(50)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Customer’s mobile or telephone contact number</td>
+      </tr>
+      <tr>
+        <td>address</td>
+        <td>TEXT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Default delivery address of the customer</td>
+      </tr>
+      <tr>
+        <td>password_hash</td>
+        <td>VARCHAR(255)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Securely hashed customer password for account login</td>
+      </tr>
+      <tr>
+        <td>created_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the customer registered their account</td>
+      </tr>
+      <tr>
+        <td>updated_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the account profile was last updated</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 3. Carts -->
+  <div class="table-title">Table 3. Carts</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Field</th>
+        <th style="width: 15%;">Data Type</th>
+        <th style="width: 12%;">Required</th>
+        <th style="width: 18%;">Key</th>
+        <th style="width: 35%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>member_id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Primary Key, Foreign Key</td>
+        <td>References members(id) representing the member owning the cart</td>
+      </tr>
+      <tr>
+        <td>updated_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the shopping cart was last modified</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 4. Cart_Items -->
+  <div class="table-title">Table 4. Cart_Items</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Field</th>
+        <th style="width: 15%;">Data Type</th>
+        <th style="width: 12%;">Required</th>
+        <th style="width: 18%;">Key</th>
+        <th style="width: 35%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>member_id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Composite Primary Key, Foreign Key</td>
+        <td>References carts(member_id) identifying the active cart</td>
+      </tr>
+      <tr>
+        <td>product_id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Composite Primary Key, Foreign Key</td>
+        <td>References products(id) identifying the selected bread item</td>
+      </tr>
+      <tr>
+        <td>bundles</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Number of wholesale bundles added to the cart</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 5. Products -->
+  <div class="table-title">Table 5. Products</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Field</th>
+        <th style="width: 15%;">Data Type</th>
+        <th style="width: 12%;">Required</th>
+        <th style="width: 18%;">Key</th>
+        <th style="width: 35%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Primary Key</td>
+        <td>Unique identifier for the bakery product</td>
+      </tr>
+      <tr>
+        <td>name</td>
+        <td>VARCHAR(255)</td>
+        <td class="center">Yes</td>
+        <td class="center">Unique</td>
+        <td>Official product name (e.g., Mamon, Otap, Butter Toast)</td>
+      </tr>
+      <tr>
+        <td>description</td>
+        <td>TEXT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Detailed description, texture, and product characteristics</td>
+      </tr>
+      <tr>
+        <td>price_bundle_centavos</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Wholesale price per bundle in centavos (e.g., 10500 = ₱105.00)</td>
+      </tr>
+      <tr>
+        <td>pieces_per_bundle</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Number of individual bread pieces contained in one bundle</td>
+      </tr>
+      <tr>
+        <td>piece_price_centavos</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Retail price per individual piece in centavos (e.g., 500 = ₱5.00)</td>
+      </tr>
+      <tr>
+        <td>stock_pieces</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Current stock available counted in individual pieces</td>
+      </tr>
+      <tr>
+        <td>low_stock_threshold_pieces</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Minimum piece threshold triggering a low-stock alert</td>
+      </tr>
+      <tr>
+        <td>image_url</td>
+        <td>TEXT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Relative path or URL to the official product packaging photo</td>
+      </tr>
+      <tr>
+        <td>is_archived</td>
+        <td>BOOLEAN</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Flag indicating if product is hidden from public storefront</td>
+      </tr>
+      <tr>
+        <td>created_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the product record was added to catalog</td>
+      </tr>
+      <tr>
+        <td>updated_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the product information was last updated</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 6. Orders -->
+  <div class="table-title">Table 6. Orders</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Field</th>
+        <th style="width: 15%;">Data Type</th>
+        <th style="width: 12%;">Required</th>
+        <th style="width: 18%;">Key</th>
+        <th style="width: 35%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Primary Key</td>
+        <td>Unique identifier for the wholesale order</td>
+      </tr>
+      <tr>
+        <td>order_code</td>
+        <td>VARCHAR(50)</td>
+        <td class="center">Yes</td>
+        <td class="center">Unique</td>
+        <td>Tracking reference code of the order (e.g., WB-XXXX)</td>
+      </tr>
+      <tr>
+        <td>member_id</td>
+        <td>BIGINT</td>
+        <td class="center">No</td>
+        <td class="center">Foreign Key</td>
+        <td>References members(id); null for guest checkouts</td>
+      </tr>
+      <tr>
+        <td>customer_name</td>
+        <td>VARCHAR(255)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Customer full name entered during checkout</td>
+      </tr>
+      <tr>
+        <td>customer_email</td>
+        <td>VARCHAR(255)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Customer email address for order notifications</td>
+      </tr>
+      <tr>
+        <td>customer_contact</td>
+        <td>VARCHAR(50)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Contact phone number for delivery dispatch</td>
+      </tr>
+      <tr>
+        <td>delivery_address</td>
+        <td>TEXT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Complete destination address for bread delivery</td>
+      </tr>
+      <tr>
+        <td>subtotal_centavos</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Total price of all ordered line items in integer centavos</td>
+      </tr>
+      <tr>
+        <td>total_centavos</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Final total payable order amount in integer centavos</td>
+      </tr>
+      <tr>
+        <td>downpayment_centavos</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Required 50% deposit amount in integer centavos</td>
+      </tr>
+      <tr>
+        <td>downpayment_paid_centavos</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Verified downpayment amount received in integer centavos</td>
+      </tr>
+      <tr>
+        <td>balance_due_centavos</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Remaining unpaid balance amount in integer centavos</td>
+      </tr>
+      <tr>
+        <td>payment_method</td>
+        <td>VARCHAR(20)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Payment method selected (GCASH or MAYA)</td>
+      </tr>
+      <tr>
+        <td>status</td>
+        <td>VARCHAR(50)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Current lifecycle state of the order</td>
+      </tr>
+      <tr>
+        <td>rejection_reason</td>
+        <td>TEXT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Stated explanation if payment verification was rejected</td>
+      </tr>
+      <tr>
+        <td>resubmit_count</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Number of times customer resubmitted proof of payment</td>
+      </tr>
+      <tr>
+        <td>idempotency_key</td>
+        <td>VARCHAR(255)</td>
+        <td class="center">No</td>
+        <td class="center">Unique</td>
+        <td>Cryptographic token preventing duplicate checkout orders</td>
+      </tr>
+      <tr>
+        <td>created_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the order was initially placed</td>
+      </tr>
+      <tr>
+        <td>updated_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the order was last updated</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 7. Order_Items -->
+  <div class="table-title">Table 7. Order_Items</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Field</th>
+        <th style="width: 15%;">Data Type</th>
+        <th style="width: 12%;">Required</th>
+        <th style="width: 18%;">Key</th>
+        <th style="width: 35%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Primary Key</td>
+        <td>Unique identifier for the order line item</td>
+      </tr>
+      <tr>
+        <td>order_id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Foreign Key</td>
+        <td>References orders(id) indicating parent order</td>
+      </tr>
+      <tr>
+        <td>product_id</td>
+        <td>BIGINT</td>
+        <td class="center">No</td>
+        <td class="center">Foreign Key</td>
+        <td>References products(id) indicating purchased product</td>
+      </tr>
+      <tr>
+        <td>product_name</td>
+        <td>VARCHAR(255)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Historical snapshot of product name at purchase time</td>
+      </tr>
+      <tr>
+        <td>pieces_per_bundle</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Historical snapshot of packaging size at purchase time</td>
+      </tr>
+      <tr>
+        <td>bundles</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Number of wholesale bundles ordered</td>
+      </tr>
+      <tr>
+        <td>unit_price_centavos</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Historical snapshot of bundle price in centavos</td>
+      </tr>
+      <tr>
+        <td>line_total_centavos</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Total calculated price for this line item in centavos</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 8. Payments -->
+  <div class="table-title">Table 8. Payments</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Field</th>
+        <th style="width: 15%;">Data Type</th>
+        <th style="width: 12%;">Required</th>
+        <th style="width: 18%;">Key</th>
+        <th style="width: 35%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Primary Key</td>
+        <td>Unique identifier for the payment transaction</td>
+      </tr>
+      <tr>
+        <td>order_id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Foreign Key</td>
+        <td>References orders(id) linking payment to order</td>
+      </tr>
+      <tr>
+        <td>stage</td>
+        <td>VARCHAR(20)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Payment phase (DOWNPAYMENT or BALANCE)</td>
+      </tr>
+      <tr>
+        <td>channel</td>
+        <td>VARCHAR(20)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Remittance platform (GCASH, MAYA, or CASH)</td>
+      </tr>
+      <tr>
+        <td>amount_centavos</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Remitted monetary amount in integer centavos</td>
+      </tr>
+      <tr>
+        <td>reference_number</td>
+        <td>VARCHAR(100)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Financial transaction reference number from receipt</td>
+      </tr>
+      <tr>
+        <td>proof_storage_path</td>
+        <td>TEXT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Secure storage path to the uploaded receipt screenshot</td>
+      </tr>
+      <tr>
+        <td>verification_status</td>
+        <td>VARCHAR(20)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Verification status (PENDING, VERIFIED, or REJECTED)</td>
+      </tr>
+      <tr>
+        <td>verified_at</td>
+        <td>DATETIME</td>
+        <td class="center">No</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the receipt was verified by administrator</td>
+      </tr>
+      <tr>
+        <td>created_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the payment proof was uploaded</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 9. Refund_Requests -->
+  <div class="table-title">Table 9. Refund_Requests</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Field</th>
+        <th style="width: 15%;">Data Type</th>
+        <th style="width: 12%;">Required</th>
+        <th style="width: 18%;">Key</th>
+        <th style="width: 35%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Primary Key</td>
+        <td>Unique identifier for the refund request</td>
+      </tr>
+      <tr>
+        <td>order_id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Unique, Foreign Key</td>
+        <td>References orders(id) enforcing 1-to-1 refund relation</td>
+      </tr>
+      <tr>
+        <td>reason</td>
+        <td>TEXT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Reason explanation for requesting the refund</td>
+      </tr>
+      <tr>
+        <td>reason_source</td>
+        <td>VARCHAR(20)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Origin of request (CUSTOMER or ADMIN_REJECTION)</td>
+      </tr>
+      <tr>
+        <td>wallet_type</td>
+        <td>VARCHAR(20)</td>
+        <td class="center">No</td>
+        <td class="center">&mdash;</td>
+        <td>Recipient e-wallet provider (GCASH or PAYMAYA)</td>
+      </tr>
+      <tr>
+        <td>account_number</td>
+        <td>VARCHAR(50)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Recipient mobile account number receiving refund</td>
+      </tr>
+      <tr>
+        <td>account_name</td>
+        <td>VARCHAR(255)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Account holder name on the recipient e-wallet</td>
+      </tr>
+      <tr>
+        <td>refund_amount_centavos</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Amount to be returned to customer in integer centavos</td>
+      </tr>
+      <tr>
+        <td>status</td>
+        <td>VARCHAR(30)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Lifecycle status of the refund request</td>
+      </tr>
+      <tr>
+        <td>requested_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the refund was submitted</td>
+      </tr>
+      <tr>
+        <td>processed_at</td>
+        <td>DATETIME</td>
+        <td class="center">No</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the refund payout was finalized</td>
+      </tr>
+      <tr>
+        <td>admin_reference_number</td>
+        <td>VARCHAR(100)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Transaction reference number for the completed payout</td>
+      </tr>
+      <tr>
+        <td>admin_note</td>
+        <td>TEXT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Internal remarks recorded by the administrator</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 10. Order_Status_History -->
+  <div class="table-title">Table 10. Order_Status_History</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Field</th>
+        <th style="width: 15%;">Data Type</th>
+        <th style="width: 12%;">Required</th>
+        <th style="width: 18%;">Key</th>
+        <th style="width: 35%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Primary Key</td>
+        <td>Unique identifier for the status audit record</td>
+      </tr>
+      <tr>
+        <td>order_id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Foreign Key</td>
+        <td>References orders(id) tracking progression</td>
+      </tr>
+      <tr>
+        <td>old_status</td>
+        <td>VARCHAR(50)</td>
+        <td class="center">No</td>
+        <td class="center">&mdash;</td>
+        <td>Previous status state prior to change</td>
+      </tr>
+      <tr>
+        <td>new_status</td>
+        <td>VARCHAR(50)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Updated new status state</td>
+      </tr>
+      <tr>
+        <td>changed_by</td>
+        <td>VARCHAR(20)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Actor who initiated change (CUSTOMER, ADMIN, or SYSTEM)</td>
+      </tr>
+      <tr>
+        <td>changed_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the status transition occurred</td>
+      </tr>
+      <tr>
+        <td>note</td>
+        <td>TEXT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Additional context or remarks regarding the transition</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 11. Stock_Movements -->
+  <div class="table-title">Table 11. Stock_Movements</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Field</th>
+        <th style="width: 15%;">Data Type</th>
+        <th style="width: 12%;">Required</th>
+        <th style="width: 18%;">Key</th>
+        <th style="width: 35%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Primary Key</td>
+        <td>Unique identifier for the product stock movement</td>
+      </tr>
+      <tr>
+        <td>product_id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Foreign Key</td>
+        <td>References products(id) indicating affected bread item</td>
+      </tr>
+      <tr>
+        <td>change_pieces</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Signed quantity in pieces (negative for sales, positive for restocks)</td>
+      </tr>
+      <tr>
+        <td>reason</td>
+        <td>VARCHAR(50)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Movement cause (APPROVAL_DEDUCTION, POS_SALE, RESTOCK, etc.)</td>
+      </tr>
+      <tr>
+        <td>order_id</td>
+        <td>BIGINT</td>
+        <td class="center">No</td>
+        <td class="center">Foreign Key</td>
+        <td>References orders(id) if triggered by an online order</td>
+      </tr>
+      <tr>
+        <td>note</td>
+        <td>TEXT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Audit trail note or reference memo</td>
+      </tr>
+      <tr>
+        <td>created_by</td>
+        <td>VARCHAR(100)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Staff username or process executing the stock change</td>
+      </tr>
+      <tr>
+        <td>created_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Exact date and time the movement was logged</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 12. Walkin_Sales -->
+  <div class="table-title">Table 12. Walkin_Sales</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Field</th>
+        <th style="width: 15%;">Data Type</th>
+        <th style="width: 12%;">Required</th>
+        <th style="width: 18%;">Key</th>
+        <th style="width: 35%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Primary Key</td>
+        <td>Unique identifier for the counter walk-in sale</td>
+      </tr>
+      <tr>
+        <td>sale_code</td>
+        <td>VARCHAR(50)</td>
+        <td class="center">Yes</td>
+        <td class="center">Unique</td>
+        <td>Tracking reference number of POS receipt (e.g. POS-XXXX)</td>
+      </tr>
+      <tr>
+        <td>total_centavos</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Total sale charge in integer centavos</td>
+      </tr>
+      <tr>
+        <td>cash_received_centavos</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Cash handed by walk-in customer in integer centavos</td>
+      </tr>
+      <tr>
+        <td>change_centavos</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Change amount returned to customer in integer centavos</td>
+      </tr>
+      <tr>
+        <td>created_by</td>
+        <td>VARCHAR(100)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Cashier username or staff who processed transaction</td>
+      </tr>
+      <tr>
+        <td>created_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the transaction occurred</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 13. Walkin_Sale_Items -->
+  <div class="table-title">Table 13. Walkin_Sale_Items</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Field</th>
+        <th style="width: 15%;">Data Type</th>
+        <th style="width: 12%;">Required</th>
+        <th style="width: 18%;">Key</th>
+        <th style="width: 35%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Primary Key</td>
+        <td>Unique identifier for the walk-in sale item</td>
+      </tr>
+      <tr>
+        <td>sale_id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Foreign Key</td>
+        <td>References walkin_sales(id) indicating parent sale</td>
+      </tr>
+      <tr>
+        <td>product_id</td>
+        <td>BIGINT</td>
+        <td class="center">No</td>
+        <td class="center">Foreign Key</td>
+        <td>References products(id) indicating product sold</td>
+      </tr>
+      <tr>
+        <td>product_name</td>
+        <td>VARCHAR(255)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Historical snapshot of product name at transaction time</td>
+      </tr>
+      <tr>
+        <td>pieces_per_bundle</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Packaging ratio snapshot at transaction time</td>
+      </tr>
+      <tr>
+        <td>unit</td>
+        <td>VARCHAR(10)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Unit sold (BUNDLE or PIECE)</td>
+      </tr>
+      <tr>
+        <td>qty</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Quantity of units purchased</td>
+      </tr>
+      <tr>
+        <td>unit_price_centavos</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Price per unit charged in integer centavos</td>
+      </tr>
+      <tr>
+        <td>line_total_centavos</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Total price for this line item in integer centavos</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 14. Ingredients -->
+  <div class="table-title">Table 14. Ingredients</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Field</th>
+        <th style="width: 15%;">Data Type</th>
+        <th style="width: 12%;">Required</th>
+        <th style="width: 18%;">Key</th>
+        <th style="width: 35%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Primary Key</td>
+        <td>Unique identifier for the raw bakery ingredient</td>
+      </tr>
+      <tr>
+        <td>name</td>
+        <td>VARCHAR(255)</td>
+        <td class="center">Yes</td>
+        <td class="center">Unique</td>
+        <td>Official ingredient name (e.g. All-Purpose Flour, White Sugar)</td>
+      </tr>
+      <tr>
+        <td>stock_quantity</td>
+        <td>DECIMAL(12,3)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Current inventory volume on hand</td>
+      </tr>
+      <tr>
+        <td>unit</td>
+        <td>VARCHAR(20)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Unit of measurement (e.g., kg, pcs, sacks)</td>
+      </tr>
+      <tr>
+        <td>reorder_level</td>
+        <td>DECIMAL(12,3)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Minimum stock threshold triggering a restock alert</td>
+      </tr>
+      <tr>
+        <td>cost_per_unit</td>
+        <td>DECIMAL(12,2)</td>
+        <td class="center">No</td>
+        <td class="center">&mdash;</td>
+        <td>Estimated purchase cost per unit in Philippine Pesos</td>
+      </tr>
+      <tr>
+        <td>expiry_date</td>
+        <td>DATE</td>
+        <td class="center">No</td>
+        <td class="center">&mdash;</td>
+        <td>Expiration date of the current ingredient batch</td>
+      </tr>
+      <tr>
+        <td>stock_updated_at</td>
+        <td>DATETIME</td>
+        <td class="center">No</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time stock level was last updated</td>
+      </tr>
+      <tr>
+        <td>created_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time ingredient was added to inventory</td>
+      </tr>
+      <tr>
+        <td>updated_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time ingredient details were last modified</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 15. Inventory_Movements -->
+  <div class="table-title">Table 15. Inventory_Movements</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Field</th>
+        <th style="width: 15%;">Data Type</th>
+        <th style="width: 12%;">Required</th>
+        <th style="width: 18%;">Key</th>
+        <th style="width: 35%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Primary Key</td>
+        <td>Unique identifier for the ingredient movement record</td>
+      </tr>
+      <tr>
+        <td>ingredient_id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Foreign Key</td>
+        <td>References ingredients(id) indicating ingredient adjusted</td>
+      </tr>
+      <tr>
+        <td>movement_type</td>
+        <td>VARCHAR(20)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Movement category (restock, usage, adjustment, waste)</td>
+      </tr>
+      <tr>
+        <td>quantity_change</td>
+        <td>DECIMAL(12,3)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Signed volume change amount added or deducted</td>
+      </tr>
+      <tr>
+        <td>quantity_before</td>
+        <td>DECIMAL(12,3)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Stock volume immediately before transaction</td>
+      </tr>
+      <tr>
+        <td>quantity_after</td>
+        <td>DECIMAL(12,3)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Resulting stock volume immediately after transaction</td>
+      </tr>
+      <tr>
+        <td>unit_cost</td>
+        <td>DECIMAL(12,2)</td>
+        <td class="center">No</td>
+        <td class="center">&mdash;</td>
+        <td>Purchase unit cost associated with this stock entry</td>
+      </tr>
+      <tr>
+        <td>reason</td>
+        <td>TEXT</td>
+        <td class="center">No</td>
+        <td class="center">&mdash;</td>
+        <td>Audit explanation, delivery receipt, or baking batch memo</td>
+      </tr>
+      <tr>
+        <td>created_by</td>
+        <td>VARCHAR(100)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Staff username or baker who performed the adjustment</td>
+      </tr>
+      <tr>
+        <td>created_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the inventory movement was logged</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 16. Reviews -->
+  <div class="table-title">Table 16. Reviews</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Field</th>
+        <th style="width: 15%;">Data Type</th>
+        <th style="width: 12%;">Required</th>
+        <th style="width: 18%;">Key</th>
+        <th style="width: 35%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Primary Key</td>
+        <td>Unique identifier for the customer review</td>
+      </tr>
+      <tr>
+        <td>order_id</td>
+        <td>BIGINT</td>
+        <td class="center">No</td>
+        <td class="center">Foreign Key</td>
+        <td>References orders(id) linking feedback to an order</td>
+      </tr>
+      <tr>
+        <td>product_id</td>
+        <td>BIGINT</td>
+        <td class="center">No</td>
+        <td class="center">Foreign Key</td>
+        <td>References products(id) indicating reviewed item</td>
+      </tr>
+      <tr>
+        <td>member_id</td>
+        <td>BIGINT</td>
+        <td class="center">No</td>
+        <td class="center">Foreign Key</td>
+        <td>References members(id) identifying reviewer account</td>
+      </tr>
+      <tr>
+        <td>display_name</td>
+        <td>VARCHAR(255)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Display screen name shown on public testimonial</td>
+      </tr>
+      <tr>
+        <td>rating</td>
+        <td>SMALLINT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Customer rating score ranging from 1 to 5 stars</td>
+      </tr>
+      <tr>
+        <td>text_en</td>
+        <td>TEXT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Written review commentary and feedback text</td>
+      </tr>
+      <tr>
+        <td>is_seed</td>
+        <td>BOOLEAN</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Flag identifying initial template reviews from live orders</td>
+      </tr>
+      <tr>
+        <td>created_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the review was submitted</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 17. Otp_Codes -->
+  <div class="table-title">Table 17. Otp_Codes</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Field</th>
+        <th style="width: 15%;">Data Type</th>
+        <th style="width: 12%;">Required</th>
+        <th style="width: 18%;">Key</th>
+        <th style="width: 35%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>id</td>
+        <td>BIGINT</td>
+        <td class="center">Yes</td>
+        <td class="center">Primary Key</td>
+        <td>Unique identifier for the verification code record</td>
+      </tr>
+      <tr>
+        <td>email</td>
+        <td>VARCHAR(255)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Recipient email address the OTP was sent to</td>
+      </tr>
+      <tr>
+        <td>code_hash</td>
+        <td>VARCHAR(255)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Secure cryptographic hash of the 6-digit one-time code</td>
+      </tr>
+      <tr>
+        <td>purpose</td>
+        <td>VARCHAR(20)</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Action scenario (REGISTER, CHECKOUT, or RESET)</td>
+      </tr>
+      <tr>
+        <td>expires_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Expiration date and time of the OTP (typically 5–10 min)</td>
+      </tr>
+      <tr>
+        <td>attempts</td>
+        <td>INT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Count of failed verification attempts to block brute-force</td>
+      </tr>
+      <tr>
+        <td>verified_at</td>
+        <td>DATETIME</td>
+        <td class="center">No</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the code was successfully validated</td>
+      </tr>
+      <tr>
+        <td>consumed_at</td>
+        <td>DATETIME</td>
+        <td class="center">No</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the validated code was consumed by the action</td>
+      </tr>
+      <tr>
+        <td>created_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the verification code was generated</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Table 18. Settings -->
+  <div class="table-title">Table 18. Settings</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Field</th>
+        <th style="width: 15%;">Data Type</th>
+        <th style="width: 12%;">Required</th>
+        <th style="width: 18%;">Key</th>
+        <th style="width: 35%;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>key</td>
+        <td>VARCHAR(100)</td>
+        <td class="center">Yes</td>
+        <td class="center">Primary Key</td>
+        <td>Unique configuration key identifier (e.g., gcash_qr)</td>
+      </tr>
+      <tr>
+        <td>value</td>
+        <td>TEXT</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Stored configuration setting value or QR image URI</td>
+      </tr>
+      <tr>
+        <td>updated_at</td>
+        <td>DATETIME</td>
+        <td class="center">Yes</td>
+        <td class="center">&mdash;</td>
+        <td>Date and time the configuration setting was last updated</td>
+      </tr>
+    </tbody>
+  </table>
+
+
+</div>
+</body>
+</html>
