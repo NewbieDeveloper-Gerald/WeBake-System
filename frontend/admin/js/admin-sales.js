@@ -755,7 +755,7 @@
               <div class="friendly-empty-state" style="padding: 1.5rem 1rem;">
                 <i class="fas fa-hand-holding-dollar" aria-hidden="true"></i>
                 <h4 style="margin: 0.35rem 0; font-size: 0.95rem;">No customer payments recorded</h4>
-                <p style="margin: 0; font-size: 0.8rem; color: #7A685D;">No manual partner payments logged during this period. Use "Record Payment" to log one.</p>
+                <p style="margin: 0; font-size: 0.8rem; color: #7A685D;">No customer payments recorded for this period.</p>
               </div>
             </td>
           </tr>
@@ -1103,7 +1103,7 @@
       const errorBox = document.getElementById('record-payment-error');
       const saveBtn = document.getElementById('btn-save-record-payment');
 
-      if (!openBtn || !modal) return;
+      if (!modal) return;
 
       function updatePreview() {
         if (!selectedOrder) return;
@@ -1128,7 +1128,7 @@
         }
       }
 
-      openBtn.addEventListener('click', () => {
+      function openRecordPaymentModal() {
         // Reset modal state
         cachedUnpaidCustomers = [];
         selectedCustomerOrders = [];
@@ -1174,7 +1174,12 @@
           errorBox.textContent = 'Failed to load unpaid customers: ' + err.message;
           errorBox.style.display = 'block';
         });
-      });
+      }
+
+      window.openRecordPaymentModal = openRecordPaymentModal;
+      if (openBtn) {
+        openBtn.addEventListener('click', openRecordPaymentModal);
+      }
 
       customerSelect.addEventListener('change', () => {
         const custIdx = parseInt(customerSelect.value, 10);
