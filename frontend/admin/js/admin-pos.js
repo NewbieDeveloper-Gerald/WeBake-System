@@ -17,19 +17,7 @@
     let cart = []; // {product_id, name, unit, qty, unit_price, ppb}
     let currentFilter = 'all';
 
-    // --- hide non-spec POS features ---
-    (function adaptShell() {
-      const hide = (sel) => document.querySelectorAll(sel).forEach((el) => { el.style.display = 'none'; });
-      hide('.pos-type-toggle-btn[data-type="advance"]');
-      hide('#pos-advance-details');
-      hide('.pos-customer-box');
-      hide('.pos-downpayment-switch-row');
-      hide('#pos-downpayment-row');
-      hide('#pos-balance-row');
-      hide('.pos-pay-tab-btn[data-method="GCash"]');
-      hide('.pos-pay-tab-btn[data-method="PayMaya"]');
-      hide('#pos-ewallet-box');
-    })();
+    // Order slip is streamlined for immediate walk-in takeout counter sales
 
     // Search input listener
     const searchInput = document.getElementById('pos-search');
@@ -172,6 +160,10 @@
 
     function renderCart() {
       const box = document.getElementById('pos-cart-items-list');
+      const cashInput = document.getElementById('pos-cash-tendered');
+      const chipButtons = document.querySelectorAll('.cash-chip-btn');
+      const completeBtn = document.getElementById('btn-pos-complete');
+
       if (!cart.length) {
         box.innerHTML =
           '<div class="pos-slip-empty">' +
@@ -179,7 +171,15 @@
           '<strong>Your order slip is empty</strong>' +
           '<small>Choose bundles or single pieces on the left to start this walk-in sale.</small>' +
           '</div>';
+        if (cashInput) {
+          cashInput.disabled = true;
+          cashInput.value = '';
+        }
+        chipButtons.forEach((btn) => { btn.disabled = true; });
+        if (completeBtn) completeBtn.disabled = true;
       } else {
+        if (cashInput) cashInput.disabled = false;
+        chipButtons.forEach((btn) => { btn.disabled = false; });
         box.innerHTML = cart.map((c, i) => {
           const maxStock = getMaxStockForLine(i);
           const ariaLabel = c.unit === 'BUNDLE' ? 'Quantity in bundles' : 'Quantity in pieces';
@@ -209,8 +209,10 @@
 
       const itemCount = cart.reduce((sum, line) => sum + line.qty, 0);
       const countEl = document.getElementById('pos-slip-count');
-      countEl.textContent = itemCount + ' item' + (itemCount === 1 ? '' : 's');
-      countEl.classList.toggle('is-empty', itemCount === 0);
+      if (countEl) {
+        countEl.textContent = itemCount + ' item' + (itemCount === 1 ? '' : 's');
+        countEl.classList.toggle('is-empty', itemCount === 0);
+      }
 
       const total = cartTotal();
       document.getElementById('pos-cart-subtotal').textContent = ui.pesos(total);
@@ -314,42 +316,63 @@
 
     document.getElementById('btn-clear-cart').addEventListener('click', () => {
       if (!cart.length) return;
+      if (cart.length > 1 && !confirm('Clear all items from this order slip?')) {
+        return;
+      }
       cart = [];
-      document.getElementById('pos-cash-tendered').value = '';
+      const cashInput = document.getElementById('pos-cash-tendered');
+      if (cashInput) cashInput.value = '';
       ui.toast('Order slip cleared.', 'info');
       renderCart();
     });
 
-    // --- cash tendering ---
+    // --- cash tendering & change calculation ---
     function updateChange() {
-      const inputVal = document.getElementById('pos-cash-tendered').value;
+      const cashInput = document.getElementById('pos-cash-tendered');
+      const inputVal = cashInput ? cashInput.value : '';
       const tendered = Math.round(Number(inputVal || 0) * 100);
       const total = cartTotal();
       const change = tendered - total;
       const changeEl = document.getElementById('pos-change-amount');
+      const changeBox = document.getElementById('pos-change-display');
+      const completeBtn = document.getElementById('btn-pos-complete');
 
-      if (!inputVal || Number(inputVal) === 0) {
+      if (!changeEl || !changeBox) return { tendered, change };
+
+      changeBox.classList.remove('is-short', 'is-ready');
+
+      if (!cart.length || total === 0) {
         changeEl.textContent = ui.pesos(0);
-        changeEl.style.color = '';
+        if (completeBtn) completeBtn.disabled = true;
+      } else if (!inputVal || Number(inputVal) === 0) {
+        changeEl.textContent = ui.pesos(0);
+        if (completeBtn) completeBtn.disabled = true;
       } else if (change < 0) {
+        changeBox.classList.add('is-short');
         changeEl.textContent = 'Short by ' + ui.pesos(-change);
-        changeEl.style.color = 'var(--danger)';
+        if (completeBtn) completeBtn.disabled = true;
       } else {
+        changeBox.classList.add('is-ready');
         changeEl.textContent = ui.pesos(change);
-        changeEl.style.color = 'var(--success)';
+        if (completeBtn) completeBtn.disabled = false;
       }
       return { tendered, change };
     }
 
-    document.getElementById('pos-cash-tendered').addEventListener('input', updateChange);
+    const cashTenderedInput = document.getElementById('pos-cash-tendered');
+    if (cashTenderedInput) {
+      cashTenderedInput.addEventListener('input', updateChange);
+    }
 
     document.querySelectorAll('.cash-chip-btn').forEach((chip) => {
       chip.addEventListener('click', () => {
+        if (!cart.length) return;
         const input = document.getElementById('pos-cash-tendered');
         input.value = chip.dataset.amount === 'exact'
           ? (cartTotal() / 100).toFixed(2)
           : chip.dataset.amount;
         updateChange();
+        input.focus();
       });
     });
 

@@ -184,48 +184,10 @@
             </div>
 
             <div class="pos-cart-scroll-area">
-              <!-- Order Type Toggle -->
-              <div class="form-group">
-                <label class="form-label">Order Type</label>
-                <div class="pos-order-type-tabs">
-                  <button type="button" class="pos-type-toggle-btn active" data-type="takeout">
-                    <i class="fas fa-shopping-bag"></i> Immediate Takeout
-                  </button>
-                  <button type="button" class="pos-type-toggle-btn" data-type="advance">
-                    <i class="fas fa-calendar-check"></i> Advance Reservation
-                  </button>
-                </div>
-              </div>
-
-              <!-- Advance Details (Shown if advance reservation) -->
-              <div class="pos-advance-details" id="pos-advance-details">
-                <div class="form-row-2">
-                  <div class="form-group">
-                    <label class="form-label form-label-required">Pickup Date</label>
-                    <input type="date" id="pos-advance-date" class="form-input">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Pickup Time</label>
-                    <input type="time" id="pos-advance-time" class="form-input" value="09:00">
-                  </div>
-                </div>
-              </div>
-
-              <!-- Customer Info -->
-              <div class="pos-customer-box">
-                <div class="form-row-2">
-                  <div class="form-group">
-                    <label class="form-label">Customer Name</label>
-                    <input type="text" id="pos-cust-name" class="form-input" placeholder="Walk-In Customer">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Contact Number</label>
-                    <input type="tel" id="pos-cust-phone" class="form-input" placeholder="09XX-XXX-XXXX">
-                  </div>
-                </div>
-                <button type="button" class="btn btn-outline btn-sm w-full" id="btn-link-customer">
-                  <i class="fas fa-search"></i> Quick Link Registered Customer
-                </button>
+              <!-- Register Mode Status -->
+              <div class="pos-register-mode-bar">
+                <span class="pos-mode-tag"><i class="fas fa-shopping-bag"></i> Takeout Counter</span>
+                <span class="pos-mode-tag"><i class="fas fa-money-bill-wave"></i> Cash Sale</span>
               </div>
 
               <!-- Line Items List -->
@@ -234,86 +196,40 @@
 
             <!-- Cart Footer & Calculations -->
             <div class="pos-cart-footer">
-              <!-- 50% Downpayment Mode Switch -->
-              <div class="pos-downpayment-switch-row">
-                <label for="pos-downpayment-checkbox">
-                  <input type="checkbox" id="pos-downpayment-checkbox">
-                  <span>50% Downpayment Mode</span>
-                </label>
-              </div>
-
               <!-- Totals Breakdown -->
               <div class="pos-totals-box">
                 <div class="pos-total-row">
                   <span>Subtotal</span>
                   <span id="pos-cart-subtotal">&#8369;0.00</span>
                 </div>
-                <div class="pos-total-row" id="pos-downpayment-row">
-                  <span>50% Downpayment Due</span>
-                  <span id="pos-downpayment-val">&#8369;0.00</span>
-                </div>
-                <div class="pos-total-row" id="pos-balance-row">
-                  <span>Balance Due on Pickup</span>
-                  <span id="pos-balance-val">&#8369;0.00</span>
-                </div>
                 <div class="pos-total-row highlight-due">
-                  <span>Total Due Counter</span>
+                  <span>Total Amount Due</span>
                   <span id="pos-total-due">&#8369;0.00</span>
                 </div>
-              </div>
-
-              <!-- Payment Method Tabs -->
-              <div class="pos-payment-tabs">
-                <button type="button" class="pos-pay-tab-btn active" data-method="Cash">
-                  <i class="fas fa-money-bill-wave"></i> Cash
-                </button>
-                <button type="button" class="pos-pay-tab-btn" data-method="GCash">
-                  <i class="fas fa-mobile-alt"></i> GCash QR
-                </button>
-                <button type="button" class="pos-pay-tab-btn" data-method="PayMaya">
-                  <i class="fas fa-wallet"></i> Maya QR
-                </button>
               </div>
 
               <!-- Cash Calculator -->
               <div class="pos-cash-calculator" id="pos-cash-calculator">
                 <div class="form-group">
-                  <label class="form-label">Cash Tendered (&#8369;)</label>
-                  <input type="number" id="pos-cash-tendered" class="form-input" placeholder="0.00" min="0">
+                  <label class="form-label" for="pos-cash-tendered">Cash Tendered (&#8369;)</label>
+                  <input type="number" id="pos-cash-tendered" class="form-input" placeholder="0.00" min="0" disabled>
                 </div>
                 <div class="cash-presets-row">
-                  <button type="button" class="cash-chip-btn" data-amount="exact">Exact</button>
-                  <button type="button" class="cash-chip-btn" data-amount="105">&#8369;105</button>
-                  <button type="button" class="cash-chip-btn" data-amount="200">&#8369;200</button>
-                  <button type="button" class="cash-chip-btn" data-amount="500">&#8369;500</button>
-                  <button type="button" class="cash-chip-btn" data-amount="1000">&#8369;1,000</button>
+                  <button type="button" class="cash-chip-btn" data-amount="exact" disabled>Exact</button>
+                  <button type="button" class="cash-chip-btn" data-amount="50" disabled>&#8369;50</button>
+                  <button type="button" class="cash-chip-btn" data-amount="100" disabled>&#8369;100</button>
+                  <button type="button" class="cash-chip-btn" data-amount="200" disabled>&#8369;200</button>
+                  <button type="button" class="cash-chip-btn" data-amount="500" disabled>&#8369;500</button>
+                  <button type="button" class="cash-chip-btn" data-amount="1000" disabled>&#8369;1,000</button>
                 </div>
-                <div class="pos-change-display">
+                <div class="pos-change-display" id="pos-change-display">
                   <span class="change-label">Change to Return:</span>
                   <span class="change-amount" id="pos-change-amount">&#8369;0.00</span>
                 </div>
               </div>
 
-              <!-- E-Wallet QR Box -->
-              <div class="pos-ewallet-box" id="pos-ewallet-box">
-                <div class="pos-qr-thumbnail">
-                  <img id="pos-ewallet-qr-img" src="../../assets/qr-gcash-placeholder.png" alt="Payment QR">
-                </div>
-                <div class="detail-data-row">
-                  <span class="detail-data-label">Account:</span>
-                  <strong id="pos-ewallet-name">Gerald V.</strong>
-                </div>
-                <div class="detail-data-row">
-                  <span class="detail-data-label">Number:</span>
-                  <strong id="pos-ewallet-number">0917-123-4567</strong>
-                </div>
-                <div class="form-group">
-                  <input type="text" id="pos-ewallet-ref" class="form-input" placeholder="Enter Reference Number (e.g. 13-digit)">
-                </div>
-              </div>
-
               <!-- Checkout Button -->
-              <button type="button" class="btn btn-success btn-block btn-lg" id="btn-pos-complete">
+              <button type="button" class="btn btn-success btn-block btn-lg" id="btn-pos-complete" disabled>
                 <i class="fas fa-check-circle"></i> Complete Sale &amp; Print Receipt
               </button>
             </div>
