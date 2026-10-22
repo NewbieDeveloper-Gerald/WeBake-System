@@ -183,26 +183,26 @@
         box.innerHTML = cart.map((c, i) => {
           const maxStock = getMaxStockForLine(i);
           const ariaLabel = c.unit === 'BUNDLE' ? 'Quantity in bundles' : 'Quantity in pieces';
-          const unitTag = c.unit === 'BUNDLE'
-            ? '<span style="display:inline-block;padding:1px 6px;border-radius:4px;background:#F8EEE5;color:#704638;font-size:0.68rem;font-weight:700;">Bundle (' + c.ppb + ' pcs)</span>'
-            : '<span style="display:inline-block;padding:1px 6px;border-radius:4px;background:#EAF7ED;color:#28A745;font-size:0.68rem;font-weight:700;">Piece</span>';
 
-          return '<div class="pos-cart-line" style="border-radius:12px;padding:0.75rem 0.85rem;background:#FFFEFC;border:1px solid #EDE4DC;box-shadow:0 2px 6px rgba(62,38,28,0.03);">' +
-            '<div class="pos-cart-line-info" style="min-width:0;">' +
-            '<div style="font-weight:700;color:#542D24;font-size:0.83rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + ui.esc(c.name) + '</div>' +
-            '<div style="display:flex;align-items:center;gap:0.4rem;margin-top:0.25rem;">' +
-            unitTag +
-            '<span class="muted" style="font-size:0.72rem;">' + ui.pesos(c.unit_price) + ' each</span>' +
+          return '<div class="pos-cart-line">' +
+            '<div class="pos-cart-line-info">' +
+            '<div class="pos-cart-line-title">' + ui.esc(c.name) + '</div>' +
+            '<div class="pos-cart-line-sub">' +
+            '<div class="pos-unit-toggle-group" role="group" aria-label="Select unit">' +
+            '<button type="button" class="pos-unit-btn' + (c.unit === 'PIECE' ? ' active' : '') + '" data-unit-idx="' + i + '" data-unit-val="PIECE">Piece</button>' +
+            '<button type="button" class="pos-unit-btn' + (c.unit === 'BUNDLE' ? ' active' : '') + '" data-unit-idx="' + i + '" data-unit-val="BUNDLE">Bundle (' + c.ppb + ')</button>' +
+            '</div>' +
+            '<span class="pos-unit-price-label">' + ui.pesos(c.unit_price) + ' each</span>' +
             '</div></div>' +
             '<div class="pos-cart-line-controls">' +
             '<div class="pos-qty-ctrl">' +
-            '<button type="button" class="btn btn-outline btn-sm pos-qty-button" data-dec="' + i + '" aria-label="Decrease quantity" style="border-radius:8px;font-weight:700;">&minus;</button>' +
+            '<button type="button" class="pos-qty-button" data-dec="' + i + '" aria-label="Decrease quantity">&minus;</button>' +
             '<input type="number" inputmode="numeric" min="1" max="' + maxStock + '" value="' + c.qty + '" class="pos-qty-input" data-qty-idx="' + i + '" aria-label="' + ariaLabel + '">' +
-            '<button type="button" class="btn btn-outline btn-sm pos-qty-button" data-inc="' + i + '" aria-label="Increase quantity" style="border-radius:8px;font-weight:700;">&plus;</button>' +
+            '<button type="button" class="pos-qty-button" data-inc="' + i + '" aria-label="Increase quantity">&plus;</button>' +
             '</div>' +
-            '<button type="button" class="btn btn-danger-outline btn-sm pos-remove-line" data-del="' + i + '" title="Remove item" style="border-radius:8px;"><i class="fas fa-trash-alt"></i></button>' +
+            '<button type="button" class="btn btn-danger-outline btn-sm pos-remove-line" data-del="' + i + '" title="Remove item"><i class="fas fa-trash-alt"></i></button>' +
             '</div>' +
-            '<div style="text-align:right;"><strong class="pos-line-total" style="font-size:0.88rem;color:#4B2B23;">' + ui.pesos(c.unit_price * c.qty) + '</strong></div>' +
+            '<div style="text-align:right;"><strong class="pos-line-total">' + ui.pesos(c.unit_price * c.qty) + '</strong></div>' +
             '</div>';
         }).join('');
       }
@@ -222,9 +222,17 @@
 
     const cartList = document.getElementById('pos-cart-items-list');
 
+    // Auto-select entire quantity on focus or click so typing immediately replaces it
     cartList.addEventListener('focusin', (e) => {
       if (e.target.classList.contains('pos-qty-input')) {
-        e.target.select();
+        setTimeout(() => e.target.select(), 0);
+      }
+    });
+
+    cartList.addEventListener('mouseup', (e) => {
+      if (e.target.classList.contains('pos-qty-input')) {
+        // Prevent browser mouseup from clearing text selection
+        e.preventDefault();
       }
     });
 
@@ -289,6 +297,48 @@
     }, true);
 
     cartList.addEventListener('click', (e) => {
+      // Unit Toggle (Piece <-> Bundle)
+      const unitBtn = e.target.closest('[data-unit-idx]');
+      if (unitBtn) {
+        const idx = parseInt(unitBtn.dataset.unitIdx, 10);
+        const newUnit = unitBtn.dataset.unitVal;
+        const c = cart[idx];
+        if (!c || c.unit === newUnit) return;
+
+        const p = products.find((x) => x.id === c.product_id);
+        if (!p) return;
+
+        const neededPieces = newUnit === 'BUNDLE' ? c.qty * p.pieces_per_bundle : c.qty;
+        const otherPieces = cart.reduce((sum, item, i) => {
+          if (i === idx || item.product_id !== p.id) return sum;
+          return sum + (item.unit === 'BUNDLE' ? item.qty * item.ppb : item.qty);
+        }, 0);
+
+        if (p.stock_pieces < otherPieces + neededPieces) {
+          const maxAvail = newUnit === 'BUNDLE'
+            ? Math.floor(Math.max(0, p.stock_pieces - otherPieces) / p.pieces_per_bundle)
+            : Math.max(0, p.stock_pieces - otherPieces);
+
+          if (maxAvail < 1) {
+            ui.toast('No available stock to switch to ' + newUnit.toLowerCase() + '.', 'warning');
+            return;
+          }
+          c.qty = maxAvail;
+          ui.toast('Adjusted to ' + maxAvail + ' ' + newUnit.toLowerCase() + (maxAvail === 1 ? '' : 's') + ' based on stock.', 'warning');
+        }
+
+        const existing = cart.find((item, i) => i !== idx && item.product_id === p.id && item.unit === newUnit);
+        if (existing) {
+          existing.qty += c.qty;
+          cart.splice(idx, 1);
+        } else {
+          c.unit = newUnit;
+          c.unit_price = newUnit === 'BUNDLE' ? p.price_bundle_centavos : p.piece_price_centavos;
+        }
+        renderCart();
+        return;
+      }
+
       const inc = e.target.closest('[data-inc]');
       const dec = e.target.closest('[data-dec]');
       const del = e.target.closest('[data-del]');
