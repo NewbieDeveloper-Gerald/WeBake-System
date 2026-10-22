@@ -97,8 +97,8 @@
      In production, update via window.CRBAdminSidebar.setBadge('orders', realCount)
      ========================================================================== */
   const INITIAL_BADGES = {
-    orders: 3,
-    refunds: 1
+    orders: 0,
+    refunds: 0
   };
 
   /**

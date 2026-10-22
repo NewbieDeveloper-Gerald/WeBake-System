@@ -211,10 +211,16 @@ async function approveDownpayment(code, actor) {
         WHERE id = $1;`,
       [payment.id]
     );
+    const approvedPaid = order.downpayment_centavos;
+    const approvedPaymentStatus = (order.balance_due_centavos <= 0) ? 'PAID' : 'PARTIAL';
     await client.query(
-      `UPDATE orders SET status = $1, downpayment_paid_centavos = downpayment_centavos
-        WHERE id = $2;`,
-      [ORDER.CONFIRMED, order.id]
+      `UPDATE orders
+          SET status = $1,
+              downpayment_paid_centavos = downpayment_centavos,
+              amount_paid_centavos = $2,
+              payment_status = $3
+        WHERE id = $4;`,
+      [ORDER.CONFIRMED, approvedPaid, approvedPaymentStatus, order.id]
     );
     await insertHistory(client, order.id, order.status, ORDER.CONFIRMED, 'ADMIN',
       `Downpayment verified by ${actor || 'admin'} (${payment.channel} ${payment.reference_number}).`);

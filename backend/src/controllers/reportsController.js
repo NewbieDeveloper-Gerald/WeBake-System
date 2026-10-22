@@ -50,7 +50,7 @@ async function recordPayment(req, res) {
     date_received: req.body.date_received,
     reference_number: req.body.reference_number,
     notes: req.body.notes,
-    admin_email: req.user?.email || 'Store Manager',
+    admin_email: req.admin?.email || req.user?.email || 'Store Manager',
   });
   return res.json({ success: true, ...result });
 }
@@ -59,7 +59,7 @@ async function voidPayment(req, res) {
   const paymentId = parseInt(req.params.id, 10);
   const result = await reportService.voidPartnerPayment(paymentId, {
     reason: req.body.reason,
-    admin_email: req.user?.email || 'Store Manager',
+    admin_email: req.admin?.email || req.user?.email || 'Store Manager',
   });
   return res.json({ success: true, ...result });
 }

@@ -430,7 +430,7 @@
 
       async function sendRegisterOtp(isResend) {
         const email = document.getElementById('reg-email').value.trim().toLowerCase();
-        if (!email) { showErr(t('au.reset_sent')); return; }
+        if (!email) { showErr('Please enter your email address.'); return; }
         const password = document.getElementById('reg-password').value;
         if (password.length < 6) { showErr('Password must be at least 6 characters.'); return; }
         if (password !== document.getElementById('reg-confirm').value) { showErr('Passwords do not match.'); return; }

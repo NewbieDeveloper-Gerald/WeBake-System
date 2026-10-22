@@ -31,7 +31,18 @@ async function stats() {
              JOIN orders o ON o.id = p.order_id
             WHERE p.stage = 'BALANCE'
               AND p.verification_status = 'VERIFIED'
-              AND (COALESCE(p.verified_at, p.created_at) AT TIME ZONE 'Asia/Manila')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Manila')::date
+              AND (p.is_voided IS NULL OR p.is_voided = FALSE)
+              AND (COALESCE(p.payment_date, p.verified_at, p.created_at) AT TIME ZONE 'Asia/Manila')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Manila')::date
+              AND o.status != 'CANCELLED';`);
+
+    const todayPartnerPayments = await client.query(`SELECT COALESCE(SUM(p.amount_centavos), 0)::int AS collected,
+                  COUNT(*)::int AS payment_count
+             FROM payments p
+             JOIN orders o ON o.id = p.order_id
+            WHERE p.stage = 'PARTNER'
+              AND p.verification_status = 'VERIFIED'
+              AND (p.is_voided IS NULL OR p.is_voided = FALSE)
+              AND (COALESCE(p.payment_date, p.verified_at, p.created_at) AT TIME ZONE 'Asia/Manila')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Manila')::date
               AND o.status != 'CANCELLED';`);
 
     const todayRefunds = await client.query(`SELECT COALESCE(SUM(refund_amount_centavos), 0)::int AS refunded_today
@@ -84,9 +95,10 @@ async function stats() {
 
     const onlineDownpayment = todayDownpayments.rows[0].collected;
     const balanceCollected = todayBalances.rows[0].collected;
+    const partnerCollected = todayPartnerPayments.rows[0].collected;
     const walkinGross = todayWalkin.rows[0].gross;
     const refundedToday = todayRefunds.rows[0].refunded_today;
-    const combinedToday = Math.max(0, onlineDownpayment + walkinGross + balanceCollected - refundedToday);
+    const combinedToday = Math.max(0, onlineDownpayment + walkinGross + balanceCollected + partnerCollected - refundedToday);
 
     return {
       sales_today: {
@@ -100,6 +112,8 @@ async function stats() {
         walkin_count: todayWalkin.rows[0].n,
         collected_balance_centavos: balanceCollected,
         collected_balance_count: todayBalances.rows[0].payment_count,
+        partner_collected_centavos: partnerCollected,
+        partner_count: todayPartnerPayments.rows[0].payment_count,
       },
       pending_verification: pending.rows[0].n,
       orders_by_status: Object.fromEntries(byStatus.rows.map((r) => [r.status, r.n])),

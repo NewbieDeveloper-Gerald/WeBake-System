@@ -468,12 +468,18 @@ async function recordBalance(code, actor, note, amountCentavos) {
     );
 
     const newBalance = order.balance_due_centavos - amount;
+    const amountPaid = order.total_centavos - newBalance;
+    const dbPaymentStatus = newBalance <= 0 ? 'PAID' : 'PARTIAL';
     await client.query(
-      'UPDATE orders SET balance_due_centavos = $1, updated_at = NOW() WHERE id = $2;',
-      [newBalance, order.id]
+      `UPDATE orders
+          SET balance_due_centavos = $1,
+              amount_paid_centavos = $2,
+              payment_status = $3,
+              updated_at = NOW()
+        WHERE id = $4;`,
+      [newBalance, amountPaid, dbPaymentStatus, order.id]
     );
 
-    const amountPaid = order.total_centavos - newBalance;
     const paymentStatus = newBalance === 0 ? 'Fully Paid' : 'Partially Paid';
 
     await insertHistory(
@@ -542,8 +548,8 @@ async function cancelOrder(code, identity, input, changedBy = 'CUSTOMER') {
       }
     }
 
-    await client.query('UPDATE orders SET status = $1 WHERE id = $2;',
-      [ORDER.CANCELLED, order.id]);
+    await client.query('UPDATE orders SET status = $1, payment_status = $2 WHERE id = $3;',
+      [ORDER.CANCELLED, 'CANCELLED', order.id]);
 
     // Full downpayment, no fee. UNIQUE(order_id) makes double-cancel impossible
     // at the database level even if two requests slip past the status check.
