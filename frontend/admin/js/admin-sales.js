@@ -1226,6 +1226,15 @@
 
       amountInput.addEventListener('input', updatePreview);
 
+      refInput.addEventListener('input', () => {
+        const isMaya = methodSelect.value === 'MAYA';
+        const isGcash = methodSelect.value === 'GCASH';
+        if (isMaya || isGcash) {
+          const max = isMaya ? 16 : 13;
+          refInput.value = refInput.value.replace(/\D/g, '').slice(0, max);
+        }
+      });
+
       btnPayFull.addEventListener('click', () => {
         if (!selectedOrder) return;
         amountInput.value = (selectedOrder.balance_due_centavos / 100).toFixed(2);
@@ -1260,6 +1269,18 @@
           errorBox.textContent = `Amount (${formatPesos(amtCentavos)}) cannot exceed remaining balance (${formatPesos(bal)}).`;
           errorBox.style.display = 'block';
           return;
+        }
+
+        const refVal = refInput.value.trim();
+        const isMaya = methodSelect.value === 'MAYA';
+        const isGcash = methodSelect.value === 'GCASH';
+        const maxRef = isMaya ? 16 : (isGcash ? 13 : 100);
+        if (refVal && (isMaya || isGcash)) {
+          if (!/^\d+$/.test(refVal) || refVal.length > maxRef) {
+            errorBox.textContent = `Reference number must be digits only (max ${maxRef} digits for ${methodSelect.value}).`;
+            errorBox.style.display = 'block';
+            return;
+          }
         }
 
         const payDate = dateInput.value;

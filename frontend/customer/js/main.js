@@ -710,6 +710,12 @@
         co.email = document.getElementById('cust-email').value.trim().toLowerCase();
         co.address = document.getElementById('cust-address').value.trim();
 
+        if (!/^09\d{9}$/.test(co.contact)) {
+          alert('Contact number must be 11 digits starting with 09 (e.g. 09XXXXXXXXX).');
+          document.getElementById('cust-contact').focus();
+          return;
+        }
+
         if (auth.token() && memberEmail && memberEmail.toLowerCase() === co.email) {
           renderReview();
           setMethod(co.method || 'GCASH');
@@ -907,8 +913,16 @@
       if (ref) {
         ref.value = '';
         ref.maxLength = isGcash ? 13 : 16;
-        ref.placeholder = isGcash ? 'e.g. 1000123456789 (13 digits)' : 'e.g. 1000123456789012 (16 digits)';
+        ref.placeholder = isGcash ? 'e.g. 1000123456789 (max 13 digits)' : 'e.g. 1000123456789012 (max 16 digits)';
       }
+    }
+
+    const gcashRefInput = document.getElementById('gcash-ref');
+    if (gcashRefInput) {
+      gcashRefInput.addEventListener('input', () => {
+        const max = co.method === 'GCASH' ? 13 : 16;
+        gcashRefInput.value = gcashRefInput.value.replace(/\D/g, '').slice(0, max);
+      });
     }
 
     /* --- Payment proof file selection, preview, and removal --- */
@@ -990,11 +1004,11 @@
       payBtn.addEventListener('click', async (e) => {
         payError(null);
         const ref = document.getElementById('gcash-ref').value.trim();
-        const expected = co.method === 'GCASH' ? 13 : 16;
-        if (!/^\d+$/.test(ref) || ref.length !== expected) {
+        const maxLen = co.method === 'GCASH' ? 13 : 16;
+        if (!ref || !/^\d+$/.test(ref) || ref.length > maxLen) {
           payError(co.method === 'GCASH'
-            ? 'Please enter a valid 13-digit GCash reference number (numbers only).'
-            : 'Please enter a valid 16-digit Maya reference number (numbers only).');
+            ? 'Please enter a valid GCash reference number (numbers only, up to 13 digits).'
+            : 'Please enter a valid Maya reference number (numbers only, up to 16 digits).');
           return;
         }
         const file = document.getElementById('gcash-proof').files[0];

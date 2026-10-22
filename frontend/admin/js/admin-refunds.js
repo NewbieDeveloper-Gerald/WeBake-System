@@ -112,8 +112,21 @@
     document.getElementById('btn-close-process').addEventListener('click', () => {
       document.getElementById('modal-process-refund').classList.remove('active');
     });
+    const payoutRefInput = document.getElementById('refund-payout-ref');
+    if (payoutRefInput) {
+      payoutRefInput.addEventListener('input', () => {
+        payoutRefInput.value = payoutRefInput.value.replace(/\D/g, '').slice(0, 16);
+      });
+    }
+
     document.getElementById('btn-confirm-payout').addEventListener('click', async (e) => {
       const ref = document.getElementById('refund-payout-ref').value.trim();
+      const currR = rows.find((x) => String(x.id) === String(currentId));
+      const maxDigits = (currR && currR.wallet_type === 'PAYMAYA') ? 16 : 13;
+      if (ref && (!/^\d+$/.test(ref) || ref.length > maxDigits)) {
+        window.alert(`Reference number must be digits only (max ${maxDigits} digits for ${currR ? currR.wallet_type : 'payout'}).`);
+        return;
+      }
       if (!ui.confirmAsk('Confirm the money was SENT to the customer? This marks the refund paid.')) return;
       const btn = e.currentTarget;
       btn.disabled = true;

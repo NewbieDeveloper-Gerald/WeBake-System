@@ -390,6 +390,14 @@
       document.getElementById('modal-proof-lightbox').classList.remove('active');
     });
 
+    const editPhoneInput = document.getElementById('edit-cust-phone');
+    if (editPhoneInput) {
+      editPhoneInput.maxLength = 11;
+      editPhoneInput.addEventListener('input', () => {
+        editPhoneInput.value = editPhoneInput.value.replace(/\D/g, '').slice(0, 11);
+      });
+    }
+
     // --- details modal (read-only + legal status moves) ---
     async function openDetails(code) {
       const { order: o } = await api.orderDetail(code);

@@ -55,8 +55,8 @@ const MSG = {
     format_en: 'The verification code must be 6 digits.',
   },
   payment: {
-    ref_gcash_en: 'GCash reference number must be exactly 13 digits.',
-    ref_maya_en: 'PayMaya reference number must be exactly 16 digits.',
+    ref_gcash_en: 'GCash reference number must be digits only (up to 13 digits).',
+    ref_maya_en: 'PayMaya reference number must be digits only (up to 16 digits).',
     reason_en: 'Rejection reason is required (5 to 500 characters).',
   },
 };

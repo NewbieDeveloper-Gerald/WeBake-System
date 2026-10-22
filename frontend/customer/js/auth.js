@@ -429,6 +429,12 @@
       document.getElementById('reg-send-otp').addEventListener('click', () => sendRegisterOtp(false));
 
       async function sendRegisterOtp(isResend) {
+        const contact = (document.getElementById('reg-contact')?.value || '').replace(/\D/g, '').slice(0, 11);
+        if (!/^09\d{9}$/.test(contact)) {
+          showErr('Contact number must be 11 digits starting with 09 (e.g. 09XXXXXXXXX).');
+          document.getElementById('reg-contact')?.focus();
+          return;
+        }
         const email = document.getElementById('reg-email').value.trim().toLowerCase();
         if (!email) { showErr('Please enter your email address.'); return; }
         const password = document.getElementById('reg-password').value;
@@ -464,6 +470,12 @@
         errBox.style.display = 'none';
         const code = widget.code();
         if (code.length !== 6) { showErr(t('co.otp_bad')); return; }
+        const contact = (document.getElementById('reg-contact')?.value || '').replace(/\D/g, '').slice(0, 11);
+        if (!/^09\d{9}$/.test(contact)) {
+          showErr('Contact number must be 11 digits starting with 09 (e.g. 09XXXXXXXXX).');
+          document.getElementById('reg-contact')?.focus();
+          return;
+        }
         const pw = document.getElementById('reg-password').value;
         if (pw !== document.getElementById('reg-confirm').value) {
           showErr('Passwords do not match.');

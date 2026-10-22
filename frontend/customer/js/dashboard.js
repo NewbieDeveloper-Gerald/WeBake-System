@@ -79,10 +79,16 @@
 
     document.getElementById('profile-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const contactVal = document.getElementById('dash-contact').value.replace(/\D/g, '').slice(0, 11).trim();
+      if (contactVal && !/^09\d{9}$/.test(contactVal)) {
+        U.toast('Contact number must be 11 digits starting with 09 (e.g. 09XXXXXXXXX).');
+        document.getElementById('dash-contact').focus();
+        return;
+      }
       try {
         await api.updateProfile({
           name: document.getElementById('dash-name').value.trim(),
-          contact: document.getElementById('dash-contact').value.trim(),
+          contact: contactVal,
           address: document.getElementById('dash-address').value.trim(),
         });
         const name = document.getElementById('dash-name').value.trim();
@@ -414,8 +420,13 @@
     document.getElementById('dash-cancel-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!activeCancelOrder) return;
-      const num = document.getElementById('dash-cancel-num').value.trim();
-      const num2 = document.getElementById('dash-cancel-num2').value.trim();
+      const num = document.getElementById('dash-cancel-num').value.replace(/\D/g, '').slice(0, 11).trim();
+      const num2 = document.getElementById('dash-cancel-num2').value.replace(/\D/g, '').slice(0, 11).trim();
+      if (!/^09\d{9}$/.test(num)) {
+        U.toast('Account number must be 11 digits starting with 09 (e.g. 09XXXXXXXXX).');
+        document.getElementById('dash-cancel-num').focus();
+        return;
+      }
       if (num !== num2) {
         U.toast('The two account numbers do not match.');
         return;
@@ -462,8 +473,13 @@
     document.getElementById('dash-refund-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!activeRefundOrder) return;
-      const num = document.getElementById('dash-refund-num').value.trim();
-      const num2 = document.getElementById('dash-refund-num2').value.trim();
+      const num = document.getElementById('dash-refund-num').value.replace(/\D/g, '').slice(0, 11).trim();
+      const num2 = document.getElementById('dash-refund-num2').value.replace(/\D/g, '').slice(0, 11).trim();
+      if (!/^09\d{9}$/.test(num)) {
+        U.toast('Account number must be 11 digits starting with 09 (e.g. 09XXXXXXXXX).');
+        document.getElementById('dash-refund-num').focus();
+        return;
+      }
       if (num !== num2) {
         U.toast('The two account numbers do not match.');
         return;

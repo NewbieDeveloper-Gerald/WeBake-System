@@ -37,6 +37,19 @@ const recordPaymentSchema = z.object({
   date_received: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/, 'Valid date YYYY-MM-DD required'),
   reference_number: z.string().trim().max(100).optional().default(''),
   notes: z.string().trim().max(500).optional().default(''),
+}).superRefine((v, ctx) => {
+  if (v.reference_number) {
+    const isEwallet = v.payment_method === 'GCASH' || v.payment_method === 'MAYA';
+    const digitsOnly = /^\d+$/.test(v.reference_number);
+    const maxDigits = v.payment_method === 'GCASH' ? 13 : (v.payment_method === 'MAYA' ? 16 : 100);
+    if (isEwallet && (!digitsOnly || v.reference_number.length > maxDigits)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['reference_number'],
+        message: `Reference number must be digits only (up to ${maxDigits} digits for ${v.payment_method}).`,
+      });
+    }
+  }
 });
 
 const voidPaymentSchema = z.object({

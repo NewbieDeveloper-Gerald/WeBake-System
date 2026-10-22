@@ -19,8 +19,8 @@ const submitPaymentSchema = z.object({
   email: emailField.optional(),
 }).strict().superRefine((v, ctx) => {
   const digitsOnly = /^\d+$/.test(v.reference_number);
-  const expected = v.channel === 'GCASH' ? 13 : 16;
-  if (!digitsOnly || v.reference_number.length !== expected) {
+  const maxDigits = v.channel === 'GCASH' ? 13 : 16;
+  if (!digitsOnly || v.reference_number.length > maxDigits) {
     ctx.addIssue({
       code: 'custom',
       path: ['reference_number'],

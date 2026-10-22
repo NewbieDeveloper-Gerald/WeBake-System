@@ -121,7 +121,7 @@
         '<select class="form-input" id="tp-channel"><option value="GCASH">GCash</option>' +
         '<option value="MAYA">Maya</option></select></div>' +
         '<div class="form-group"><label for="tp-ref">Reference number</label>' +
-        '<input class="form-input" id="tp-ref" required autocomplete="off"></div></div>' +
+        '<input class="form-input" id="tp-ref" type="text" inputmode="numeric" maxlength="13" placeholder="Max 13 digits" required autocomplete="off"></div></div>' +
         '<div class="form-group"><label for="tp-proof">Payment screenshot</label>' +
         '<div id="tp-proof-input-wrap"><input class="form-input" id="tp-proof" type="file" accept="image/*" required></div>' +
         '<div id="tp-proof-preview-wrap" style="display:none; margin-top:8px; padding:10px; border:1px solid #e0d0c5; border-radius:8px; background:#fffcf9; align-items:center; gap:12px;">' +
@@ -179,13 +179,30 @@
         });
       }
 
+      const tpRefInput = document.getElementById('tp-ref');
+      const tpChanSelect = document.getElementById('tp-channel');
+      if (tpRefInput && tpChanSelect) {
+        const updateTpLimits = () => {
+          const isGcash = tpChanSelect.value === 'GCASH';
+          tpRefInput.maxLength = isGcash ? 13 : 16;
+          tpRefInput.placeholder = isGcash ? 'Max 13 digits' : 'Max 16 digits';
+          tpRefInput.value = tpRefInput.value.replace(/\D/g, '').slice(0, tpRefInput.maxLength);
+        };
+        tpChanSelect.addEventListener('change', updateTpLimits);
+        tpRefInput.addEventListener('input', () => {
+          const max = tpChanSelect.value === 'GCASH' ? 13 : 16;
+          tpRefInput.value = tpRefInput.value.replace(/\D/g, '').slice(0, max);
+        });
+        updateTpLimits();
+      }
+
       document.getElementById('track-pay-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const channel = document.getElementById('tp-channel').value;
         const ref = document.getElementById('tp-ref').value.trim();
-        const expected = channel === 'GCASH' ? 13 : 16;
-        if (!/^\d+$/.test(ref) || ref.length !== expected) {
-          U.toast('Reference must be ' + expected + ' digits for ' + channel + '.');
+        const maxLen = channel === 'GCASH' ? 13 : 16;
+        if (!ref || !/^\d+$/.test(ref) || ref.length > maxLen) {
+          U.toast('Reference number must be digits only (max ' + maxLen + ' digits for ' + (channel === 'GCASH' ? 'GCash' : 'Maya') + ').');
           return;
         }
         const file = document.getElementById('tp-proof').files[0];
@@ -262,13 +279,24 @@
       box.innerHTML = html;
 
       const wf = document.getElementById('track-wallet-form');
-      if (wf) wf.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const num = document.getElementById('tw-num').value.trim();
-        if (num !== document.getElementById('tw-num2').value.trim()) {
-          U.toast('The two account numbers do not match.');
-          return;
-        }
+      if (wf) {
+        ['tw-num', 'tw-num2'].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('input', () => { el.value = el.value.replace(/\D/g, '').slice(0, 11); });
+        });
+        wf.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const num = document.getElementById('tw-num').value.replace(/\D/g, '').slice(0, 11).trim();
+          const num2 = document.getElementById('tw-num2').value.replace(/\D/g, '').slice(0, 11).trim();
+          if (!/^09\d{9}$/.test(num)) {
+            U.toast('Account number must be 11 digits starting with 09 (e.g. 09XXXXXXXXX).');
+            document.getElementById('tw-num').focus();
+            return;
+          }
+          if (num !== num2) {
+            U.toast('The two account numbers do not match.');
+            return;
+          }
         const btn = e.target.querySelector('button[type="submit"]');
         btn.disabled = true;
         try {
@@ -288,6 +316,7 @@
           btn.disabled = false;
         }
       });
+      }
     }
 
     /* ---------------- cancel ---------------- */
@@ -330,10 +359,23 @@
         '<input class="form-input" id="tc-num2" required inputmode="numeric" maxlength="11"></div></div>' +
         '<button type="submit" class="btn btn-outline">Cancel order</button></form>';
 
+      const cf = document.getElementById('track-cancel-form');
+      if (cf) {
+        ['tc-num', 'tc-num2'].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('input', () => { el.value = el.value.replace(/\D/g, '').slice(0, 11); });
+        });
+      }
       document.getElementById('track-cancel-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const num = document.getElementById('tc-num').value.trim();
-        if (num !== document.getElementById('tc-num2').value.trim()) {
+        const num = document.getElementById('tc-num').value.replace(/\D/g, '').slice(0, 11).trim();
+        const num2 = document.getElementById('tc-num2').value.replace(/\D/g, '').slice(0, 11).trim();
+        if (!/^09\d{9}$/.test(num)) {
+          U.toast('Account number must be 11 digits starting with 09 (e.g. 09XXXXXXXXX).');
+          document.getElementById('tc-num').focus();
+          return;
+        }
+        if (num !== num2) {
           U.toast('The two account numbers do not match.');
           return;
         }
