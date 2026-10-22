@@ -371,3 +371,181 @@
   .order-tab-btn { padding: .48rem .68rem; }
   .balance-payment-options { grid-template-columns: 1fr; }
 }
+
+
+/* ==========================================================================
+   Refined Orders Table, Visual Hierarchy & Bakery Design Tokens
+   ========================================================================== */
+
+.order-code-text {
+  font-weight: 700;
+  color: #4A2518;
+  font-size: 0.88rem;
+  letter-spacing: -0.01em;
+}
+
+.order-date-text {
+  font-size: 0.74rem;
+  color: #7A6D68;
+  margin-top: 2px;
+}
+
+.order-channel-box {
+  margin-top: 4px;
+}
+
+.channel-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.channel-pill--online {
+  background: #F4ECE4;
+  color: #6B352A;
+  border: 1px solid #E5D6C8;
+}
+
+.channel-pill--walkin {
+  background: #E8F4FD;
+  color: #0369A1;
+  border: 1px solid #BAE6FD;
+}
+
+.order-customer-name {
+  font-weight: 600;
+  color: #2D2422;
+  font-size: 0.86rem;
+}
+
+.order-customer-contact {
+  font-size: 0.75rem;
+  color: #7A6D68;
+  font-family: monospace;
+  margin-top: 2px;
+}
+
+.order-items-text {
+  font-size: 0.84rem;
+  color: #4A3A33;
+}
+
+.order-financials-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.order-total-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.order-total-row strong {
+  font-size: 0.9rem;
+  color: #4A2518;
+  font-variant-numeric: tabular-nums;
+}
+
+.badge-payment-method {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #F0E8DF;
+  color: #543D32;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.order-finance-sub {
+  font-size: 0.74rem;
+  margin-top: 2px;
+}
+
+.finance-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.finance-paid {
+  background: #EAF7ED;
+  color: #1E7E34;
+  border: 1px solid #A3E0B5;
+}
+
+.finance-cancelled {
+  background: #FEE2E2;
+  color: #991B1B;
+  border: 1px solid #FCA5A5;
+}
+
+.finance-paid-amt {
+  color: #1E7E34;
+  font-weight: 600;
+}
+
+.finance-bal-amt {
+  color: #B45309;
+  font-weight: 600;
+}
+
+.badge-awaiting-proof {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #FAF7F2;
+  color: #786D68;
+  border: 1px dashed #D5C8BD;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+/* Actions Cell & Button Groups */
+.actions-cell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.actions-btn-group {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+}
+
+.actions-btn-group .btn {
+  padding: 0.38rem 0.65rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  border-radius: 8px;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.15s ease;
+}
+
+.actions-btn-group .btn i {
+  font-size: 0.75rem;
+}
+
+.order-tab-btn.active {
+  background: #4A2518;
+  border-color: #4A2518;
+  box-shadow: 0 3px 10px rgba(74, 37, 24, 0.16);
+}

@@ -140,89 +140,95 @@
 
     function actionsFor(o) {
       if (o.is_walkin) {
-        return '<a href="walkin-pos.html" class="btn btn-outline btn-sm"><i class="fas fa-receipt"></i> POS Counter</a>';
+        return '<div class="actions-btn-group"><a href="walkin-pos.html" class="btn btn-outline btn-sm"><i class="fas fa-receipt"></i> POS Counter</a></div>';
       }
       const btns = [];
+
+      // Primary Action based on state
       if (o.status === 'PAYMENT_UNDER_VERIFICATION') {
         const hasProof = !!queueByCode[o.order_code];
-        btns.push('<button type="button" class="btn ' + (hasProof ? 'btn-primary' : 'btn-outline') + ' btn-sm" data-verify="' +
-          ui.esc(o.order_code) + '">' + (hasProof ? 'Verify Payment' : 'Awaiting Proof') + '</button>');
-        btns.push('<button type="button" class="btn btn-outline btn-sm" data-details="' +
-          ui.esc(o.order_code) + '">Details</button>');
-      } else {
-        btns.push('<button type="button" class="btn btn-outline btn-sm" data-details="' +
-          ui.esc(o.order_code) + '">Details</button>');
+        if (hasProof) {
+          btns.push('<button type="button" class="btn btn-primary btn-sm" data-verify="' +
+            ui.esc(o.order_code) + '"><i class="fas fa-shield-alt"></i> Verify</button>');
+        } else {
+          btns.push('<span class="badge-awaiting-proof" title="Waiting for customer to upload receipt"><i class="far fa-clock"></i> Awaiting Proof</span>');
+        }
+      } else if (o.status === 'OUT_FOR_DELIVERY' && (o.balance_due_centavos || 0) > 0) {
+        btns.push('<button type="button" class="btn btn-success btn-sm" data-balance="' +
+          ui.esc(o.order_code) + '"><i class="fas fa-hand-holding-dollar"></i> Collect</button>');
       }
-      if (o.status === 'OUT_FOR_DELIVERY' && o.balance_due_centavos > 0) {
-        const maxPesos = (o.balance_due_centavos / 100).toFixed(2);
-        btns.push(
-          '<div class="collect-inline-box" style="display:inline-flex; align-items:center; gap:4px; margin-top:4px;">' +
-            '<div style="position:relative; display:inline-block;">' +
-              '<span style="position:absolute; left:6px; top:50%; transform:translateY(-50%); font-size:0.75rem; color:#888;">₱</span>' +
-              '<input type="number" step="0.01" min="0.01" max="' + maxPesos + '" value="' + maxPesos + '" ' +
-                     'class="form-input collect-input" id="col-input-' + ui.esc(o.order_code) + '" ' +
-                     'data-max-cents="' + o.balance_due_centavos + '" ' +
-                     'style="width:85px; padding:2px 4px 2px 18px; font-size:0.78rem; height:28px; border:1px solid #d0c5bc; border-radius:6px;" ' +
-                     'placeholder="Amount" title="Remaining: ₱' + maxPesos + '">' +
-            '</div>' +
-            '<button type="button" class="btn btn-success btn-sm" style="padding:2px 8px; font-size:0.78rem; height:28px;" ' +
-                    'data-collect-confirm="' + ui.esc(o.order_code) + '">' +
-              '<i class="fas fa-check"></i> Collect' +
-            '</button>' +
-          '</div>'
-        );
-      }
+
+      // Secondary Action: Details
+      btns.push('<button type="button" class="btn btn-outline btn-sm" data-details="' +
+        ui.esc(o.order_code) + '"><i class="fas fa-eye"></i> Details</button>');
+
+      // Destructive Action: Cancel (only when legally cancellable)
       if (CANCELLABLE.includes(o.status)) {
         btns.push('<button type="button" class="btn btn-danger-outline btn-sm" data-cancel="' +
-          ui.esc(o.order_code) + '">Cancel</button>');
-      } else if (o.status === 'CONFIRMED') {
-        btns.push('<button type="button" class="btn btn-danger-outline btn-sm" disabled style="opacity:0.5; cursor:not-allowed;" title="This order is already confirmed and can no longer be cancelled or refunded.">Cancel</button>');
+          ui.esc(o.order_code) + '" title="Cancel order"><i class="fas fa-ban"></i> Cancel</button>');
       }
-      return btns.join(' ');
+
+      return '<div class="actions-btn-group">' + btns.join('') + '</div>';
     }
 
     function render() {
       const rows = filtered();
-      document.getElementById('orders-table-body').innerHTML = rows.length ? rows.map((o) => {
+      const tbody = document.getElementById('orders-table-body');
+      if (!tbody) return;
+
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="table-empty-notice"><i class="fas fa-clipboard-list"></i><p>No orders match the selected filter.</p></td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = rows.map((o) => {
         const isPaid = (o.downpayment_paid_centavos || 0) > 0;
         const amountPaid = o.amount_paid_centavos != null
           ? o.amount_paid_centavos
           : (isPaid ? (o.total_centavos - (o.balance_due_centavos || 0)) : 0);
         const remBalance = o.balance_due_centavos != null ? o.balance_due_centavos : 0;
-        let payStatus = o.payment_status;
-        if (!payStatus) {
-          if (o.status === 'CANCELLED') payStatus = 'Cancelled';
-          else if (remBalance === 0 && (isPaid || o.is_walkin)) payStatus = 'Fully Paid';
-          else if (isPaid) payStatus = 'Partially Paid';
-          else payStatus = 'Pending Verification';
-        }
-        const payPillStyle = payStatus === 'Fully Paid'
-          ? 'background:#dcfce7; color:#15803d; border:1px solid #86efac;'
-          : payStatus === 'Partially Paid'
-            ? 'background:#fef3c7; color:#b45309; border:1px solid #fde68a;'
-            : payStatus === 'Cancelled'
-              ? 'background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5;'
-              : 'background:#f3f4f6; color:#4b5563; border:1px solid #e5e7eb;';
+        const method = o.payment_method || (o.is_walkin ? 'CASH' : 'GCASH');
 
-        return '<tr><td><strong>' + ui.esc(o.order_code) + '</strong><br><small class="muted">' +
-          ui.fmtDate(o.created_at) + '</small></td><td>' + ui.esc(o.customer_name) +
-          '<br><small class="muted">' + ui.esc(o.customer_contact) + '</small></td>' +
-          '<td>' + (o.is_walkin ? '<span class="channel-pill" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;"><i class="fas fa-store"></i> Walk-In</span>' : '<span class="channel-pill">Online</span>') + '</td>' +
-          '<td>' + (o.is_walkin ? 'Counter Piece/Bdl' : (o.total_bundles || 0) + ' bundles') + '</td>' +
+        // Financial status subtext
+        let financeSub = '';
+        if (o.status === 'CANCELLED') {
+          financeSub = '<span class="finance-status-pill finance-cancelled">Cancelled</span>';
+        } else if (remBalance <= 0) {
+          financeSub = '<span class="finance-status-pill finance-paid"><i class="fas fa-check-circle"></i> Paid in Full</span>';
+        } else {
+          financeSub = '<span class="finance-paid-amt">Paid: ' + ui.pesos(amountPaid) + '</span> &bull; <span class="finance-bal-amt">Bal: ' + ui.pesos(remBalance) + '</span>';
+        }
+
+        const channelBadge = o.is_walkin
+          ? '<span class="channel-pill channel-pill--walkin"><i class="fas fa-store"></i> Walk-In</span>'
+          : '<span class="channel-pill channel-pill--online"><i class="fas fa-globe"></i> Online</span>';
+
+        return '<tr>' +
           '<td>' +
-            '<div style="line-height:1.35;">' +
-              '<div><strong>Total: </strong>' + ui.pesos(o.total_centavos) + '</div>' +
-              '<div><small style="color:#15803d; font-weight:600;">Paid: ' + ui.pesos(amountPaid) + '</small></div>' +
-              '<div><small style="color:' + (remBalance > 0 ? '#b45309' : '#6b7280') + '; font-weight:600;">Balance: ' + ui.pesos(remBalance) + '</small></div>' +
-              '<div style="margin-top:3px;"><span style="display:inline-block; font-size:0.7rem; font-weight:700; padding:1px 6px; border-radius:4px; ' + payPillStyle + '">' +
-                ui.esc(payStatus) +
-              '</span></div>' +
+            '<div class="order-code-text">#' + ui.esc(o.order_code) + '</div>' +
+            '<div class="order-date-text">' + ui.fmtDate(o.created_at) + '</div>' +
+            '<div class="order-channel-box">' + channelBadge + '</div>' +
+          '</td>' +
+          '<td>' +
+            '<div class="order-customer-name">' + ui.esc(o.customer_name) + '</div>' +
+            '<div class="order-customer-contact">' + ui.esc(o.customer_contact || '—') + '</div>' +
+          '</td>' +
+          '<td>' +
+            '<div class="order-items-text">' + (o.is_walkin ? 'Counter Sale' : '<strong>' + (o.total_bundles || 0) + '</strong> bundles') + '</div>' +
+          '</td>' +
+          '<td>' +
+            '<div class="order-financials-block">' +
+              '<div class="order-total-row">' +
+                '<strong>' + ui.pesos(o.total_centavos) + '</strong>' +
+                '<span class="badge-payment-method">' + ui.esc(method) + '</span>' +
+              '</div>' +
+              '<div class="order-finance-sub">' + financeSub + '</div>' +
             '</div>' +
           '</td>' +
-          '<td>' + ui.esc(o.payment_method || '-') + '</td>' +
           '<td>' + ui.pill(o.status) + '</td>' +
-          '<td class="actions-cell">' + actionsFor(o) + '</td></tr>';
-      }).join('') : '<tr><td colspan="8" class="muted">No orders match.</td></tr>';
+          '<td class="actions-cell">' + actionsFor(o) + '</td>' +
+        '</tr>';
+      }).join('');
     }
 
     // --- table actions (delegated) ---
@@ -231,33 +237,7 @@
       const d = e.target.closest('[data-details]');
       const b = e.target.closest('[data-balance]');
       const c = e.target.closest('[data-cancel]');
-      const colBtn = e.target.closest('[data-collect-confirm]');
       try {
-        if (colBtn) {
-          const code = colBtn.dataset.collectConfirm;
-          const input = document.getElementById('col-input-' + code);
-          const maxCents = input ? Number(input.dataset.maxCents || 0) : 0;
-          const enteredVal = input ? parseFloat(input.value) : 0;
-          if (!enteredVal || isNaN(enteredVal) || enteredVal <= 0) {
-            window.alert('Please enter a valid amount to collect.');
-            return;
-          }
-          const enteredCents = Math.round(enteredVal * 100);
-          if (enteredCents > maxCents) {
-            window.alert('Cannot collect more than the remaining balance of ' + ui.pesos(maxCents) + '.');
-            return;
-          }
-          if (!ui.confirmAsk('Confirm collection of ' + ui.pesos(enteredCents) + ' for order ' + code + '?')) return;
-          colBtn.disabled = true;
-          try {
-            const res = await api.recordBalance(code, 'Collected on delivery', enteredCents);
-            window.alert('Collection successful! Amount paid: ' + ui.pesos(res.amount_paid_centavos) + '. Remaining balance: ' + ui.pesos(res.balance_due_centavos) + ' (' + res.payment_status + ').');
-            await load();
-          } finally {
-            colBtn.disabled = false;
-          }
-          return;
-        }
         if (v) { openVerify(v.dataset.verify); return; }
         if (d) { await openDetails(d.dataset.details); return; }
         if (b) { openBalance(b.dataset.balance); return; }
@@ -528,7 +508,7 @@
 
     load().catch((err) => {
       document.getElementById('orders-table-body').innerHTML =
-        '<tr><td colspan="8" class="error-text">' + ui.esc(err.message) + '</td></tr>';
+        '<tr><td colspan="6" class="error-text">' + ui.esc(err.message) + '</td></tr>';
     });
   });
 })();

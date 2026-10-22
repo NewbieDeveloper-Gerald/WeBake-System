@@ -10,21 +10,21 @@
 
   // --- shared helpers (available before DOMContentLoaded for page scripts) ---
   const STATUS_STYLE = {
-    PENDING_DOWNPAYMENT: ['var(--warning-bg)', 'var(--warning)'],
-    PAYMENT_UNDER_VERIFICATION: ['var(--info-bg)', 'var(--info)'],
-    CONFIRMED: ['var(--purple-bg)', 'var(--purple)'],
-    IN_PRODUCTION: ['var(--purple-bg)', 'var(--purple)'],
-    READY: ['var(--accent-soft)', 'var(--primary)'],
-    OUT_FOR_DELIVERY: ['var(--info-bg)', 'var(--info)'],
-    COMPLETED: ['var(--success-bg)', 'var(--success)'],
-    CANCELLED: ['var(--danger-bg)', 'var(--danger)'],
-    AWAITING_DETAILS: ['var(--warning-bg)', 'var(--warning)'],
-    PENDING: ['var(--info-bg)', 'var(--info)'],
-    REFUNDED: ['var(--success-bg)', 'var(--success)'],
-    CLOSED_NO_PAYMENT: ['var(--border-light)', 'var(--text-muted)'],
-    IN_STOCK: ['var(--success-bg)', 'var(--success)'],
-    LOW_STOCK: ['var(--warning-bg)', 'var(--warning)'],
-    OUT_OF_STOCK: ['var(--danger-bg)', 'var(--danger)'],
+    PENDING_DOWNPAYMENT: ['#FEF3C7', '#B45309', '#FDE68A'],
+    PAYMENT_UNDER_VERIFICATION: ['#FFF4CC', '#8C5815', '#E9D99A'],
+    CONFIRMED: ['#FBF0EA', '#8C3A27', '#E8C5BC'],
+    IN_PRODUCTION: ['#F3E8FF', '#6B21A8', '#DDD6FE'],
+    READY: ['#ECFDF5', '#047857', '#A7F3D0'],
+    OUT_FOR_DELIVERY: ['#E0F2FE', '#0369A1', '#BAE6FD'],
+    COMPLETED: ['#EAF7ED', '#1E7E34', '#A3E0B5'],
+    CANCELLED: ['#FEE2E2', '#991B1B', '#FCA5A5'],
+    AWAITING_DETAILS: ['#FEF3C7', '#B45309', '#FDE68A'],
+    PENDING: ['#E0F2FE', '#0369A1', '#BAE6FD'],
+    REFUNDED: ['#EAF7ED', '#1E7E34', '#A3E0B5'],
+    CLOSED_NO_PAYMENT: ['#F5F2EF', '#786D68', '#E2D9D0'],
+    IN_STOCK: ['#EAF7ED', '#1E7E34', '#A3E0B5'],
+    LOW_STOCK: ['#FEF3C7', '#B45309', '#FDE68A'],
+    OUT_OF_STOCK: ['#FEE2E2', '#991B1B', '#FCA5A5'],
   };
 
   const STATUS_LABEL = {
@@ -69,10 +69,11 @@
     /** Colored status pill using the design-system variables. */
     pill(status) {
       const key = String(status || '').toUpperCase();
-      const style = STATUS_STYLE[key] || ['var(--border-light)', 'var(--text-muted)'];
+      const style = STATUS_STYLE[key] || ['#F5F2EF', '#786D68', '#E2D9D0'];
       const label = STATUS_LABEL[key] || status;
-      return '<span style="display:inline-block;padding:2px 10px;border-radius:9999px;' +
-        'font-size:0.75rem;font-weight:600;background:' + style[0] + ';color:' + style[1] + ';">' +
+      const border = style[2] ? 'border:1px solid ' + style[2] + ';' : '';
+      return '<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:9999px;' +
+        'font-size:0.74rem;font-weight:700;line-height:1.2;background:' + style[0] + ';color:' + style[1] + ';' + border + '">' +
         window.AdminUI.esc(label) + '</span>';
     },
     /** Plain confirm() wrapper so pages read intent, not browser API. */
