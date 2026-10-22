@@ -74,14 +74,6 @@
             ? '<i class="fas fa-ban"></i> Out of Stock'
             : p.stock_pieces + ' pcs &bull; ' + bundlesAvailable + ' bundles ready') +
           '</div>' +
-          '<div class="pos-card-qty-row">' +
-          '<span class="pos-card-qty-label">Qty to add:</span>' +
-          '<div class="pos-card-qty-ctrl">' +
-          '<button type="button" class="pos-card-qty-btn" data-qty-dec="' + p.id + '"' + (isOutOfStock ? ' disabled' : '') + ' aria-label="Decrease quantity">&minus;</button>' +
-          '<input type="number" inputmode="numeric" min="1" max="' + p.stock_pieces + '" value="1" class="pos-card-qty-input" data-card-qty-id="' + p.id + '"' + (isOutOfStock ? ' disabled' : '') + ' aria-label="Quantity to add">' +
-          '<button type="button" class="pos-card-qty-btn" data-qty-inc="' + p.id + '"' + (isOutOfStock ? ' disabled' : '') + ' aria-label="Increase quantity">&plus;</button>' +
-          '</div>' +
-          '</div>' +
           '<div class="pos-product-add">' +
           '<button type="button" class="btn btn-primary btn-sm pos-add-bundle" data-add-bundle="' + p.id + '"' +
           (p.stock_pieces < p.pieces_per_bundle ? ' disabled' : '') + '><i class="fas fa-plus"></i> Bundle</button> ' +
@@ -91,78 +83,12 @@
       }).join('');
     }
 
-    const gridEl = document.getElementById('pos-product-grid');
-
-    gridEl.addEventListener('click', (e) => {
+    document.getElementById('pos-product-grid').addEventListener('click', (e) => {
       const bd = e.target.closest('[data-add-bundle]');
-      if (bd) {
-        const id = bd.dataset.addBundle;
-        const input = document.querySelector('[data-card-qty-id="' + id + '"]');
-        const qty = input ? Math.max(1, parseInt(input.value, 10) || 1) : 1;
-        addToCart(id, 'BUNDLE', qty);
-        if (input) input.value = 1;
-        return;
-      }
-
+      if (bd) addToCart(bd.dataset.addBundle, 'BUNDLE', 1);
       const pc = e.target.closest('[data-add-piece]');
-      if (pc) {
-        const id = pc.dataset.addPiece;
-        const input = document.querySelector('[data-card-qty-id="' + id + '"]');
-        const qty = input ? Math.max(1, parseInt(input.value, 10) || 1) : 1;
-        addToCart(id, 'PIECE', qty);
-        if (input) input.value = 1;
-        return;
-      }
-
-      const inc = e.target.closest('[data-qty-inc]');
-      if (inc) {
-        const id = inc.dataset.qtyInc;
-        const input = document.querySelector('[data-card-qty-id="' + id + '"]');
-        if (input) {
-          const val = parseInt(input.value, 10) || 1;
-          input.value = val + 1;
-        }
-        return;
-      }
-
-      const dec = e.target.closest('[data-qty-dec]');
-      if (dec) {
-        const id = dec.dataset.qtyDec;
-        const input = document.querySelector('[data-card-qty-id="' + id + '"]');
-        if (input) {
-          const val = parseInt(input.value, 10) || 1;
-          if (val > 1) input.value = val - 1;
-        }
-        return;
-      }
+      if (pc) addToCart(pc.dataset.addPiece, 'PIECE', 1);
     });
-
-    gridEl.addEventListener('focusin', (e) => {
-      if (e.target.classList.contains('pos-card-qty-input')) {
-        e.target.select();
-      }
-    });
-
-    gridEl.addEventListener('keydown', (e) => {
-      if (!e.target.classList.contains('pos-card-qty-input')) return;
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        e.target.blur();
-        return;
-      }
-      if (['e', 'E', '+', '-', '.'].includes(e.key)) {
-        e.preventDefault();
-      }
-    });
-
-    gridEl.addEventListener('blur', (e) => {
-      if (!e.target.classList.contains('pos-card-qty-input')) return;
-      const input = e.target;
-      let val = parseInt(input.value, 10);
-      if (isNaN(val) || val < 1) {
-        input.value = 1;
-      }
-    }, true);
 
     function addToCart(id, unit, qty = 1) {
       const p = products.find((x) => String(x.id) === String(id));
@@ -189,8 +115,7 @@
           unit_price: unit === 'BUNDLE' ? p.price_bundle_centavos : p.piece_price_centavos,
         });
       }
-      const unitLabel = unit === 'BUNDLE' ? (qty === 1 ? 'bundle' : 'bundles') : (qty === 1 ? 'piece' : 'pieces');
-      ui.toast('Added ' + (qty > 1 ? qty + ' ' + unitLabel + ' of ' : '') + p.name + (qty === 1 ? ' (' + unit.toLowerCase() + ')' : '') + ' to slip.', 'success');
+      ui.toast('Added ' + p.name + ' (' + unit.toLowerCase() + ') to slip.', 'success');
       renderCart();
     }
 
