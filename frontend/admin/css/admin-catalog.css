@@ -319,35 +319,51 @@
 
 /* --- Table Column Sizing & Data Clarity --- */
 .catalog-table th.col-product {
-  min-width: 260px;
+  min-width: 240px;
 }
 
-.catalog-table th.col-bundle-price {
-  width: 125px;
-  text-align: right;
-}
-
-.catalog-table th.col-pcs-bundle {
-  width: 105px;
-  text-align: center;
-}
-
-.catalog-table th.col-piece-price {
-  width: 115px;
-  text-align: right;
+.catalog-table th.col-pricing {
+  min-width: 170px;
 }
 
 .catalog-table th.col-stock {
-  width: 140px;
+  min-width: 160px;
 }
 
 .catalog-table th.col-status {
-  width: 130px;
+  min-width: 120px;
   text-align: center;
 }
 
 .catalog-table th.col-actions {
-  width: 140px;
+  min-width: 170px;
+  text-align: right;
+}
+
+/* Ingredients column definitions */
+.catalog-table th.col-ingredient {
+  min-width: 220px;
+}
+
+.catalog-table th.col-ing-stock {
+  min-width: 170px;
+}
+
+.catalog-table th.col-ing-cost {
+  min-width: 125px;
+}
+
+.catalog-table th.col-ing-expiry {
+  min-width: 125px;
+}
+
+.catalog-table th.col-ing-status {
+  min-width: 120px;
+  text-align: center;
+}
+
+.catalog-table th.col-ing-actions {
+  min-width: 200px;
   text-align: right;
 }
 
@@ -450,9 +466,9 @@
   flex-shrink: 0;
 }
 
-.stock-dot.stock-ok { background-color: #16A34A; }
-.stock-dot.stock-low { background-color: #D97706; }
-.stock-dot.stock-out { background-color: #DC3545; }
+.stock-dot.stock-ok { background-color: #1E7E34; }
+.stock-dot.stock-low { background-color: #B45309; }
+.stock-dot.stock-out { background-color: #991B1B; }
 
 .stock-text-col {
   display: flex;
@@ -477,17 +493,18 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.25rem 0.65rem;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1.2;
   white-space: nowrap;
 }
 
 .catalog-status-badge.status-ok {
-  background: #DCFCE7;
-  color: #15803D;
-  border: 1px solid #BBF7D0;
+  background: #EAF7ED;
+  color: #1E7E34;
+  border: 1px solid #A3E0B5;
 }
 
 .catalog-status-badge.status-low {
@@ -498,14 +515,14 @@
 
 .catalog-status-badge.status-out {
   background: #FEE2E2;
-  color: #B91C1C;
-  border: 1px solid #FECACA;
+  color: #991B1B;
+  border: 1px solid #FCA5A5;
 }
 
 .catalog-status-badge.status-archived {
-  background: #ECEFF1;
-  color: #455A64;
-  border: 1px solid #CFD8DC;
+  background: #F5F2EF;
+  color: #786D68;
+  border: 1px solid #E2D9D0;
 }
 
 /* Pagination Bar */
@@ -623,6 +640,150 @@
   background: #FEE2E2;
   border-color: #B91C1C;
   color: #B91C1C;
+}
+
+
+
+/* ==========================================================================
+   Refined Inventory Tokens, Typography, and Action Hierarchies
+   ========================================================================== */
+
+/* Semantic Stat Value Colors & Active Inversion */
+.stat-val-success { color: #1E7E34; }
+.stat-val-warning { color: #B45309; }
+.stat-val-danger { color: #991B1B; }
+.stat-val-accent { color: #8C3A27; }
+.stat-val-muted { color: #786D68; }
+
+.stat-card.active .stat-val-success,
+.stat-card.active .stat-val-warning,
+.stat-card.active .stat-val-danger,
+.stat-card.active .stat-val-accent,
+.stat-card.active .stat-val-muted {
+  color: #FFE082 !important;
+}
+
+/* Product Pricing & Packaging Stack */
+.product-pricing-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.price-bundle-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+
+.price-bundle-row strong {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #4A2518;
+  font-variant-numeric: tabular-nums;
+}
+
+.price-bundle-tag {
+  font-size: 0.72rem;
+  color: #7A6961;
+  font-weight: 500;
+}
+
+.price-piece-sub {
+  font-size: 0.74rem;
+  color: #69564B;
+}
+
+/* Ingredients Details & Metadata */
+.stock-reorder-sub {
+  font-size: 0.72rem;
+  color: #8C7B73;
+  margin-top: 1px;
+}
+
+.cost-unit-text strong {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #4A2518;
+  font-variant-numeric: tabular-nums;
+}
+
+.cost-unit-text .unit-label {
+  font-size: 0.74rem;
+  color: #7A6961;
+}
+
+.expiry-date-text {
+  font-size: 0.84rem;
+  color: #2D2422;
+}
+
+.tag-expiring {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #FDE68A;
+}
+
+/* Movement History Badges */
+.badge-movement {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.badge-movement.badge-RESTOCK,
+.badge-movement.badge-PURCHASE {
+  background: #EAF7ED;
+  color: #1E7E34;
+  border: 1px solid #A3E0B5;
+}
+
+.badge-movement.badge-USAGE,
+.badge-movement.badge-BAKING {
+  background: #E0F2FE;
+  color: #0369A1;
+  border: 1px solid #BAE6FD;
+}
+
+.badge-movement.badge-ADJUSTMENT {
+  background: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #FDE68A;
+}
+
+.badge-movement.badge-SPOILAGE,
+.badge-movement.badge-DAMAGE {
+  background: #FEE2E2;
+  color: #991B1B;
+  border: 1px solid #FCA5A5;
+}
+
+/* Action Button Layout & Hierarchy */
+.action-buttons-group .btn {
+  padding: 0.38rem 0.65rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  border-radius: 8px;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.15s ease;
+}
+
+.action-buttons-group .btn i {
+  font-size: 0.75rem;
 }
 
 /* --- Responsive Breakpoints --- */

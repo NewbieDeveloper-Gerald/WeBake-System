@@ -126,7 +126,7 @@
       renderSummary();
       renderTable();
     } catch (err) {
-      tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:2rem; color:var(--danger, #dc3545);">
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--danger, #dc3545);">
         <i class="fas fa-exclamation-triangle"></i> Failed to load ingredients: ${AdminUI.esc(err.message)}
       </td></tr>`;
       countLabel.textContent = 'Error loading inventory';
@@ -164,7 +164,7 @@
     if (filtered.length === 0) {
       const tr = document.createElement('tr');
       const td = document.createElement('td');
-      td.colSpan = 8;
+      td.colSpan = 6;
       td.style.textAlign = 'center';
       td.style.padding = '2.5rem 1rem';
       td.className = 'muted';
@@ -179,75 +179,72 @@
     filtered.forEach((ing) => {
       const tr = document.createElement('tr');
 
-      // Highlight row if out of stock or low stock
-      if (ing.stock_status === 'out_of_stock') {
-        tr.classList.add('row-danger');
-      } else if (ing.stock_status === 'low_stock') {
-        tr.classList.add('row-warning');
-      }
-      if (ing.is_expiring_soon) {
-        tr.classList.add('row-expiring');
-      }
-
-      // 1. Name
+      // 1. Name & Packaging Unit
       const tdName = document.createElement('td');
-      tdName.className = 'catalog-product-name';
+      tdName.className = 'col-ingredient';
       tdName.innerHTML = `
-        <span class="catalog-product-icon"><i class="fas fa-wheat-awn"></i></span>
-        <span>
-          <strong>${AdminUI.esc(ing.name)}</strong>
-          ${ing.is_expiring_soon ? '<span class="tag-expiring"><i class="fas fa-clock"></i> Expiring Soon</span>' : ''}
-        </span>
+        <div class="catalog-product-name">
+          <span class="catalog-product-icon"><i class="fas fa-wheat-awn"></i></span>
+          <div class="catalog-name-meta">
+            <strong>${AdminUI.esc(ing.name)}</strong>
+            <small class="text-muted">Unit: ${AdminUI.esc(ing.unit || 'pcs')}</small>
+          </div>
+        </div>
       `;
       tr.appendChild(tdName);
 
-      // 2. Stock
+      // 2. Stock & Reorder Level
+      const isOut = ing.stock_status === 'out_of_stock';
+      const isLow = !isOut && ing.stock_status === 'low_stock';
+      const stockDotClass = isOut ? 'stock-out' : (isLow ? 'stock-low' : 'stock-ok');
+
       const tdStock = document.createElement('td');
-      tdStock.style.fontWeight = '700';
-      tdStock.style.fontSize = '0.9rem';
-      tdStock.style.color = ing.stock_status === 'out_of_stock'
-        ? 'var(--danger, #dc3545)'
-        : ing.stock_status === 'low_stock'
-          ? 'var(--warning, #e65100)'
-          : 'var(--text-main, #333)';
-      tdStock.textContent = formatNumber(ing.stock_quantity);
+      tdStock.className = 'col-ing-stock';
+      tdStock.innerHTML = `
+        <div class="catalog-stock-group">
+          <span class="stock-dot ${stockDotClass}"></span>
+          <div class="stock-text-col">
+            <strong class="stock-qty">${formatNumber(ing.stock_quantity)} ${AdminUI.esc(ing.unit || 'pcs')}</strong>
+            <span class="stock-reorder-sub">Reorder at &le; ${formatNumber(ing.reorder_level)} ${AdminUI.esc(ing.unit || 'pcs')}</span>
+          </div>
+        </div>
+      `;
       tr.appendChild(tdStock);
 
-      // 3. Unit
-      const tdUnit = document.createElement('td');
-      tdUnit.innerHTML = `<span class="catalog-pcs-pill">${AdminUI.esc(ing.unit || 'pcs')}</span>`;
-      tr.appendChild(tdUnit);
-
-      // 4. Reorder Level
-      const tdReorder = document.createElement('td');
-      tdReorder.textContent = formatNumber(ing.reorder_level);
-      tr.appendChild(tdReorder);
-
-      // 5. Cost / Unit
+      // 3. Cost / Unit
       const tdCost = document.createElement('td');
-      tdCost.textContent = formatPesos(ing.cost_per_unit);
+      tdCost.className = 'col-ing-cost';
+      tdCost.innerHTML = `
+        <div class="cost-unit-text">
+          <strong>${formatPesos(ing.cost_per_unit)}</strong>
+          <span class="unit-label">/ ${AdminUI.esc(ing.unit || 'pcs')}</span>
+        </div>
+      `;
       tr.appendChild(tdCost);
 
-      // 6. Expiry Date
+      // 4. Expiry Date
       const tdExpiry = document.createElement('td');
-      tdExpiry.textContent = formatDate(ing.expiry_date);
-      if (ing.is_expiring_soon) {
-        tdExpiry.style.color = '#B23C00';
-        tdExpiry.style.fontWeight = '600';
-      }
+      tdExpiry.className = 'col-ing-expiry';
+      const expDateStr = formatDate(ing.expiry_date);
+      tdExpiry.innerHTML = `
+        <div class="expiry-date-text">${expDateStr}</div>
+        ${ing.is_expiring_soon ? '<div style="margin-top:2px;"><span class="tag-expiring"><i class="far fa-clock"></i> Expiring Soon</span></div>' : ''}
+      `;
       tr.appendChild(tdExpiry);
 
-      // 7. Status Badge
+      // 5. Status Badge
       const tdStatus = document.createElement('td');
+      tdStatus.className = 'col-ing-status col-center';
+      tdStatus.style.textAlign = 'center';
       let badgeClass = 'status-ok';
       let badgeText = 'In Stock';
-      let badgeIcon = 'fa-check';
+      let badgeIcon = 'fa-circle-check';
 
-      if (ing.stock_status === 'out_of_stock') {
+      if (isOut) {
         badgeClass = 'status-out';
         badgeText = 'Out of Stock';
-        badgeIcon = 'fa-xmark';
-      } else if (ing.stock_status === 'low_stock') {
+        badgeIcon = 'fa-circle-xmark';
+      } else if (isLow) {
         badgeClass = 'status-low';
         badgeText = 'Low Stock';
         badgeIcon = 'fa-triangle-exclamation';
@@ -255,60 +252,64 @@
       tdStatus.innerHTML = `<span class="catalog-status-badge ${badgeClass}"><i class="fas ${badgeIcon}"></i> ${badgeText}</span>`;
       tr.appendChild(tdStatus);
 
-      // 10. Actions
+      // 6. Actions
       const tdActions = document.createElement('td');
-      tdActions.className = 'actions-cell';
+      tdActions.className = 'col-ing-actions actions-cell';
       tdActions.style.textAlign = 'right';
 
-      // Restock button
+      const actionsGroup = document.createElement('div');
+      actionsGroup.className = 'action-buttons-group';
+
+      // Restock button (Primary)
       const btnRestock = document.createElement('button');
       btnRestock.type = 'button';
       btnRestock.className = 'btn btn-primary btn-sm';
-      btnRestock.style.marginRight = '4px';
       btnRestock.innerHTML = '<i class="fas fa-plus"></i> Restock';
       btnRestock.title = 'Add stock (purchase / batch intake)';
       btnRestock.addEventListener('click', () => openRestockModal(ing));
 
-      // Remove / Adjust button
+      // Adjust button (Secondary)
       const btnAdj = document.createElement('button');
       btnAdj.type = 'button';
       btnAdj.className = 'btn btn-outline btn-sm';
-      btnAdj.style.marginRight = '4px';
-      btnAdj.innerHTML = '<i class="fas fa-sliders"></i> Adjust';
-      btnAdj.title = 'Remove stock (usage, damage, count correction)';
+      btnAdj.innerHTML = '<i class="fas fa-sliders-h"></i> Adjust';
+      btnAdj.title = 'Remove stock (usage, damage, correction)';
       btnAdj.addEventListener('click', () => openAdjustModal(ing));
 
       // History button
       const btnHist = document.createElement('button');
       btnHist.type = 'button';
-      btnHist.className = 'btn btn-outline btn-icon';
-      btnHist.style.marginRight = '4px';
-      btnHist.innerHTML = '<i class="fas fa-history"></i>';
-      btnHist.title = 'View movement history';
+      btnHist.className = 'btn-icon';
+      btnHist.innerHTML = '<i class="fas fa-clock-rotate-left"></i>';
+      btnHist.title = 'Audit trail & movements';
+      btnHist.setAttribute('aria-label', 'Audit trail');
       btnHist.addEventListener('click', () => openHistoryModal(ing));
 
       // Edit info button
       const btnEdit = document.createElement('button');
       btnEdit.type = 'button';
-      btnEdit.className = 'btn btn-outline btn-icon';
-      btnEdit.style.marginRight = '4px';
-      btnEdit.innerHTML = '<i class="fas fa-pencil"></i>';
-      btnEdit.title = 'Edit details (reorder level, cost, expiry)';
+      btnEdit.className = 'btn-icon';
+      btnEdit.innerHTML = '<i class="fas fa-pen"></i>';
+      btnEdit.title = 'Edit details';
+      btnEdit.setAttribute('aria-label', 'Edit ingredient');
       btnEdit.addEventListener('click', () => openEditModal(ing));
 
       // Delete button
       const btnDel = document.createElement('button');
       btnDel.type = 'button';
-      btnDel.className = 'btn btn-danger-outline btn-icon';
+      btnDel.className = 'btn-icon btn-icon-archive';
       btnDel.innerHTML = '<i class="fas fa-trash"></i>';
       btnDel.title = 'Delete ingredient';
+      btnDel.setAttribute('aria-label', 'Delete ingredient');
       btnDel.addEventListener('click', () => deleteIngredient(ing));
 
-      tdActions.appendChild(btnRestock);
-      tdActions.appendChild(btnAdj);
-      tdActions.appendChild(btnHist);
-      tdActions.appendChild(btnEdit);
-      tdActions.appendChild(btnDel);
+      actionsGroup.appendChild(btnRestock);
+      actionsGroup.appendChild(btnAdj);
+      actionsGroup.appendChild(btnHist);
+      actionsGroup.appendChild(btnEdit);
+      actionsGroup.appendChild(btnDel);
+
+      tdActions.appendChild(actionsGroup);
       tr.appendChild(tdActions);
 
       tbody.appendChild(tr);
@@ -321,7 +322,21 @@
       filterPills.forEach((p) => p.classList.remove('active'));
       pill.classList.add('active');
       currentFilter = pill.getAttribute('data-filter') || 'all';
+      // Sync stat cards active state
+      document.querySelectorAll('#ingredient-kpi-cards .stat-card').forEach((c) => {
+        c.classList.toggle('active', (c.dataset.filter || 'all') === currentFilter);
+      });
       renderTable();
+    });
+  });
+
+  // Sync click on ingredient stat cards
+  document.querySelectorAll('#ingredient-kpi-cards .stat-card').forEach((card) => {
+    card.addEventListener('click', () => {
+      const filter = card.dataset.filter;
+      if (!filter) return;
+      const targetPill = document.querySelector(`#ingredient-filters .pos-filter-pill[data-filter="${filter}"]`);
+      if (targetPill) targetPill.click();
     });
   });
 

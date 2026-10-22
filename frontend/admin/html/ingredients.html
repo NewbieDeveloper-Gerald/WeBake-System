@@ -147,26 +147,38 @@
       </header>
 
       <main class="content-area">
-        <!-- Summary Cards -->
-        <div class="stats-grid" style="margin-bottom: 1.25rem;">
-          <div class="stat-card">
-            <div class="stat-label"><i class="fas fa-wheat-awn text-primary"></i> Total Ingredients</div>
+        <!-- Summary Cards (Clickable Filters & Bakery Theme) -->
+        <div class="stats-grid" id="ingredient-kpi-cards" style="margin-bottom: 1.25rem;">
+          <div class="stat-card active" data-filter="all" role="button" tabindex="0" title="Click to view all ingredients">
+            <div class="stat-card-header">
+              <span class="stat-label"><i class="fas fa-wheat-awn text-primary"></i> Total Ingredients</span>
+              <span class="active-indicator" title="Current Filter"><i class="fas fa-check"></i></span>
+            </div>
             <div class="stat-value" id="stat-total-ingredients">—</div>
             <div class="stat-sub">in pantry inventory</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label"><i class="fas fa-triangle-exclamation" style="color:var(--warning, #e65100);"></i> Low Stock</div>
-            <div class="stat-value" id="stat-lowstock-ingredients" style="color:var(--warning, #e65100);">—</div>
+          <div class="stat-card" data-filter="low_stock" role="button" tabindex="0" title="Click to view low stock ingredients">
+            <div class="stat-card-header">
+              <span class="stat-label"><i class="fas fa-triangle-exclamation" style="color:#B45309;"></i> Low Stock</span>
+              <span class="active-indicator" title="Current Filter"><i class="fas fa-check"></i></span>
+            </div>
+            <div class="stat-value stat-val-warning" id="stat-lowstock-ingredients">—</div>
             <div class="stat-sub">&le; reorder threshold</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label"><i class="fas fa-circle-xmark" style="color:var(--danger, #dc3545);"></i> Out of Stock</div>
-            <div class="stat-value" id="stat-outofstock-ingredients" style="color:var(--danger, #dc3545);">—</div>
+          <div class="stat-card" data-filter="out_of_stock" role="button" tabindex="0" title="Click to view depleted ingredients">
+            <div class="stat-card-header">
+              <span class="stat-label"><i class="fas fa-circle-xmark" style="color:#991B1B;"></i> Out of Stock</span>
+              <span class="active-indicator" title="Current Filter"><i class="fas fa-check"></i></span>
+            </div>
+            <div class="stat-value stat-val-danger" id="stat-outofstock-ingredients">—</div>
             <div class="stat-sub">depleted stock</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label"><i class="fas fa-clock text-primary"></i> Expiring Soon</div>
-            <div class="stat-value" id="stat-expiring-ingredients" style="color:#b23c00;">—</div>
+          <div class="stat-card" data-filter="expiring_soon" role="button" tabindex="0" title="Click to view expiring ingredients">
+            <div class="stat-card-header">
+              <span class="stat-label"><i class="fas fa-clock text-primary"></i> Expiring Soon</span>
+              <span class="active-indicator" title="Current Filter"><i class="fas fa-check"></i></span>
+            </div>
+            <div class="stat-value stat-val-accent" id="stat-expiring-ingredients">—</div>
             <div class="stat-sub">within next 7 days</div>
           </div>
         </div>
@@ -199,22 +211,20 @@
           </div>
 
           <div class="table-responsive">
-            <table class="dash-table catalog-table">
+            <table class="dash-table catalog-table admin-table">
               <thead>
                 <tr>
-                  <th>Ingredient</th>
-                  <th>Current Stock</th>
-                  <th>Unit</th>
-                  <th>Reorder Level</th>
-                  <th>Cost / Unit</th>
-                  <th>Expiry Date</th>
-                  <th>Status</th>
-                  <th style="text-align:right;">Actions</th>
+                  <th class="col-ingredient">Ingredient</th>
+                  <th class="col-ing-stock">Stock &amp; Reorder Level</th>
+                  <th class="col-ing-cost">Cost / Unit</th>
+                  <th class="col-ing-expiry">Expiry Date</th>
+                  <th class="col-ing-status col-center" style="text-align:center;">Status</th>
+                  <th class="col-ing-actions text-right" style="text-align:right;">Actions</th>
                 </tr>
               </thead>
               <tbody id="ingredients-tbody">
                 <tr>
-                  <td colspan="8" class="muted" style="text-align:center; padding: 2rem;">Loading ingredients…</td>
+                  <td colspan="6" class="muted" style="text-align:center; padding: 2rem;">Loading ingredients…</td>
                 </tr>
               </tbody>
             </table>

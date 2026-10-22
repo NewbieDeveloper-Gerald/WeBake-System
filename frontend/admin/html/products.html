@@ -162,28 +162,28 @@
 
           <div class="stat-card" data-filter="active" role="button" tabindex="0" title="Click to view products in stock">
             <div class="stat-card-header">
-              <span class="stat-label"><i class="fas fa-circle-check" style="color:var(--success, #16a34a);"></i> In Stock</span>
+              <span class="stat-label"><i class="fas fa-circle-check" style="color:#1E7E34;"></i> In Stock</span>
               <span class="active-indicator" title="Current Filter"><i class="fas fa-check"></i></span>
             </div>
-            <div class="stat-value" id="stat-instock-products" style="color:var(--success, #16a34a);">—</div>
+            <div class="stat-value stat-val-success" id="stat-instock-products">—</div>
             <div class="stat-sub">ready for sale</div>
           </div>
 
           <div class="stat-card" data-filter="low_stock" role="button" tabindex="0" title="Click to view products needing production">
             <div class="stat-card-header">
-              <span class="stat-label"><i class="fas fa-triangle-exclamation" style="color:var(--warning, #e65100);"></i> Low Stock</span>
+              <span class="stat-label"><i class="fas fa-triangle-exclamation" style="color:#B45309;"></i> Low Stock</span>
               <span class="active-indicator" title="Current Filter"><i class="fas fa-check"></i></span>
             </div>
-            <div class="stat-value" id="stat-lowstock-products" style="color:var(--warning, #e65100);">—</div>
+            <div class="stat-value stat-val-warning" id="stat-lowstock-products">—</div>
             <div class="stat-sub">&le; reorder threshold <span class="stat-help" title="Configurable threshold (pieces) per product to trigger reorder alert"><i class="fas fa-circle-info"></i></span></div>
           </div>
 
           <div class="stat-card" data-filter="out_of_stock" role="button" tabindex="0" title="Click to view depleted products">
             <div class="stat-card-header">
-              <span class="stat-label"><i class="fas fa-circle-xmark" style="color:var(--danger, #dc3545);"></i> Out of Stock</span>
+              <span class="stat-label"><i class="fas fa-circle-xmark" style="color:#991B1B;"></i> Out of Stock</span>
               <span class="active-indicator" title="Current Filter"><i class="fas fa-check"></i></span>
             </div>
-            <div class="stat-value" id="stat-outofstock-products" style="color:var(--danger, #dc3545);">—</div>
+            <div class="stat-value stat-val-danger" id="stat-outofstock-products">—</div>
             <div class="stat-sub">depleted inventory</div>
           </div>
 
@@ -192,7 +192,7 @@
               <span class="stat-label"><i class="fas fa-box-archive text-muted"></i> Archived</span>
               <span class="active-indicator" title="Current Filter"><i class="fas fa-check"></i></span>
             </div>
-            <div class="stat-value" id="stat-archived-products" style="color:var(--text-muted);">—</div>
+            <div class="stat-value stat-val-muted" id="stat-archived-products">—</div>
             <div class="stat-sub">hidden from storefront</div>
           </div>
         </div>
@@ -244,16 +244,14 @@
               <thead>
                 <tr>
                   <th class="col-product">Product</th>
-                  <th class="col-bundle-price text-right">Bundle Price</th>
-                  <th class="col-pcs-bundle col-center">Pcs/Bundle</th>
-                  <th class="col-piece-price text-right">Piece Price</th>
+                  <th class="col-pricing">Pricing &amp; Packaging</th>
                   <th class="col-stock">Stock Available</th>
                   <th class="col-status col-center">Status</th>
-                  <th class="col-actions text-right">Actions</th>
+                  <th class="col-actions text-right" style="text-align:right;">Actions</th>
                 </tr>
               </thead>
               <tbody id="products-tbody">
-                <tr><td colspan="7" class="muted">Loading products…</td></tr>
+                <tr><td colspan="5" class="muted">Loading products…</td></tr>
               </tbody>
             </table>
           </div>

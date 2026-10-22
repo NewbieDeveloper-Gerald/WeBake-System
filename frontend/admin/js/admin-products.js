@@ -183,7 +183,7 @@
       // Handle Empty State
       if (!totalItems) {
         const isFiltered = term || currentFilter !== 'all' || sortVal !== 'name_asc';
-        tbody.innerHTML = '<tr><td colspan="7" class="empty-table-state">' +
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-table-state">' +
           '<i class="fas fa-box-open empty-state-icon"></i>' +
           '<div class="empty-state-title">' + (term ? 'No products match "' + ui.esc(term) + '"' : 'No products found') + '</div>' +
           '<div class="empty-state-desc">' + (isFiltered ? 'Try clearing your search or switching categories.' : 'Get started by creating your first bakery product.') + '</div>' +
@@ -249,18 +249,21 @@
             ? '<small class="text-danger"><i class="fas fa-box-archive"></i> Archived from store</small>'
             : '<small class="text-muted">' + (p.description ? ui.esc(p.description.slice(0, 48) + (p.description.length > 48 ? '…' : '')) : 'Bakery Item #' + p.id) + '</small>') +
           '</div></div></td>' +
-          '<td class="col-bundle-price text-right"><span class="catalog-price-bundle">' + ui.pesos(p.price_bundle_centavos) + '</span></td>' +
-          '<td class="col-pcs-bundle col-center"><span class="catalog-pcs-pill">' + p.pieces_per_bundle + ' pcs</span></td>' +
-          '<td class="col-piece-price text-right"><span class="catalog-price-piece">' + ui.pesos(p.piece_price_centavos) + '</span></td>' +
+          '<td class="col-pricing">' +
+            '<div class="product-pricing-block">' +
+              '<div class="price-bundle-row"><strong>' + ui.pesos(p.price_bundle_centavos) + '</strong> <span class="price-bundle-tag">/ bdl</span></div>' +
+              '<div class="price-piece-sub">' + ui.pesos(p.piece_price_centavos) + ' / pc &bull; ' + p.pieces_per_bundle + ' pcs/bdl</div>' +
+            '</div>' +
+          '</td>' +
           '<td class="col-stock"><div class="catalog-stock-group">' +
           '<span class="stock-dot ' + stockDotClass + '" title="' + (isOut ? 'Depleted' : (isLow ? 'Below threshold' : 'Sufficient')) + '"></span>' +
-          '<div class="stock-text-col"><strong class="stock-qty">' + Number(p.stock_pieces).toLocaleString() + ' pcs</strong><span class="stock-bdls">(' + Number(p.bundles_available || 0) + ' bdls)</span></div>' +
+          '<div class="stock-text-col"><strong class="stock-qty">' + Number(p.stock_pieces).toLocaleString() + ' pcs</strong><span class="stock-bdls">' + Number(p.bundles_available || 0).toLocaleString() + ' bdls &bull; Min: ' + Number(p.low_stock_threshold_pieces || 500).toLocaleString() + '</span></div>' +
           '</div></td>' +
           '<td class="col-status col-center">' + statusBadge + '</td>' +
           '<td class="col-actions text-right actions-cell">' +
           '<div class="action-buttons-group">' +
+          (!p.is_archived ? '<button type="button" class="btn btn-outline btn-sm" data-adjust="' + p.id + '" title="Quick Stock Adjust"><i class="fas fa-sliders-h"></i> Adjust</button>' : '') +
           '<button type="button" class="btn-icon" data-edit="' + p.id + '" title="Edit product" aria-label="Edit product"><i class="fas fa-pen"></i></button>' +
-          (!p.is_archived ? '<button type="button" class="btn-icon" data-adjust="' + p.id + '" title="Quick Stock Adjust" aria-label="Quick Stock Adjust"><i class="fas fa-sliders-h"></i></button>' : '') +
           '<button type="button" class="btn-icon" data-duplicate="' + p.id + '" title="Duplicate product" aria-label="Duplicate product"><i class="fas fa-copy"></i></button>' +
           (p.is_archived
             ? '<button type="button" class="btn-icon btn-icon-restore" data-restore="' + p.id + '" title="Restore to catalog" aria-label="Restore product"><i class="fas fa-rotate-left"></i></button>'
