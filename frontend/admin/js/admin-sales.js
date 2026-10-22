@@ -972,6 +972,8 @@
           stageBadge = '<span class="badge-pay-stage badge-pay-stage--balance"><i class="fas fa-check-double"></i> Balance</span>';
         } else if (p.stage === 'WALK_IN') {
           stageBadge = '<span class="badge-pay-stage badge-pay-stage--walkin"><i class="fas fa-cash-register"></i> Walk-In</span>';
+        } else if (p.stage === 'PARTNER') {
+          stageBadge = '<span class="badge-pay-stage badge-pay-stage--partner"><i class="fas fa-handshake"></i> Partner</span>';
         }
 
         return `
