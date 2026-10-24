@@ -33,6 +33,7 @@
       name: '', email: '', contact: '', address: '',
       method: 'GCASH', order: null, key: null,
       items: [],
+      policyAgreed: false,
     };
 
     /* ---------------- load ---------------- */
@@ -535,6 +536,9 @@
       const coOverlay = document.getElementById('checkout-overlay');
       if (coOverlay) coOverlay.classList.remove('active');
       if (typeof clearProofSelection === 'function') clearProofSelection();
+      co.policyAgreed = false;
+      if (typeof syncPolicyCheck === 'function') syncPolicyCheck();
+      if (typeof closePolicyModal === 'function') closePolicyModal();
     }
 
     const proceedCheckoutBtn = document.getElementById('proceed-checkout');
@@ -571,6 +575,8 @@
       }
       co.key = U.uid();
       co.order = null;
+      co.policyAgreed = false;
+      if (typeof syncPolicyCheck === 'function') syncPolicyCheck();
       openCheckout();
       gotoStep('step-stock');
       // Client-side stock sanity (the SERVER re-checks at approval).
@@ -716,32 +722,41 @@
           return;
         }
 
-        if (auth.token() && memberEmail && memberEmail.toLowerCase() === co.email) {
-          renderReview();
-          setMethod(co.method || 'GCASH');
-          gotoStep('step-payment');
+        if (!co.policyAgreed) {
+          openPolicyModal(() => proceedToPaymentStep());
           return;
         }
-
-        const proceedBtn = document.getElementById('info-proceed-btn');
-        if (proceedBtn) {
-          proceedBtn.disabled = true;
-          proceedBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending code...';
-        }
-
-        try {
-          ensureOtp().clear();
-          const emailDisp = document.getElementById('checkout-otp-email-display');
-          if (emailDisp) emailDisp.textContent = co.email;
-          gotoStep('step-otp');
-          await sendCheckoutOtp(false);
-        } finally {
-          if (proceedBtn) {
-            proceedBtn.disabled = false;
-            proceedBtn.innerHTML = '<i class="fas fa-arrow-right"></i> Proceed to Payment';
-          }
-        }
+        await proceedToPaymentStep();
       });
+    }
+
+    async function proceedToPaymentStep() {
+      if (auth.token() && memberEmail && memberEmail.toLowerCase() === co.email) {
+        renderReview();
+        setMethod(co.method || 'GCASH');
+        syncPolicyCheck();
+        gotoStep('step-payment');
+        return;
+      }
+
+      const proceedBtn = document.getElementById('info-proceed-btn');
+      if (proceedBtn) {
+        proceedBtn.disabled = true;
+        proceedBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending code...';
+      }
+
+      try {
+        ensureOtp().clear();
+        const emailDisp = document.getElementById('checkout-otp-email-display');
+        if (emailDisp) emailDisp.textContent = co.email;
+        gotoStep('step-otp');
+        await sendCheckoutOtp(false);
+      } finally {
+        if (proceedBtn) {
+          proceedBtn.disabled = false;
+          proceedBtn.innerHTML = '<i class="fas fa-arrow-right"></i> Proceed to Payment';
+        }
+      }
     }
 
     const otpBackBtn = document.getElementById('otp-back-btn');
@@ -991,6 +1006,96 @@
     const payBackBtn = document.getElementById('payment-back-btn');
     if (payBackBtn) payBackBtn.addEventListener('click', () => gotoStep('step-info'));
 
+    /* --- Downpayment Policy Modal & Agreement Logic --- */
+    let policyPendingCallback = null;
+
+    function openPolicyModal(onAccept) {
+      policyPendingCallback = typeof onAccept === 'function' ? onAccept : null;
+      const modal = document.getElementById('downpayment-policy-modal');
+      const modalCheck = document.getElementById('modal-policy-agree-check');
+      const acceptBtn = document.getElementById('modal-policy-accept-btn');
+      if (modalCheck) modalCheck.checked = !!co.policyAgreed;
+      if (acceptBtn) acceptBtn.disabled = !modalCheck?.checked;
+      if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closePolicyModal() {
+      const modal = document.getElementById('downpayment-policy-modal');
+      if (modal) {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      policyPendingCallback = null;
+    }
+
+    function syncPolicyCheck() {
+      const pageCheck = document.getElementById('policy-agree-check');
+      if (pageCheck) pageCheck.checked = !!co.policyAgreed;
+      const modalCheck = document.getElementById('modal-policy-agree-check');
+      if (modalCheck) modalCheck.checked = !!co.policyAgreed;
+      const acceptBtn = document.getElementById('modal-policy-accept-btn');
+      if (acceptBtn) acceptBtn.disabled = !co.policyAgreed;
+    }
+
+    const modalPolicyCheck = document.getElementById('modal-policy-agree-check');
+    if (modalPolicyCheck) {
+      modalPolicyCheck.addEventListener('change', () => {
+        const acceptBtn = document.getElementById('modal-policy-accept-btn');
+        if (acceptBtn) acceptBtn.disabled = !modalPolicyCheck.checked;
+      });
+    }
+
+    const modalPolicyAcceptBtn = document.getElementById('modal-policy-accept-btn');
+    if (modalPolicyAcceptBtn) {
+      modalPolicyAcceptBtn.addEventListener('click', () => {
+        co.policyAgreed = true;
+        syncPolicyCheck();
+        payError(null);
+        const cb = policyPendingCallback;
+        closePolicyModal();
+        if (cb) cb();
+      });
+    }
+
+    const closePolicyModalBtn = document.getElementById('close-policy-modal-btn');
+    if (closePolicyModalBtn) closePolicyModalBtn.addEventListener('click', closePolicyModal);
+
+    const downpaymentPolicyModal = document.getElementById('downpayment-policy-modal');
+    if (downpaymentPolicyModal) {
+      downpaymentPolicyModal.addEventListener('click', (e) => {
+        if (e.target === downpaymentPolicyModal) closePolicyModal();
+      });
+    }
+
+    const viewPolicyLink = document.getElementById('view-policy-link');
+    if (viewPolicyLink) viewPolicyLink.addEventListener('click', () => openPolicyModal());
+
+    const btnReadPolicy = document.getElementById('btn-read-downpayment-policy');
+    if (btnReadPolicy) btnReadPolicy.addEventListener('click', () => openPolicyModal());
+
+    const policyAgreeCheck = document.getElementById('policy-agree-check');
+    if (policyAgreeCheck) {
+      policyAgreeCheck.addEventListener('change', () => {
+        co.policyAgreed = policyAgreeCheck.checked;
+        syncPolicyCheck();
+        if (co.policyAgreed) payError(null);
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const pModal = document.getElementById('downpayment-policy-modal');
+        if (pModal && pModal.classList.contains('active')) {
+          closePolicyModal();
+        }
+      }
+    });
+
     function payError(msg) {
       const el = document.getElementById('payment-error-msg');
       if (!el) return;
@@ -1003,6 +1108,16 @@
     if (payBtn) {
       payBtn.addEventListener('click', async (e) => {
         payError(null);
+        const policyCheck = document.getElementById('policy-agree-check');
+        if (!policyCheck || !policyCheck.checked || !co.policyAgreed) {
+          payError('Please read and agree to the 50% Downpayment Policy before confirming payment.');
+          openPolicyModal(() => {
+            co.policyAgreed = true;
+            syncPolicyCheck();
+            payError(null);
+          });
+          return;
+        }
         const ref = document.getElementById('gcash-ref').value.trim();
         const maxLen = co.method === 'GCASH' ? 13 : 16;
         if (!ref || !/^\d+$/.test(ref) || ref.length > maxLen) {
@@ -1107,6 +1222,8 @@
         if (ref) ref.value = '';
         clearProofSelection();
         co.order = null;
+      co.policyAgreed = false;
+      if (typeof syncPolicyCheck === 'function') syncPolicyCheck();
         closeCheckout();
         window.location.href = 'products.html';
       });
@@ -1119,6 +1236,8 @@
         if (ref) ref.value = '';
         clearProofSelection();
         co.order = null;
+      co.policyAgreed = false;
+      if (typeof syncPolicyCheck === 'function') syncPolicyCheck();
         closeCheckout();
         window.location.href = 'products.html';
       });

@@ -608,3 +608,152 @@
     width: 100% !important;
   }
 }
+
+/* 50% Downpayment Policy Modal & Checkbox */
+.policy-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(39, 22, 17, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 2500;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.policy-modal-overlay.active {
+  display: flex !important;
+}
+.policy-modal-card {
+  background: var(--white, #ffffff);
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.28);
+  max-width: 520px;
+  width: 100%;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border, #E6D6C2);
+  animation: policyModalPop 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes policyModalPop {
+  from { opacity: 0; transform: scale(0.96) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.policy-modal-header {
+  padding: 1.15rem 1.4rem;
+  background: #FFF8EE;
+  border-bottom: 1px solid var(--border, #E6D6C2);
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  position: relative;
+}
+.policy-modal-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #F8E3C3;
+  color: var(--primary, #5B3A29);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.policy-modal-header h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--primary, #5B3A29);
+  font-weight: 700;
+}
+.policy-modal-subtitle {
+  margin: 2px 0 0 0;
+  font-size: 0.78rem;
+  color: var(--gray, #6B5A50);
+}
+.policy-modal-close {
+  position: absolute;
+  top: 0.9rem;
+  right: 1.1rem;
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--gray, #6B5A50);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+.policy-modal-close:hover {
+  color: var(--danger, #B3261E);
+  background: rgba(179, 38, 30, 0.08);
+}
+.policy-modal-body {
+  padding: 1.25rem 1.4rem;
+  overflow-y: auto;
+  font-size: 0.86rem;
+  color: #4A382C;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.policy-intro {
+  margin: 0 0 0.25rem 0;
+  color: var(--primary, #5B3A29);
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+.policy-item {
+  background: #FFFDF9;
+  border: 1px solid var(--line, #EFE3D3);
+  border-left: 3.5px solid var(--accent, #D9A441);
+  border-radius: 8px;
+  padding: 0.7rem 0.9rem;
+}
+.policy-item-title {
+  font-weight: 700;
+  color: var(--primary, #5B3A29);
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.86rem;
+}
+.policy-item-title i {
+  color: var(--accent-dark, #C48A22);
+  font-size: 0.9rem;
+}
+.policy-item p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #554439;
+  line-height: 1.42;
+}
+.policy-modal-footer {
+  padding: 1rem 1.4rem;
+  background: #FFFDFB;
+  border-top: 1px solid var(--border, #E6D6C2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.policy-modal-check {
+  margin-bottom: 0;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary, #5B3A29);
+}
+.downpayment-policy-agreement label {
+  cursor: pointer;
+  user-select: none;
+}
+.downpayment-policy-agreement a:hover,
+.downpayment-policy-agreement a:focus {
+  color: var(--primary-dark, #42271B);
+}

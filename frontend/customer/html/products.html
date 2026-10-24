@@ -182,6 +182,11 @@
           <i class="fas fa-shield-alt"></i>
           <div>
             <strong>50% Downpayment Policy:</strong> To confirm authentic orders and prevent bogus requests, pay half (50%) now. The remaining 50% balance is collected upon receipt of your order.
+            <div style="margin-top: 5px;">
+              <a href="javascript:void(0)" id="view-policy-link" style="color: var(--primary); font-weight: 700; text-decoration: underline; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fas fa-file-contract"></i> Read Full 50% Downpayment Policy
+              </a>
+            </div>
           </div>
         </div>
 
@@ -249,6 +254,14 @@
           </div>
         </div>
 
+        <!-- Required Policy Agreement Checkbox -->
+        <div class="form-group downpayment-policy-agreement" style="text-align: left; margin: 1rem 0 0.75rem 0; padding: 0.85rem 1rem; background: #FFFBF5; border: 1px solid #F1E2CE; border-radius: 8px;">
+          <label class="form-check" style="align-items: flex-start; gap: 0.65rem; cursor: pointer; font-size: 0.85rem; line-height: 1.45; margin-bottom: 0;">
+            <input type="checkbox" id="policy-agree-check" style="margin-top: 3px; flex-shrink: 0; width: 18px; height: 18px; accent-color: var(--primary);">
+            <span>I have read, understood, and agree to the <a href="javascript:void(0)" id="btn-read-downpayment-policy" style="color: var(--primary); font-weight: 700; text-decoration: underline;">50% Downpayment Policy</a> *</span>
+          </label>
+        </div>
+
         <div id="payment-error-msg" style="display:none; color:var(--danger); background:rgba(220,53,69,0.1); padding:0.75rem; border-radius:var(--radius); margin-bottom:1rem; text-align:center; font-weight:500;"></div>
         
         <div class="modal-actions">
@@ -277,6 +290,52 @@
           <a href="track.html" class="btn btn-status-view" id="btn-view-order-status" tabindex="0"><i class="fas fa-truck-fast"></i> View Order Status</a>
           <button type="button" class="btn btn-continue-shopping" id="btn-continue-shopping"><i class="fas fa-bag-shopping"></i> Continue Shopping</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOWNPAYMENT POLICY MODAL -->
+  <div class="policy-modal-overlay" id="downpayment-policy-modal" role="dialog" aria-modal="true" aria-labelledby="downpayment-policy-title" style="display:none;">
+    <div class="policy-modal-card">
+      <div class="policy-modal-header">
+        <div class="policy-modal-icon"><i class="fas fa-file-contract"></i></div>
+        <div style="flex: 1; min-width: 0;">
+          <h3 id="downpayment-policy-title">50% Downpayment Policy</h3>
+          <p class="policy-modal-subtitle">Crumbs N' Roll Bakery — Wholesale Terms</p>
+        </div>
+        <button type="button" class="policy-modal-close" id="close-policy-modal-btn" aria-label="Close policy">&times;</button>
+      </div>
+      <div class="policy-modal-body">
+        <p class="policy-intro">Please read and understand our downpayment and order terms before proceeding to pay:</p>
+        
+        <div class="policy-item">
+          <div class="policy-item-title"><i class="fas fa-shield-alt"></i> 1. 50% Advance Commitment</div>
+          <p>WeBake exclusively accepts wholesale bulk orders (minimum 300 bundles). A mandatory 50% advance downpayment via GCash or Maya is required to reserve your baking batch and prevent fraudulent or bogus bookings.</p>
+        </div>
+
+        <div class="policy-item">
+          <div class="policy-item-title"><i class="fas fa-hand-holding-dollar"></i> 2. Remaining 50% Balance</div>
+          <p>The remaining 50% balance is strictly due and collected upon order turnover — either upon delivery by our bakery vehicle or at our agreed halfway meeting point.</p>
+        </div>
+
+        <div class="policy-item">
+          <div class="policy-item-title"><i class="fas fa-user-check"></i> 3. Admin Payment Verification</div>
+          <p>After you submit your payment reference number and screenshot receipt, our administrator manually verifies the transaction against official GCash / Maya merchant records before approving the order.</p>
+        </div>
+
+        <div class="policy-item">
+          <div class="policy-item-title"><i class="fas fa-ban"></i> 4. Cancellation & Refund Terms</div>
+          <p>You may cancel your order and request a full refund of your 50% downpayment <strong>only while the status is "Under Verification"</strong>. Once the bakery approves the payment and moves the order to <strong>"In Production"</strong>, cancellations and refunds are <strong>strictly no longer permitted</strong> because raw ingredients and customized baking batches have already been committed.</p>
+        </div>
+      </div>
+      <div class="policy-modal-footer">
+        <label class="form-check policy-modal-check">
+          <input type="checkbox" id="modal-policy-agree-check" style="width: 18px; height: 18px; accent-color: var(--primary);">
+          <span>I have read, understood, and agree to the 50% Downpayment Policy</span>
+        </label>
+        <button type="button" class="btn btn-primary btn-block" id="modal-policy-accept-btn" disabled>
+          <i class="fas fa-check-circle"></i> I Agree & Proceed to Payment
+        </button>
       </div>
     </div>
   </div>
