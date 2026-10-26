@@ -199,6 +199,8 @@
     ingredientGet: (id) => get('/api/admin/ingredients/' + encodeURIComponent(id)),
     ingredientCreate: (data) => post('/api/admin/ingredients', data),
     ingredientUpdate: (id, data) => put('/api/admin/ingredients/' + encodeURIComponent(id), data),
+    ingredientArchive: (id) => request('DELETE', '/api/admin/ingredients/' + encodeURIComponent(id)),
+    ingredientRestore: (id) => post('/api/admin/ingredients/' + encodeURIComponent(id) + '/restore', {}),
     ingredientDelete: (id) => request('DELETE', '/api/admin/ingredients/' + encodeURIComponent(id)),
     ingredientAdjustStock: (id, data) => post('/api/admin/ingredients/' + encodeURIComponent(id) + '/adjust', data),
     ingredientMovements: (id, limit, offset) => {

@@ -39,10 +39,16 @@ router.put('/:id', asyncHandler(async (req, res) => {
   res.json({ success: true, ingredient });
 }));
 
-// DELETE /api/admin/ingredients/:id - remove ingredient
+// DELETE /api/admin/ingredients/:id - archive ingredient (soft delete)
 router.delete('/:id', asyncHandler(async (req, res) => {
   const result = await ingredientService.remove(req.params.id);
   res.json({ success: true, ...result });
+}));
+
+// POST /api/admin/ingredients/:id/restore - restore archived ingredient
+router.post('/:id/restore', asyncHandler(async (req, res) => {
+  const ingredient = await ingredientService.setArchived(req.params.id, false);
+  res.json({ success: true, message: 'Ingredient restored.', ingredient });
 }));
 
 // POST /api/admin/ingredients/:id/adjust - adjust stock through the PostgreSQL RPC function

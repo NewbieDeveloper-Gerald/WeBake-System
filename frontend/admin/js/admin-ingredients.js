@@ -152,6 +152,9 @@
       if (!matchSearch) return false;
 
       // Status pill filter
+      if (currentFilter === 'archived') return ing.is_archived === true;
+      if (ing.is_archived) return false;
+
       if (currentFilter === 'in_stock') return ing.stock_status === 'in_stock';
       if (currentFilter === 'low_stock') return ing.stock_status === 'low_stock';
       if (currentFilter === 'out_of_stock') return ing.stock_status === 'out_of_stock';
@@ -240,7 +243,11 @@
       let badgeText = 'In Stock';
       let badgeIcon = 'fa-circle-check';
 
-      if (isOut) {
+      if (ing.is_archived) {
+        badgeClass = 'status-archived';
+        badgeText = 'Archived';
+        badgeIcon = 'fa-box-archive';
+      } else if (isOut) {
         badgeClass = 'status-out';
         badgeText = 'Out of Stock';
         badgeIcon = 'fa-circle-xmark';
@@ -260,54 +267,72 @@
       const actionsGroup = document.createElement('div');
       actionsGroup.className = 'action-buttons-group';
 
-      // Restock button (Primary)
-      const btnRestock = document.createElement('button');
-      btnRestock.type = 'button';
-      btnRestock.className = 'btn btn-primary btn-sm';
-      btnRestock.innerHTML = '<i class="fas fa-plus"></i> Restock';
-      btnRestock.title = 'Add stock (purchase / batch intake)';
-      btnRestock.addEventListener('click', () => openRestockModal(ing));
+      if (ing.is_archived) {
+        // Archived: view history and restore
+        const btnHist = document.createElement('button');
+        btnHist.type = 'button';
+        btnHist.className = 'btn-icon';
+        btnHist.innerHTML = '<i class="fas fa-clock-rotate-left"></i>';
+        btnHist.title = 'Audit trail & movements';
+        btnHist.setAttribute('aria-label', 'Audit trail');
+        btnHist.addEventListener('click', () => openHistoryModal(ing));
 
-      // Adjust button (Secondary)
-      const btnAdj = document.createElement('button');
-      btnAdj.type = 'button';
-      btnAdj.className = 'btn btn-outline btn-sm';
-      btnAdj.innerHTML = '<i class="fas fa-sliders-h"></i> Adjust';
-      btnAdj.title = 'Remove stock (usage, damage, correction)';
-      btnAdj.addEventListener('click', () => openAdjustModal(ing));
+        const btnRestore = document.createElement('button');
+        btnRestore.type = 'button';
+        btnRestore.className = 'btn-icon';
+        btnRestore.innerHTML = '<i class="fas fa-rotate-left"></i>';
+        btnRestore.title = 'Restore ingredient';
+        btnRestore.setAttribute('aria-label', 'Restore ingredient');
+        btnRestore.addEventListener('click', () => restoreIngredient(ing));
 
-      // History button
-      const btnHist = document.createElement('button');
-      btnHist.type = 'button';
-      btnHist.className = 'btn-icon';
-      btnHist.innerHTML = '<i class="fas fa-clock-rotate-left"></i>';
-      btnHist.title = 'Audit trail & movements';
-      btnHist.setAttribute('aria-label', 'Audit trail');
-      btnHist.addEventListener('click', () => openHistoryModal(ing));
+        actionsGroup.appendChild(btnHist);
+        actionsGroup.appendChild(btnRestore);
+      } else {
+        // Active: Restock, Adjust, History, Edit, Archive
+        const btnRestock = document.createElement('button');
+        btnRestock.type = 'button';
+        btnRestock.className = 'btn btn-primary btn-sm';
+        btnRestock.innerHTML = '<i class="fas fa-plus"></i> Restock';
+        btnRestock.title = 'Add stock (purchase / batch intake)';
+        btnRestock.addEventListener('click', () => openRestockModal(ing));
 
-      // Edit info button
-      const btnEdit = document.createElement('button');
-      btnEdit.type = 'button';
-      btnEdit.className = 'btn-icon';
-      btnEdit.innerHTML = '<i class="fas fa-pen"></i>';
-      btnEdit.title = 'Edit details';
-      btnEdit.setAttribute('aria-label', 'Edit ingredient');
-      btnEdit.addEventListener('click', () => openEditModal(ing));
+        const btnAdj = document.createElement('button');
+        btnAdj.type = 'button';
+        btnAdj.className = 'btn btn-outline btn-sm';
+        btnAdj.innerHTML = '<i class="fas fa-sliders-h"></i> Adjust';
+        btnAdj.title = 'Remove stock (usage, damage, correction)';
+        btnAdj.addEventListener('click', () => openAdjustModal(ing));
 
-      // Delete button
-      const btnDel = document.createElement('button');
-      btnDel.type = 'button';
-      btnDel.className = 'btn-icon btn-icon-archive';
-      btnDel.innerHTML = '<i class="fas fa-trash"></i>';
-      btnDel.title = 'Delete ingredient';
-      btnDel.setAttribute('aria-label', 'Delete ingredient');
-      btnDel.addEventListener('click', () => deleteIngredient(ing));
+        const btnHist = document.createElement('button');
+        btnHist.type = 'button';
+        btnHist.className = 'btn-icon';
+        btnHist.innerHTML = '<i class="fas fa-clock-rotate-left"></i>';
+        btnHist.title = 'Audit trail & movements';
+        btnHist.setAttribute('aria-label', 'Audit trail');
+        btnHist.addEventListener('click', () => openHistoryModal(ing));
 
-      actionsGroup.appendChild(btnRestock);
-      actionsGroup.appendChild(btnAdj);
-      actionsGroup.appendChild(btnHist);
-      actionsGroup.appendChild(btnEdit);
-      actionsGroup.appendChild(btnDel);
+        const btnEdit = document.createElement('button');
+        btnEdit.type = 'button';
+        btnEdit.className = 'btn-icon';
+        btnEdit.innerHTML = '<i class="fas fa-pen"></i>';
+        btnEdit.title = 'Edit details';
+        btnEdit.setAttribute('aria-label', 'Edit ingredient');
+        btnEdit.addEventListener('click', () => openEditModal(ing));
+
+        const btnArchive = document.createElement('button');
+        btnArchive.type = 'button';
+        btnArchive.className = 'btn-icon btn-icon-archive';
+        btnArchive.innerHTML = '<i class="fas fa-box-archive"></i>';
+        btnArchive.title = 'Archive ingredient';
+        btnArchive.setAttribute('aria-label', 'Archive ingredient');
+        btnArchive.addEventListener('click', () => archiveIngredient(ing));
+
+        actionsGroup.appendChild(btnRestock);
+        actionsGroup.appendChild(btnAdj);
+        actionsGroup.appendChild(btnHist);
+        actionsGroup.appendChild(btnEdit);
+        actionsGroup.appendChild(btnArchive);
+      }
 
       tdActions.appendChild(actionsGroup);
       tr.appendChild(tdActions);
@@ -635,17 +660,27 @@
   btnCloseHistory.addEventListener('click', () => closeModal(modalHistory));
   btnDismissHistory.addEventListener('click', () => closeModal(modalHistory));
 
-  // --- Delete Ingredient ---
-  async function deleteIngredient(ing) {
-    const ok = AdminUI.confirmAsk(`Are you sure you want to delete "${ing.name}"? This removes the ingredient and its movement history.`);
+  // --- Archive & Restore Ingredient ---
+  async function archiveIngredient(ing) {
+    const ok = AdminUI.confirmAsk(`Archive "${ing.name}"? It will be hidden from the active pantry but movement history is preserved.`);
     if (!ok) return;
 
     try {
-      await AdminAPI.ingredientDelete(ing.id);
-      AdminUI.toast(`Deleted "${ing.name}".`, 'info');
+      await AdminAPI.ingredientArchive(ing.id);
+      AdminUI.toast(`Archived "${ing.name}".`, 'info');
       await loadIngredients();
     } catch (err) {
-      AdminUI.toast(err.message || 'Could not delete ingredient.', 'danger');
+      AdminUI.toast(err.message || 'Could not archive ingredient.', 'danger');
+    }
+  }
+
+  async function restoreIngredient(ing) {
+    try {
+      await AdminAPI.ingredientRestore(ing.id);
+      AdminUI.toast(`Restored "${ing.name}".`, 'success');
+      await loadIngredients();
+    } catch (err) {
+      AdminUI.toast(err.message || 'Could not restore ingredient.', 'danger');
     }
   }
 
