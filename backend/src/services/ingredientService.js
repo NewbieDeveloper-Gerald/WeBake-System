@@ -64,7 +64,7 @@ async function getById(id) {
     SELECT
       id, name, stock_quantity, unit, reorder_level, cost_per_unit,
       expiry_date::text AS expiry_date, stock_updated_at,
-      created_at, updated_at, stock_status,
+      created_at, updated_at, stock_status, is_archived,
       CASE
         WHEN expiry_date IS NOT NULL
           AND expiry_date <= (CURRENT_DATE + INTERVAL '7 days')
@@ -131,22 +131,34 @@ async function update(id, data) {
   return getById(id);
 }
 
-async function setArchived(id, isArchived = true) {
+async function archive(id) {
   await getById(id);
   const res = await query(
     `UPDATE public.ingredients
-     SET is_archived = $1, updated_at = NOW()
-     WHERE id = $2
+     SET is_archived = true, updated_at = NOW()
+     WHERE id = $1
      RETURNING *;`,
-    [Boolean(isArchived), id]
+    [id]
+  );
+  return res.rows[0];
+}
+
+async function unarchive(id) {
+  await getById(id);
+  const res = await query(
+    `UPDATE public.ingredients
+     SET is_archived = false, updated_at = NOW()
+     WHERE id = $1
+     RETURNING *;`,
+    [id]
   );
   return res.rows[0];
 }
 
 async function remove(id) {
-  // Soft delete: archives ingredient to preserve inventory movement audit trail
-  await setArchived(id, true);
-  return { success: true, message: 'Ingredient archived.' };
+  await getById(id);
+  await query('DELETE FROM public.ingredients WHERE id = $1;', [id]);
+  return { success: true, message: 'Ingredient permanently deleted.' };
 }
 
 async function adjustStock(id, { type, quantity, reason, unitCost }, actor = 'admin') {
@@ -223,7 +235,8 @@ module.exports = {
   create,
   update,
   remove,
-  setArchived,
+  archive,
+  unarchive,
   adjustStock,
   movements,
 };

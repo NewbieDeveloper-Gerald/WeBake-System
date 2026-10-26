@@ -268,7 +268,7 @@
       actionsGroup.className = 'action-buttons-group';
 
       if (ing.is_archived) {
-        // Archived: view history and restore
+        // Archived: view history, unarchive, or permanently delete
         const btnHist = document.createElement('button');
         btnHist.type = 'button';
         btnHist.className = 'btn-icon';
@@ -277,16 +277,25 @@
         btnHist.setAttribute('aria-label', 'Audit trail');
         btnHist.addEventListener('click', () => openHistoryModal(ing));
 
-        const btnRestore = document.createElement('button');
-        btnRestore.type = 'button';
-        btnRestore.className = 'btn-icon';
-        btnRestore.innerHTML = '<i class="fas fa-rotate-left"></i>';
-        btnRestore.title = 'Restore ingredient';
-        btnRestore.setAttribute('aria-label', 'Restore ingredient');
-        btnRestore.addEventListener('click', () => restoreIngredient(ing));
+        const btnUnarchive = document.createElement('button');
+        btnUnarchive.type = 'button';
+        btnUnarchive.className = 'btn-icon';
+        btnUnarchive.innerHTML = '<i class="fas fa-box-open"></i>';
+        btnUnarchive.title = 'Unarchive ingredient';
+        btnUnarchive.setAttribute('aria-label', 'Unarchive ingredient');
+        btnUnarchive.addEventListener('click', () => unarchiveIngredient(ing));
+
+        const btnDel = document.createElement('button');
+        btnDel.type = 'button';
+        btnDel.className = 'btn-icon btn-icon-archive';
+        btnDel.innerHTML = '<i class="fas fa-trash"></i>';
+        btnDel.title = 'Permanently delete';
+        btnDel.setAttribute('aria-label', 'Permanently delete');
+        btnDel.addEventListener('click', () => deleteIngredient(ing));
 
         actionsGroup.appendChild(btnHist);
-        actionsGroup.appendChild(btnRestore);
+        actionsGroup.appendChild(btnUnarchive);
+        actionsGroup.appendChild(btnDel);
       } else {
         // Active: Restock, Adjust, History, Edit, Archive
         const btnRestock = document.createElement('button');
@@ -660,9 +669,9 @@
   btnCloseHistory.addEventListener('click', () => closeModal(modalHistory));
   btnDismissHistory.addEventListener('click', () => closeModal(modalHistory));
 
-  // --- Archive & Restore Ingredient ---
+  // --- Archive, Unarchive & Permanent Delete ---
   async function archiveIngredient(ing) {
-    const ok = AdminUI.confirmAsk(`Archive "${ing.name}"? It will be hidden from the active pantry but movement history is preserved.`);
+    const ok = AdminUI.confirmAsk(`Archive "${ing.name}"? It will be marked as inactive and moved to the Archived section.`);
     if (!ok) return;
 
     try {
@@ -674,13 +683,26 @@
     }
   }
 
-  async function restoreIngredient(ing) {
+  async function unarchiveIngredient(ing) {
     try {
-      await AdminAPI.ingredientRestore(ing.id);
-      AdminUI.toast(`Restored "${ing.name}".`, 'success');
+      await AdminAPI.ingredientUnarchive(ing.id);
+      AdminUI.toast(`Unarchived "${ing.name}".`, 'success');
       await loadIngredients();
     } catch (err) {
-      AdminUI.toast(err.message || 'Could not restore ingredient.', 'danger');
+      AdminUI.toast(err.message || 'Could not unarchive ingredient.', 'danger');
+    }
+  }
+
+  async function deleteIngredient(ing) {
+    const ok = AdminUI.confirmAsk(`Permanently delete "${ing.name}"? This removes the ingredient and cannot be undone.`);
+    if (!ok) return;
+
+    try {
+      await AdminAPI.ingredientDelete(ing.id);
+      AdminUI.toast(`Deleted "${ing.name}".`, 'info');
+      await loadIngredients();
+    } catch (err) {
+      AdminUI.toast(err.message || 'Could not delete ingredient.', 'danger');
     }
   }
 
